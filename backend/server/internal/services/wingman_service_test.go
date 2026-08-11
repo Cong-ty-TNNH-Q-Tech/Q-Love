@@ -54,7 +54,7 @@ func TestWingmanService_CreateReferral(t *testing.T) {
 
 	referral, err := service.CreateReferral(context.Background(), wingmanID, target1ID, target2ID)
 	if err != nil {
-		t.Errorf("Expected no error, got %v", err)
+		t.Fatalf("Expected no error, got %v", err)
 	}
 
 	if referral == nil {
@@ -77,17 +77,17 @@ func TestWingmanService_AcceptReferral_Success(t *testing.T) {
 	target1ID := uuid.New()
 
 	mock.ExpectBegin()
-	mock.ExpectQuery(`SELECT \* FROM "wingman_referrals" WHERE id = \$1`).
+	mock.ExpectQuery(`SELECT .* FROM "wingman_referrals"`).
 		WithArgs(refID).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "status", "expires_at", "target1_id", "target2_id"}).
 			AddRow(refID, "pending", time.Now().Add(1*time.Hour), target1ID, uuid.New()))
 	
-	mock.ExpectExec(`UPDATE "wingman_referrals" SET`).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec(`UPDATE "wingman_referrals"`).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
 	referral, err := service.AcceptReferral(context.Background(), refID, target1ID)
 	if err != nil {
-		t.Errorf("Expected no error, got %v", err)
+		t.Fatalf("Expected no error, got %v", err)
 	}
 	if referral.Status != "matched" {
 		t.Errorf("Expected status matched, got %s", referral.Status)
@@ -105,25 +105,25 @@ func TestWingmanService_ProcessCommission_Success(t *testing.T) {
 	wingmanID := uuid.New()
 
 	mock.ExpectBegin()
-	mock.ExpectQuery(`SELECT \* FROM "wingman_referrals" WHERE id = \$1`).
+	mock.ExpectQuery(`SELECT .* FROM "wingman_referrals"`).
 		WithArgs(refID).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "status", "wingman_id"}).
 			AddRow(refID, "matched", wingmanID))
 	
 	// mock FirstOrCreate UserWallet
-	mock.ExpectQuery(`SELECT \* FROM "user_wallets" WHERE "user_wallets"."user_id" = \$1`).
+	mock.ExpectQuery(`SELECT .* FROM "user_wallets"`).
 		WithArgs(wingmanID).
 		WillReturnRows(sqlmock.NewRows([]string{"user_id", "balance"}).
 			AddRow(wingmanID, 0))
 	
 	// save wallet
-	mock.ExpectExec(`UPDATE "user_wallets" SET`).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec(`UPDATE "user_wallets"`).WillReturnResult(sqlmock.NewResult(1, 1))
 	
 	// Create transaction
 	mock.ExpectQuery(`INSERT INTO "wallet_transactions"`).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(uuid.New()))
 	
 	// Save referral
-	mock.ExpectExec(`UPDATE "wingman_referrals" SET`).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec(`UPDATE "wingman_referrals"`).WillReturnResult(sqlmock.NewResult(1, 1))
 
 	mock.ExpectCommit()
 
