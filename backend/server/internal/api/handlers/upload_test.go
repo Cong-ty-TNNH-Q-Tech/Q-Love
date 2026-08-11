@@ -74,6 +74,15 @@ func TestGenerateUploadURL_Validation(t *testing.T) {
 			expectedCode:  400,
 			expectedError: "File size must be between 1 byte and 10MB",
 		},
+		{
+			name: "No extension fallback",
+			payload: PresignedURLRequest{
+				Filename:      "test",
+				ContentType:   "image/jpeg",
+				ContentLength: 5000000,
+			},
+			expectedCode: 200,
+		},
 	}
 
 	for _, tt := range tests {
@@ -108,4 +117,14 @@ func TestGenerateUploadURL_Validation(t *testing.T) {
 			}
 		})
 	}
+
+	// Test Invalid JSON
+	t.Run("Invalid JSON", func(t *testing.T) {
+		req := httptest.NewRequest("POST", "/upload", bytes.NewReader([]byte("{invalid json}")))
+		req.Header.Set("Content-Type", "application/json")
+		resp, _ := app.Test(req, -1)
+		if resp.StatusCode != 400 {
+			t.Errorf("Expected status 400 for invalid JSON, got %d", resp.StatusCode)
+		}
+	})
 }
