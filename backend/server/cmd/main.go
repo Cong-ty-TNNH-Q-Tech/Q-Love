@@ -5,13 +5,24 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"gorm.io/gorm"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/api"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
+	"gorm.io/gorm"
 )
 
 var app *fiber.App
 
 func setupApp() *fiber.App {
+	// 1. Load config
+	cfg := config.LoadConfig()
+
+	// 2. Init R2 Storage Client
+	r2Client, err := storage.NewR2Client(cfg)
+	if err != nil {
+		log.Fatalf("Failed to initialize R2 Storage Client: %v", err)
+	}
+
 	a := fiber.New(fiber.Config{
 		AppName: "Q-Love Backend v1.0",
 	})
@@ -20,9 +31,8 @@ func setupApp() *fiber.App {
 	a.Use(logger.New())
 
 	var db *gorm.DB // In a real setup, connect to PostgreSQL here
-	api.RegisterRoutes(a, db)
-
-	// Routes
+	
+	// Health Check
 	a.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"status":  "ok",
@@ -30,20 +40,23 @@ func setupApp() *fiber.App {
 		})
 	})
 
-	a.Get("/ping", func(c *fiber.Ctx) error {
-		return c.SendString("pong")
-	})
-
-	a.Get("/version", func(c *fiber.Ctx) error {
-		return c.SendString("v1.0.0")
-	})
+	// Register API Routes
+	api.RegisterRoutes(a, db, r2Client)
 
 	return a
 }
 
 func main() {
+	cfg := config.LoadConfig()
 	app = setupApp()
-	if err := app.Listen(":3000"); err != nil {
+	
+	port := cfg.Port
+	if port == "" {
+		port = "3000"
+	}
+
+	log.Printf("Starting server on port %s...", port)
+	if err := app.Listen(":" + port); err != nil {
 		log.Printf("Server stopped: %v", err)
 	}
 }
