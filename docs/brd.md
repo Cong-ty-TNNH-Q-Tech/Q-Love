@@ -33,9 +33,13 @@ Tích hợp mạnh mẽ các cơ chế **Gamification** (Game hóa) và **Virtua
 
 ## 2. Mục tiêu kinh doanh (Business Objectives)
 - **User Acquisition:** Đạt 1 triệu người dùng đăng ký (Registered Users) và 300,000 người dùng hoạt động hàng tháng (MAU) trong 6 tháng đầu ra mắt.
+  - *Đo lường:* Amplitude (event: `app_open`, `registration_completed`). Báo cáo hàng tuần. Chủ sở hữu: PM.
 - **Retention (Giữ chân):** Tăng tỷ lệ giữ chân ngày 1 (D1 Retention) lên 45% và ngày 30 (D30 Retention) lên 25% nhờ vào cơ chế chuỗi tương tác (Streak) và Đảo Tình Yêu.
+  - *Đo lường:* Amplitude Retention Analysis (Cohort). Báo cáo hàng tháng. Chủ sở hữu: Product.
 - **Monetization (Doanh thu):** Đạt ARPU (Doanh thu trung bình trên mỗi người dùng) tối thiểu $2.5/tháng thông qua hệ thống In-App Purchase và mua bán vật phẩm nội bộ.
+  - *Đo lường:* RevenueCat (IAP analytics). Báo cáo hàng tháng. Chủ sở hữu: Business.
 - **Thương hiệu:** Trở thành Top 3 ứng dụng Hẹn Hò & Giải Trí được tải nhiều nhất trên App Store / Google Play tại Việt Nam sau 1 năm.
+  - *Đo lường:* App Annie / data.ai rank tracking. Theo dõi hàng tuần.
 
 ---
 
@@ -52,7 +56,7 @@ Tích hợp mạnh mẽ các cơ chế **Gamification** (Game hóa) và **Virtua
 ## 4. Phạm vi dự án (Project Scope)
 
 ### 4.1. In-Scope (Trong phạm vi triển khai)
-Các tính năng được quy hoạch theo 3 giai đoạn (Phases) tương ứng với tài liệu Đặc tả Use-case [ba.md](file:///c:/Coding%20Space/Projects/Q-Love/docs/ba.md):
+Các tính năng được quy hoạch theo 3 giai đoạn (Phases) tương ứng với tài liệu Đặc tả Use-case [ba.md](./ba.md):
 
 **Phase 1 (MVP Core - Nền móng Viral):**
 - Đăng ký và Quẹt thẻ tìm đối tượng (Matchmaking cơ bản).

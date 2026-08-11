@@ -23,7 +23,7 @@ Sử dụng phương pháp phát triển đa nền tảng (Cross-platform) để
 ## 2. Hệ thống Máy chủ (Backend & APIs)
 Để tối ưu nguồn lực cho giai đoạn MVP (Phase 1), toàn bộ kiến trúc Backend sẽ được gom về một ngôn ngữ duy nhất thay vì dùng quá nhiều loại Tech Stack làm phân mảnh đội Dev.
 
-- **Ngôn ngữ & Framework độc tôn:** **Golang (Go)** kết hợp framework `Gin` hoặc `Fiber`.
+- **Ngôn ngữ & Framework độc tôn:** **Golang (Go)** kết hợp framework **`Fiber`** *(đã chốt, lý do: Fiber nhanh hơn Gin ~20% trên benchmark, API syntax gần giống Express.js giúp dev onboard nhanh hơn, phù hợp cho workload Real-time cao)*.
   - *Lý do:* Golang là "vua" trong việc xử lý đồng thời (Concurrency) bằng Goroutines. Nó gánh vác cực tốt các kết nối Socket liên tục (Real-time Chat, Matchmaking), tốn ít RAM và chạy rất mượt trên môi trường Cloud.
 - **Cách Golang xử lý toàn bộ bài toán của Q-Love:**
   - *Real-time & Core:* Xử lý giao dịch Sàn Chứng Khoán, Cọc Khế ước và Chat thông qua WebSockets.
@@ -56,3 +56,57 @@ Sử dụng phương pháp phát triển đa nền tảng (Cross-platform) để
 3. **Backend Developer (2 người):** Chuyên Golang. Có kinh nghiệm làm việc với kiến trúc Microservices/Modular Monolith, WebSockets và xử lý ảnh cơ bản.
 4. **DevOps / Cloud Engineer (0.5 - 1 người):** Thiết lập hạ tầng AWS, CI/CD, Kubernetes ban đầu.
 5. **QA / Tester (1 người):** Viết Test script dựa trên tài liệu `uc_ac.md`.
+
+---
+
+## 6. CI/CD Pipeline
+
+Toàn bộ quy trình tích hợp và triển khai liên tục (CI/CD) được tự động hóa bằng **GitHub Actions**.
+
+```text
+[Push / PR to main]
+       │
+       ▼
+[1. CI: Test & Build]
+   - go test ./... (Unit + Integration tests)
+   - flutter test
+   - Lint (golangci-lint, flutter analyze)
+       │
+       ▼
+[2. Docker Build & Push]
+   - docker build -t q-love-api:sha-{commit}
+   - Push to Amazon ECR
+       │
+       ▼
+[3. Deploy to Staging (Auto)]
+   - kubectl set image deployment/q-love-api ... (K8s Rolling Update)
+   - Smoke test tự động sau deploy
+       │
+       ▼
+[4. Deploy to Production (Manual Approval)]
+   - PM / Tech Lead approve trên GitHub Actions UI
+   - Blue/Green Deployment để đảm bảo Zero Downtime
+```
+
+**Quy tắc:**
+- Branch `main` → Deploy tự động lên **Staging**.
+- Tag `v*.*.*` (VD: `v1.2.0`) → Trigger deploy lên **Production** sau khi được approve.
+
+---
+
+## 7. Monitoring & Observability Stack
+
+Hệ thống Real-time với giao dịch Xu ảo phức tạp bắt buộc phải có đầy đủ 3 trụ cột Observability: **Logs, Metrics, Traces**.
+
+| Lớp | Công cụ | Mục đích |
+| :--- | :--- | :--- |
+| **Error Tracking** | **Sentry** (SDK tích hợp trong Go + Flutter) | Bắt và báo động ngay lập tức khi có crash (App) hoặc panic (Backend). Tích hợp alert vào Slack. |
+| **Metrics & Dashboards** | **Prometheus + Grafana** | Theo dõi: Request latency, WebSocket connection count, Worker queue size, Xu transaction volume theo thời gian thực. |
+| **Centralized Logging** | **Grafana Loki** | Thu thập log từ tất cả pods K8s vào một nơi. Giúp debug nhanh khi có sự cố (VD: trace luồng giao dịch Xu bị lỗi theo `trace_id`). |
+| **Uptime Monitoring** | **Uptime Robot** (Free tier) | Ping endpoint `/health` mỗi 5 phút, SMS alert khi downtime. Đảm bảo SLA 99.9%. |
+
+**Cảnh báo (Alerting Rules) quan trọng:**
+- API latency P99 > 500ms → Alert PagerDuty (On-call dev)
+- WebSocket active connections > 10,000 → Trigger K8s HPA scale-out
+- `wallet_transactions` error rate > 0.1% → Alert khẩn cấp (Liên quan đến tiền)
+- Sentry error rate tăng đột biến > 5x baseline → Alert Slack channel #incidents

@@ -28,6 +28,8 @@ erDiagram
     USERS ||--o{ WALLET_TRANSACTIONS : "makes"
     COURT_CASES ||--o{ COURT_VOTES : "receives"
     USERS ||--o{ COURT_VOTES : "votes"
+    USERS ||--o{ NOTIFICATIONS : "receives"
+    USERS ||--o{ USER_VIOLATIONS : "has"
 
     USERS {
         uuid id PK
@@ -71,6 +73,22 @@ erDiagram
         uuid reviewer_id FK
         uuid target_id FK
         int rating_score
+    }
+    NOTIFICATIONS {
+        uuid id PK
+        uuid user_id FK
+        varchar type
+        text payload
+        varchar status
+        timestamp created_at
+    }
+    USER_VIOLATIONS {
+        uuid id PK
+        uuid user_id FK
+        varchar type
+        varchar reason
+        timestamp expires_at
+        timestamp created_at
     }
 ```
 
@@ -142,6 +160,7 @@ erDiagram
 | `content` | TEXT | | Nội dung text hoặc URL ảnh gốc |
 | `blur_url` | TEXT | | URL ảnh đã làm mờ (Nếu type = locket) |
 | `blur_level`| INT | | Tỷ lệ mờ (90, 50, 0) phụ thuộc Streak |
+| `created_at`| TIMESTAMP | Default NOW() | Thời gian gửi tin nhắn |
 
 **Bảng `ex_ratings`** (Đánh giá CV Tình trường)
 | Column | Type | Constraints | Description |
@@ -175,6 +194,7 @@ erDiagram
 | `id` | UUID | Primary Key | |
 | `name` | VARCHAR(100) | | Tên địa điểm (VD: Phố Đi Bộ) |
 | `location` | GEOMETRY(Point) | PostGIS | Tọa độ điểm mù |
+| `radius_meters` | INT | Default 200 | Bán kính hợp lệ để check-in (ST_DWithin) |
 | `current_owner_clan_id`| UUID | FK(clans.id) | Bang hội đang chiếm cờ |
 
 **Bảng `clans`** (Bang hội)
@@ -221,6 +241,7 @@ erDiagram
 | `user_id` | UUID | PK, FK(users.id) | Chủ sở hữu profile ($Mã) |
 | `current_price` | NUMERIC(15,2) | Default 100 | Giá hiện tại (Tính bằng công thức) |
 | `total_supply` | INT | Default 1000 | Tổng cung cổ phiếu |
+| `available_supply` | INT | Default 1000 | Số cổ phiếu tự do lưu hành (chưa bị mua) |
 
 **Bảng `stock_transactions`** (Giao dịch Mua/Bán)
 | Column | Type | Constraints | Description |
@@ -234,7 +255,44 @@ erDiagram
 
 ---
 
+### 2.5. Hệ thống Thông báo & Vi phạm (Notification & Violation)
+
+**Bảng `notifications`** (Lịch sử thông báo Push/In-app - phục vụ Audit & Debug)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `user_id` | UUID | FK(users.id) | Người nhận thông báo |
+| `type` | VARCHAR(50) | Not Null | Loại: `locket_received`, `match`, `court_verdict`, `contract_reminder`... |
+| `payload` | TEXT | | JSON payload đầy đủ (URL ảnh, case_id...) |
+| `status` | VARCHAR(20) | Default 'sent' | Trạng thái: `sent`, `delivered`, `failed` |
+| `reference_id` | UUID | | ID của đối tượng liên quan (match_id, case_id...) |
+| `created_at` | TIMESTAMP | Default NOW() | |
+
+**Bảng `user_violations`** (Lịch sử vi phạm - phục vụ Auto-ban & Admin)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `user_id` | UUID | FK(users.id) | Người vi phạm |
+| `type` | VARCHAR(50) | Not Null | Loại vi phạm: `nsfw_image`, `fake_gps`, `purge_ban`, `court_shadowban`... |
+| `reason` | TEXT | | Mô tả chi tiết vi phạm |
+| `is_active` | BOOLEAN | Default true | Lệnh phạt còn hiệu lực hay không |
+| `expires_at` | TIMESTAMP | | Thời điểm hết hạn phạt (NULL = vĩnh viễn) |
+| `created_at` | TIMESTAMP | Default NOW() | |
+
+---
+
 ## 3. Tối ưu hóa Database (Database Optimization Notes)
 1. **Ví ảo (User Wallets):** Phải sử dụng `BEGIN ... COMMIT` (Transactions) của PostgreSQL ở cấp độ Isolation `SERIALIZABLE` để tránh lỗi Race Condition khi 2 user cùng thao tác trừ/cộng Xu cùng lúc.
 2. **Tìm kiếm GPS:** Bảng `users` và `landmarks` bắt buộc phải tạo Index `GIST(location)` trên PostGIS để thuật toán tìm "người quanh đây bán kính 5km" trả về kết quả < 50ms.
 3. **Ghosting Checker:** Bảng `matches` sử dụng `last_interaction_at` để tạo Cronjob tự động quét mỗi đêm, nếu quá 24h thì trừ điểm Streak và đánh dấu "Héo úa" Đảo Tình Yêu.
+4. **Bảng `notifications`:** Index trên `(user_id, status)` để query nhanh danh sách thông báo chưa đọc.
+5. **Bảng `user_violations`:** Index trên `(user_id, type, expires_at)` để Cron Job quét và tự động gỡ lệnh ban khi hết hạn.
+
+---
+
+## 4. Changelog Schema
+
+| Version | Ngày | Thay đổi |
+| :--- | :--- | :--- |
+| v1.1 | 2026-08-11 | Thêm bảng `notifications`, `user_violations`; Bổ sung cột `created_at` vào `chat_messages`; Thêm `available_supply` vào `stock_profiles`; Thêm `radius_meters` vào `landmarks`. |
+| v1.0 | 2026-08-11 | Khởi tạo schema ban đầu. |

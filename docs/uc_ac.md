@@ -192,3 +192,50 @@ Tài liệu này đặc tả các Tiêu chí chấp nhận (Acceptance Criteria 
 - **When** Người dùng chọn "Tham gia ngay".
 - **Then** Hệ thống ghép đôi ẩn danh (không hiện Avatar/Tên) ngẫu nhiên không giới hạn bán kính khoảng cách.
 - **And** Sau 10 phút trò chuyện, nếu cả 2 cùng bấm "Lộ diện", Avatar và Profile thật mới được hiển thị.
+
+---
+
+## 12. AC Bổ Sung: Giới hạn tần suất gửi Locket (Rate Limit)
+
+### AC1: Rate limit gửi ảnh Locket
+- **Given** Người dùng A đã gửi **10 ảnh Locket** cho cùng một người dùng B trong vòng 1 giờ.
+- **When** Người dùng A cố gắng gửi ảnh Locket thứ 11 trong cùng khung giờ đó.
+- **Then** Hệ thống từ chối request, trả về lỗi `429 Too Many Requests`.
+- **And** Hiển thị thông báo cho A: *"Bạn đã gửi quá nhiều Locket trong giờ này. Hãy thư giãn và thử lại sau [thời gian reset]."*
+
+### AC2: Giới hạn không áp dụng cho gói Premium
+- **Given** Người dùng A đang có gói **Q-Love Premium** và đã gửi 10 ảnh Locket trong 1 giờ.
+- **When** Người dùng A gửi ảnh thứ 11.
+- **Then** Hệ thống cho phép gửi bình thường, không áp dụng rate limit.
+
+---
+
+## 13. AC Bổ Sung: Circuit Breaker Sàn Chứng Khoán (Chống Pump & Dump)
+
+### AC1: Tạm dừng giao dịch khi giá biến động bất thường
+- **Given** Mã cổ phiếu `$NVA` đang giao dịch ở 200 Xu.
+- **When** Trong vòng **5 phút**, giá `$NVA` tăng hoặc giảm hơn **30%** (lên 260 Xu hoặc xuống 140 Xu).
+- **Then** Hệ thống tự động kích hoạt **Circuit Breaker**: tạm dừng toàn bộ lệnh mua/bán của mã `$NVA` trong **15 phút**.
+- **And** Hiển thị banner trên trang cổ phiếu: *"Giao dịch tạm dừng do biến động bất thường. Tiếp tục lúc [thời gian]."*
+
+### AC2: Thông báo cho cổ đông hiện hữu
+- **Given** Circuit Breaker vừa được kích hoạt cho mã `$NVA`.
+- **When** Hệ thống thực thi lệnh tạm dừng.
+- **Then** Toàn bộ user đang nắm giữ cổ phiếu `$NVA` nhận được **push notification** thông báo tình trạng tạm dừng.
+- **And** Các lệnh đang chờ khớp (Pending Orders) bị **hủy tự động**, Xu được hoàn trả vào ví.
+
+---
+
+## 14. AC Bổ Sung: Rút đơn kiện (Tòa Án Tình Yêu)
+
+### AC1: Người kiện rút đơn trước khi đủ 50 vote
+- **Given** Vụ kiện do Người dùng A khởi tạo chống B đang trong thời gian bỏ phiếu và chưa đạt đủ 50 phiếu.
+- **When** Người dùng A vào mục "Vụ kiện của tôi" và nhấn "Rút đơn kiện".
+- **Then** Hệ thống **hủy vụ án**, gỡ bài khỏi tab "Hóng Drama".
+- **And** Bồi thẩm đoàn nhận thông báo *"Vụ kiện đã được nguyên đơn rút lại."*
+- **And** Không có hình phạt hoặc phần thưởng nào được áp dụng cho cả hai bên.
+
+### AC2: Không thể rút đơn sau khi đã đủ 50 vote và có kết quả
+- **Given** Vụ kiện đã nhận đủ 50 phiếu và đã có kết quả (guilty/not_guilty).
+- **When** Người dùng A cố gắng rút đơn.
+- **Then** Nút "Rút đơn" bị vô hiệu hóa (greyed-out), hệ thống hiển thị thông báo *"Vụ án đã có phán quyết và không thể rút lại."*
