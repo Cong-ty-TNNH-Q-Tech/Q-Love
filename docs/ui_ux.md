@@ -55,6 +55,8 @@ Q-Love nhắm đến Gen Z và Millennials — thế hệ thích những thứ *
 | `--bg-surface` | `#1A1A2E` | Card, Modal, Bottom sheet |
 | `--bg-surface-2` | `#16213E` | Input field, List item |
 | `--bg-surface-elevated` | `#22224A` | Hover, Selected state |
+| `--bg-glass` | `rgba(26, 26, 46, 0.6)` | **Glassmorphism:** Nền kính mờ (kết hợp `backdrop-filter: blur(16px)`) dùng cho Match Overlay, Toolbar |
+| `--bg-glass-light`| `rgba(255, 255, 255, 0.05)` | **Glassmorphism:** Hiệu ứng highlight trên viền thẻ bài |
 
 #### Text Colors
 | Token | Hex | Mục đích |
@@ -121,7 +123,7 @@ Sử dụng base-8 grid system:
 
 ---
 
-### 1.6. Elevation & Shadow
+### 1.6. Elevation, Shadow & Glassmorphism
 
 ```
 Level 1 (Card):     box-shadow: 0 4px 16px rgba(255,61,107, 0.08)
@@ -129,6 +131,9 @@ Level 2 (Modal):    box-shadow: 0 8px 32px rgba(0,0,0, 0.48)
 Level 3 (Popup):    box-shadow: 0 16px 48px rgba(0,0,0, 0.64)
 Glow Primary:       box-shadow: 0 0 20px rgba(255,61,107, 0.40)
 Glow Gold:          box-shadow: 0 0 20px rgba(255,184,48, 0.40)
+
+Glassmorphism Blur: backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+Glass Border:       border: 1px solid rgba(255, 255, 255, 0.1);
 ```
 
 ---
@@ -469,7 +474,8 @@ App Root
     │  Header: "$NVA — Nguyễn Văn A"
     │  Avatar + Level badge
     │
-    │  [Candlestick Chart - chiếm 40% màn hình]
+    │  [Thẻ bài 3D Hologram - Trading Card chiếm 45% màn hình]
+    │  (Hiệu ứng Parallax phản quang khi nghiêng điện thoại)
     │  Time selector: [1H] [1D] [1W] [1M]
     │
     │  Chỉ số:
@@ -588,7 +594,7 @@ App Root
 
 ---
 
-### 5.2. Locket Widget (iOS WidgetKit / Android AppWidget)
+### 5.2. Locket Widget & Live Activities (iOS / Android)
 
 ```
 Small Widget (2x2):
@@ -615,6 +621,10 @@ Medium Widget (2x4):
 | `received_blurred` | Ảnh mờ + "Nhấn để xem và phản hồi" |
 | `received_clear` | Ảnh rõ (Streak ≥ 30) |
 | `error` | "Không tải được ảnh. Nhấn để thử lại" |
+
+**Live Activities & Dynamic Island (iOS 16.1+):**
+- **Đếm ngược Khế ước:** Hiển thị thời gian còn lại đến giờ hẹn. Icon nhấp nháy khi còn < 30 phút.
+- **The Purge Timer:** Đếm ngược đến Đêm Săn Mồi ngay trên Dynamic Island với hiệu ứng Glitch Neon.
 
 ---
 
@@ -717,6 +727,8 @@ Level 5: Lâu đài     (Streak 90+)   — Màu vàng + particle effect
 | The Purge timer < 1 phút | Timer đổi đỏ + shake 2px | Loop | Ease in-out |
 | Verdict guilty | Gavel drop sound cue + screen flash đỏ | 800ms | Ease out |
 | QR timeout | Ô QR blur dần + countdown spin | 500ms | Linear |
+| Tòa Án Phán Quyết | Mưa sao băng hoặc Sét đánh (Particle System bằng Rive) | 1200ms| Spring |
+| Hologram Tilt | Hiệu ứng phản quang thẻ bài khi dùng Gyroscope (Parallax) | Realtime| Linear |
 
 ---
 

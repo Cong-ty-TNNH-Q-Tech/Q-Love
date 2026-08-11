@@ -78,10 +78,10 @@ Tài liệu này đặc tả các Tiêu chí chấp nhận (Acceptance Criteria 
 - **When** User A gửi lời mời cọc 100 Xu, User B bấm "Xác nhận khế ước".
 - **Then** Trạng thái cuộc hẹn chuyển thành "Đang chờ". 100 Xu trong ví của mỗi người bị chuyển sang trạng thái "Đóng băng" (Hold).
 
-### AC2: Gặp mặt thành công (Quét Dynamic QR)
+### AC2: Gặp mặt thành công (Quét Dynamic QR TOTP)
 - **Given** Khế ước đang ở trạng thái "Đang chờ".
-- **When** Đến giờ hẹn, User A quét mã Dynamic QR (cập nhật 30s/lần) trên máy của User B.
-- **Then** Hệ thống xác nhận quét thành công, trạng thái chuyển thành "Hoàn thành".
+- **When** Đến giờ hẹn, User A quét mã Dynamic QR (sinh bằng thuật toán TOTP dưới Client, đổi 30s/lần) trên máy của User B.
+- **Then** Hệ thống xác thực mã TOTP thành công, trạng thái chuyển thành "Hoàn thành".
 - **And** Lệnh đóng băng được giải phóng, 100 Xu được hoàn trả về Ví của cả 2 user.
 
 ### AC3: User B bùng kèo (Không có gói Premium)
@@ -187,10 +187,10 @@ Tài liệu này đặc tả các Tiêu chí chấp nhận (Acceptance Criteria 
 
 ## 11. UC-P3-011: Đêm săn mồi (The Purge)
 
-### AC1: Tham gia ghép đôi hỗn loạn
+### AC1: Tham gia ghép đôi hỗn loạn (Matchmaking Worker)
 - **Given** Sự kiện "Đêm Săn Mồi" diễn ra vào 22h00 tối Thứ 6.
 - **When** Người dùng chọn "Tham gia ngay".
-- **Then** Hệ thống ghép đôi ẩn danh (không hiện Avatar/Tên) ngẫu nhiên không giới hạn bán kính khoảng cách.
+- **Then** Hàng đợi Redis nhận request, sau đó **Matchmaking Worker** xử lý ghép đôi ẩn danh (không hiện Avatar/Tên) ngẫu nhiên.
 - **And** Sau 10 phút trò chuyện, nếu cả 2 cùng bấm "Lộ diện", Avatar và Profile thật mới được hiển thị.
 
 ---
