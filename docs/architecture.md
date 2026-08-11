@@ -144,19 +144,24 @@ lib/
 Tuyệt đối không nhét chung code vào thư mục gốc. Sử dụng bộ khung tiêu chuẩn của cộng đồng Go (`golang-standards/project-layout`) kết hợp tư duy **Modular Monolith** (Đơn thể chia module).
 
 ```text
-/cmd
-  └── server/               # Điểm khởi chạy hệ thống (chứa main.go)
-/internal                   # Code Private cốt lõi (Không thể bị import từ dự án khác)
-  ├── config/               # Load biến môi trường, setup config DB/Redis
-  ├── core/                 # Entities, Interfaces (Domain layer)
-  ├── handler/              # Nhận Request (HTTP/REST/WebSocket Handlers)
-  ├── service/              # Xử lý Logic kinh doanh (Trừ tiền, Tính toán)
-  ├── repository/           # Giao tiếp với Database (PostgreSQL, Redis)
-  └── worker/               # Cronjobs chạy ngầm (Trừ Streak, Làm mờ ảnh)
-/pkg                        # Các thư viện tiện ích tự viết (Logger, JWT Utils)
-/migrations                 # SQL files để tự động tạo/sửa bảng DB (PostgreSQL)
-docker-compose.yml          # Cấu hình môi trường dev cục bộ
-go.mod                      # File quản lý Dependencies
+├── docs/                   # Tài liệu đặc tả (BA, System, API...)
+├── frontend/               # Toàn bộ Client Apps
+│   ├── app/                # Mobile App (Flutter)
+│   └── admin/              # Admin Dashboard (React/Vite)
+├── backend/                # Toàn bộ Backend
+│   └── server/             # Backend API (Golang/Fiber)
+│       ├── cmd/            # Entry point (main.go)
+│       ├── internal/       # Core logic (chỉ dùng nội bộ)
+│       │   ├── api/        # API Handlers/Controllers
+│       │   ├── middleware/ # Auth, Rate limit...
+│       │   ├── models/     # Database structs
+│       │   ├── repository/ # DB queries
+│       │   └── services/   # Business logic (Match, Wallet, Locket...)
+│       ├── pkg/            # Public libs (logger, utils)
+│       └── config/         # Environment configs
+├── scripts/                # Shell scripts (deploy, migrate DB)
+├── docker-compose.yml      # Cấu hình môi trường dev cục bộ
+└── go.mod                  # File quản lý Dependencies
 ```
 
 ---
