@@ -3,13 +3,24 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"context"
+	"errors"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
-	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
 	"github.com/gofiber/fiber/v2"
 )
+
+type mockPresigner struct {
+	shouldError bool
+}
+
+func (m *mockPresigner) GeneratePresignedURL(ctx context.Context, objectKey string, contentType string, contentLength int64) (string, error) {
+	if m.shouldError {
+		return "", errors.New("mock error")
+	}
+	return "http://mock.url", nil
+}
 
 // We won't test the actual R2 Client upload here (that's for integration),
 // but we will test the validation logic of the handler.
@@ -17,15 +28,9 @@ import (
 func TestGenerateUploadURL_Validation(t *testing.T) {
 	app := fiber.New()
 	
-	// Create dummy client to avoid panic
-	cfg := &config.Config{
-		R2AccountID:       "dummy",
-		R2AccessKeyID:     "dummy",
-		R2SecretAccessKey: "dummy",
-		R2BucketName:      "dummy",
-	}
-	dummyClient, _ := storage.NewR2Client(cfg)
-	h := NewUploadHandler(dummyClient)
+	// Create mock client
+	mockClient := &mockPresigner{}
+	h := NewUploadHandler(mockClient)
 	app.Post("/upload", h.GenerateUploadURL)
 
 	tests := []struct {
@@ -125,6 +130,28 @@ func TestGenerateUploadURL_Validation(t *testing.T) {
 		resp, _ := app.Test(req, -1)
 		if resp.StatusCode != 400 {
 			t.Errorf("Expected status 400 for invalid JSON, got %d", resp.StatusCode)
+		}
+	})
+
+	// Test Internal Error (Mock Error)
+	t.Run("Presigner Error", func(t *testing.T) {
+		appErr := fiber.New()
+		errClient := &mockPresigner{shouldError: true}
+		hErr := NewUploadHandler(errClient)
+		appErr.Post("/upload", hErr.GenerateUploadURL)
+
+		payload := PresignedURLRequest{
+			Filename:      "test.jpg",
+			ContentType:   "image/jpeg",
+			ContentLength: 5000000,
+		}
+		body, _ := json.Marshal(payload)
+		req := httptest.NewRequest("POST", "/upload", bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		
+		resp, _ := appErr.Test(req, -1)
+		if resp.StatusCode != 500 {
+			t.Errorf("Expected status 500 for presigner error, got %d", resp.StatusCode)
 		}
 	})
 }

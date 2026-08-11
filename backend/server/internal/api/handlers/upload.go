@@ -11,16 +11,19 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
 )
 
-type UploadHandler struct {
-	r2Client *storage.R2Client
+type Presigner interface {
+	GeneratePresignedURL(ctx context.Context, objectKey string, contentType string, contentLength int64) (string, error)
 }
 
-func NewUploadHandler(r2Client *storage.R2Client) *UploadHandler {
+type UploadHandler struct {
+	presigner Presigner
+}
+
+func NewUploadHandler(presigner Presigner) *UploadHandler {
 	return &UploadHandler{
-		r2Client: r2Client,
+		presigner: presigner,
 	}
 }
 
@@ -60,8 +63,8 @@ func (h *UploadHandler) GenerateUploadURL(c *fiber.Ctx) error {
 	ext = strings.ToLower(ext)
 	objectKey := fmt.Sprintf("avatars/%s%s", uuid.New().String(), ext)
 
-	// 4. Generate Presigned URL via R2 Client
-	url, err := h.r2Client.GeneratePresignedURL(c.Context(), objectKey, req.ContentType, req.ContentLength)
+	// 4. Generate Presigned URL via Presigner
+	url, err := h.presigner.GeneratePresignedURL(c.Context(), objectKey, req.ContentType, req.ContentLength)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate upload URL"})
 	}
