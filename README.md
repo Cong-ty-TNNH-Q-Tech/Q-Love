@@ -4,9 +4,9 @@
 
   <h1>🔥 Q-Love Super App</h1>
 
-  <p><strong>Siêu ứng dụng Hẹn hò, Gamification và Mạng xã hội dành riêng cho Gen Z</strong></p>
+  <p><strong>Siêu ứng dụng Hẹn hò, Mạng xã hội & Giải trí Thế hệ mới dành riêng cho Gen Z</strong></p>
 
-  <p><em>"Các ứng dụng truyền thống chỉ giúp bạn vuốt và nhắn tin.<br>Q-Love mang đến cho bạn cả một nền kinh tế ảo, trò chơi sinh tồn và những drama không hồi kết."</em></p>
+  <p><em>"Vượt ra khỏi giới hạn của những ứng dụng vuốt chọn nhàm chán.<br>Q-Love mang đến một nền kinh tế ảo chân thực, những trò chơi sinh tồn kịch tính và trải nghiệm kết nối bùng nổ cảm xúc."</em></p>
 
   <br>
 
@@ -30,33 +30,33 @@
 
 ## 🌟 Tầm nhìn & Sứ mệnh (Vision)
 
-**Q-Love** không chỉ là một ứng dụng hẹn hò (Dating App) vuốt thả nhàm chán. Đây là một **Siêu ứng dụng (Super App) giải trí mạng xã hội** được thiết kế nguyên bản dành riêng cho Gen Z. Chúng tôi kết hợp cơ chế ghép đôi cốt lõi với **Gamification (Trò chơi hóa)**, **Nền kinh tế ảo (Virtual Economy)**, và **Tương tác Offline-to-Online (O2O)** để tạo ra một hệ sinh thái gây nghiện, viral tự nhiên và an toàn.
+**Q-Love** được định vị là một **Siêu ứng dụng (Super App)** dẫn đầu xu hướng kết nối của giới trẻ. Chúng tôi kết hợp cơ chế ghép đôi (Matchmaking) với **Gamification (Trò chơi hóa)**, **Nền kinh tế ảo (Virtual Economy)**, và **Tương tác Offline-to-Online (O2O)** để tạo ra một hệ sinh thái gây nghiện, lan truyền (viral) tự nhiên và an toàn.
 
-Mục tiêu của Q-Love là đập bỏ "ốc đảo thông tin" của những profile tẻ nhạt, biến mỗi người dùng thành một "Tài sản số" có giá trị thông qua Chợ Thẻ Bài và các tính năng tương tác độc quyền.
+Thay vì những hồ sơ cá nhân tĩnh lặng, mỗi người dùng trên Q-Love đều trở thành một "Tài sản số" có giá trị thông qua hệ thống Chợ Thẻ Bài và các chuỗi tính năng tương tác độc quyền, xóa bỏ hoàn toàn sự nhàm chán của việc nhắn tin thông thường.
 
 ---
 
 ## 💎 Điểm Nhấn Đầu Tư (Investment Highlights)
 
-Dự án sở hữu 3 hệ thống "đột phá lõi" được thiết kế đặc biệt để giữ chân người dùng (Retention Rate), thúc đẩy chi tiêu (Monetization) và lan truyền tự nhiên (Viral Loop):
+Dự án sở hữu 3 hệ thống "đột phá lõi" được thiết kế đặc biệt để tối đa hóa khả năng giữ chân người dùng (Retention Rate), thúc đẩy chi tiêu (Monetization) và lan truyền tự nhiên (Viral Loop):
 
 1. **Nền Kinh Tế Ảo Khép Kín (Virtual Economy):**
-   Thay vì chỉ nạp tiền mua gói Premium, user nạp Xu ảo để đầu cơ, mua bán "Thẻ bài Profile" của người khác. Hệ thống tự động thu hồi (burn) Xu qua các thuế giao dịch, đảm bảo chống lạm phát và tạo dòng tiền liên tục cho nền tảng.
+   Thay vì chỉ bán các gói Premium truyền thống, Q-Love giới thiệu "Xu Ảo" để người dùng nạp tiền và tham gia vào Chợ Thẻ Bài Profile. Người dùng có thể mua bán, đầu cơ thẻ bài của những Hot boy/Hot girl. Hệ thống tự động thu hồi (burn) Xu thông qua thuế giao dịch, đảm bảo nền kinh tế luôn cân bằng, chống lạm phát và tạo dòng tiền liên tục cho nền tảng.
 2. **Cơ Chế Viral & Drama Hóa (Community Gamification):**
-   Tích hợp Tòa Án Tình Yêu, Tường Thành Phong Sát (Wall of Shame), và PK Cướp Thẻ. Nắm bắt tâm lý "hóng biến" và "cạnh tranh" của Gen Z, các tính năng này ép người dùng phải mở app mỗi ngày.
-3. **Agentic AI & Low-Cost Operation:**
-   Sử dụng LLM (Claude/OpenAI) để sinh kịch bản Tarot mỗi sáng và trợ lý chat mỏ hỗn. Giảm thiểu chi phí API đắt đỏ (như Voice AI) nhưng vẫn mang lại trải nghiệm đột phá chưa từng có trên thị trường.
+   Tích hợp Tòa Án Tình Yêu, Tường Thành Phong Sát (Wall of Shame), và PK Cướp Thẻ. Bằng cách đánh vào tâm lý "hóng drama", sự tò mò và tính cạnh tranh của Gen Z, các tính năng này tạo ra động lực ép người dùng phải mở app và tương tác mỗi ngày.
+3. **Agentic AI & Tối ưu Chi phí Vận hành (Low-Cost Operation):**
+   Sử dụng các mô hình ngôn ngữ lớn (LLM như Claude/OpenAI) để sinh kịch bản Tarot mỗi sáng và trợ lý chat mỏ hỗn. Giải pháp này tiết kiệm tối đa chi phí API đắt đỏ nhưng vẫn mang lại trải nghiệm tương tác đột phá, thông minh và mang đậm dấu ấn cá nhân.
 
 ---
 
-## 🚀 Hệ Sinh Thái Tính Năng (Feature Ecosystem)
+## 🚀 Hệ Sinh Thái Tính Năng Đỉnh Cao (Feature Ecosystem)
 
-*   **🃏 Chợ Thẻ Bài Profile:** Biến hồ sơ người dùng thành Thẻ Bài. Người dùng dùng Xu ảo để mua bán, đầu cơ thẻ bài của những Hot boy/Hot girl để kiếm lời.
-*   **🍅 Tường Thành Phong Sát (Wall of Shame):** Trừng phạt những kẻ bùng kèo bằng Tòa Án Tình Yêu. Kẻ thua kiện bị bêu tên công khai 24h và bị cộng đồng "ném cà chua" (tốn Xu).
-*   **⚔️ PK Cướp Thẻ (The Steal):** Dùng thẻ Đạo Tặc mua bằng Xu để kích hoạt minigame đối kháng 10 giây. Thắng sẽ cướp trắng Thẻ Bài Profile đắt giá từ tay người khác.
-*   **🎧 Vibe Check Nửa Đêm:** Đúng 23:00, "Đài Phát Thanh Tình Yêu" mở cửa. Ghép đôi ẩn danh hoàn toàn dựa trên bài hát đối phương đang nghe qua API Spotify.
-*   **👼 Nghề Cò Mối (Wingman):** Bạn đang ế? Không sao, hãy đi "ép duyên" bạn bè. Nếu họ thành đôi và đi chơi, bạn nhận hoa hồng. Vòng lặp Referral hoàn hảo!
-*   **🤖 AI Wingman:** Bói bài Tarot/Chiêm tinh mỗi sáng để phá băng (Ice-breaker), và đưa ra các gợi ý trả lời mặn mòi, sarcastic khi bí từ.
+*   **🃏 Chợ Thẻ Bài Profile:** Biến hồ sơ người dùng thành Thẻ Bài. Người dùng dùng Xu ảo để mua bán, đầu cơ thẻ bài của đối phương nhằm tìm kiếm lợi nhuận hoặc thể hiện đẳng cấp.
+*   **⚖️ Tòa Án Tình Yêu & Tường Phong Sát:** Trừng phạt những kẻ bùng kèo hẹn hò. Kẻ thua kiện bị bêu tên công khai 24h trên Tường Phong Sát và bị cộng đồng "ném cà chua" (tốn Xu ảo).
+*   **⚔️ PK Cướp Đoạt Thẻ Bài (The Steal):** Dùng thẻ Đạo Tặc mua bằng Xu để kích hoạt minigame đối kháng 10 giây. Người thắng sẽ cướp trắng Thẻ Bài Profile đắt giá từ tay kẻ khác.
+*   **🎧 Vibe Check Nửa Đêm:** Đúng 23:00, "Đài Phát Thanh Tình Yêu" mở cửa. Tính năng ghép đôi ẩn danh hoàn toàn dựa trên bài hát đối phương đang nghe qua tích hợp API Spotify.
+*   **👼 Nghề Cò Mối / Bà Nguyệt (Wingman):** Trao quyền cho người dùng đi "ép duyên" bạn bè. Nếu những cặp đôi này match và đi hẹn hò thật, "Cò Mối" sẽ nhận được phần trăm hoa hồng vô cùng hấp dẫn.
+*   **🤖 AI Wingman (Trợ lý mỏ hỗn):** Bói bài Tarot/Chiêm tinh mỗi sáng để phá băng (Ice-breaker), và đưa ra các gợi ý trả lời siêu mặn mòi khi bạn bí từ.
 
 ---
 
