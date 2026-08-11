@@ -8,13 +8,10 @@ on:
       - '.github/workflows/backend-ci.yml'
   pull_request:
     branches: [main, develop]
-    paths:
-      - 'backend/server/**'
-      - '.github/workflows/backend-ci.yml'
 
 jobs:
   lint-and-test:
-    name: Lint & Test
+    name: Backend Lint & Test
     runs-on: ubuntu-latest
     defaults:
       run:
