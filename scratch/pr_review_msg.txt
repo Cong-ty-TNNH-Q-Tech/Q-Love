@@ -1,0 +1,12 @@
+🤖 AI Deep Review (10 Vòng) đã hoàn tất.
+
+❌ **KẾT QUẢ: REQUEST CHANGES**
+
+**Vòng 3 - Open Source Rules & Architecture:** Vi phạm quy định về bản quyền.
+
+**File:** `core-engine/frontend/next-env.d.ts`
+**Line:** Xóa các dòng 1-3
+**Vấn đề:** PR này đã vô tình (hoặc cố ý) xóa bỏ header Copyright và License (`// Copyright (c) 2026 CuongKenn & ICTU Team`, `// SPDX-License-Identifier: AGPL-3.0-or-later`) ở đầu file mã nguồn. Theo quy định của dự án (`AGENTS.md`), TẤT CẢ các file mã nguồn bắt buộc phải giữ lại thông tin bản quyền này để tuân thủ tính pháp lý của giấy phép AGPLv3.
+**Đề xuất sửa:** Vui lòng khôi phục lại đoạn header bản quyền ở đầu file `next-env.d.ts`.
+
+Các thay đổi về `aria-live` và `role="log"` cho a11y trong `AIChatWidget` đều rất tốt và hợp lý. Vui lòng thêm lại license header và request review lại nhé!
