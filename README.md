@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="https://via.placeholder.com/800x200.png?text=Q-Love+Super+App" alt="Q-Love Logo" width="800">
+  <img src="./docs/images/qlove-logo.png" alt="Q-Love Logo" width="300">
 
   <h1>🔥 Q-Love Super App</h1>
 
@@ -10,42 +10,34 @@
 
   <br>
 
-  [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blueviolet.svg?style=for-the-badge&logo=gnu)](./LICENSE)
-  [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg?style=for-the-badge&logo=github)](#)
+  [![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg?style=for-the-badge&logo=codeigniter)](#)
+  [![Status](https://img.shields.io/badge/Status-Investor_Ready-ffd700.svg?style=for-the-badge&logo=starship)](#)
   [![Go Version](https://img.shields.io/badge/Backend-Golang_Fiber-00ADD8?style=for-the-badge&logo=go&logoColor=white)](#)
   [![Flutter](https://img.shields.io/badge/Mobile-Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)](#)
   [![PostgreSQL](https://img.shields.io/badge/Database-PostGIS-336791?style=for-the-badge&logo=postgresql&logoColor=white)](#)
-  [![Redis](https://img.shields.io/badge/Cache-Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)](#)
-
-  <br>
-
-  [![GitHub Stars](https://img.shields.io/github/stars/Cong-ty-TNNH-Q-Tech/Q-Love?style=flat-square&color=ffd700&logo=github)](https://github.com/Cong-ty-TNNH-Q-Tech/Q-Love/stargazers)
-  [![GitHub Issues](https://img.shields.io/github/issues/Cong-ty-TNNH-Q-Tech/Q-Love?style=flat-square&color=f0455a&logo=github)](https://github.com/Cong-ty-TNNH-Q-Tech/Q-Love/issues)
-  [![GitHub Forks](https://img.shields.io/github/forks/Cong-ty-TNNH-Q-Tech/Q-Love?style=flat-square&color=22c47a&logo=github)](https://github.com/Cong-ty-TNNH-Q-Tech/Q-Love/network/members)
-  [![Last Commit](https://img.shields.io/github/last-commit/Cong-ty-TNNH-Q-Tech/Q-Love?style=flat-square&color=6c63ff&logo=git&logoColor=white)](https://github.com/Cong-ty-TNNH-Q-Tech/Q-Love/commits/main)
 
 </div>
 
 ---
 
-## 🌟 Tầm nhìn & Sứ mệnh (Vision)
+## 🌟 Cơ Hội Đầu Tư (Market Opportunity)
 
-**Q-Love** được định vị là một **Siêu ứng dụng (Super App)** dẫn đầu xu hướng kết nối của giới trẻ. Chúng tôi kết hợp cơ chế ghép đôi (Matchmaking) với **Gamification (Trò chơi hóa)**, **Nền kinh tế ảo (Virtual Economy)**, và **Tương tác Offline-to-Online (O2O)** để tạo ra một hệ sinh thái gây nghiện, lan truyền (viral) tự nhiên và an toàn.
+Thị trường ứng dụng hẹn hò đang chững lại với những mô hình "Freemium" lỗi thời. **Q-Love** ra đời để tái định nghĩa ngành công nghiệp tỷ đô này bằng cách kết hợp cơ chế ghép đôi (Matchmaking) với **Gamification (Trò chơi hóa)**, **Nền kinh tế ảo (Virtual Economy)**, và **Tương tác Offline-to-Online (O2O)**.
 
-Thay vì những hồ sơ cá nhân tĩnh lặng, mỗi người dùng trên Q-Love đều trở thành một "Tài sản số" có giá trị thông qua hệ thống Chợ Thẻ Bài và các chuỗi tính năng tương tác độc quyền, xóa bỏ hoàn toàn sự nhàm chán của việc nhắn tin thông thường.
+Dự án không phải là một mã nguồn mở. Q-Love là **Tài sản Trí tuệ độc quyền (Proprietary IP)** của Q-Tech, được thiết kế để tạo ra hệ sinh thái gây nghiện, có khả năng sinh lời ngay từ ngày đầu ra mắt (Day-1 Monetization).
 
 ---
 
-## 💎 Điểm Nhấn Đầu Tư (Investment Highlights)
+## 💎 Đột Phá Lõi & Con Hào Kinh Tế (The Q-Love Moat)
 
-Dự án sở hữu 3 hệ thống "đột phá lõi" được thiết kế đặc biệt để tối đa hóa khả năng giữ chân người dùng (Retention Rate), thúc đẩy chi tiêu (Monetization) và lan truyền tự nhiên (Viral Loop):
+Dự án sở hữu 3 "Đột phá lõi" được thiết kế đặc biệt để tối đa hóa khả năng giữ chân người dùng (Retention Rate), thúc đẩy chi tiêu (Monetization) và lan truyền tự nhiên (Viral Loop):
 
-1. **Nền Kinh Tế Ảo Khép Kín (Virtual Economy):**
-   Thay vì chỉ bán các gói Premium truyền thống, Q-Love giới thiệu "Xu Ảo" để người dùng nạp tiền và tham gia vào Chợ Thẻ Bài Profile. Người dùng có thể mua bán, đầu cơ thẻ bài của những Hot boy/Hot girl. Hệ thống tự động thu hồi (burn) Xu thông qua thuế giao dịch, đảm bảo nền kinh tế luôn cân bằng, chống lạm phát và tạo dòng tiền liên tục cho nền tảng.
+1. **Nền Kinh Tế Ảo Khép Kín (Virtual Economy & Tokenomics):**
+   Thay vì chỉ bán các gói Premium truyền thống, Q-Love vận hành một sàn giao dịch thu nhỏ. Người dùng nạp "Xu Ảo" để đầu cơ, mua bán "Thẻ Bài Profile" của những cá nhân hot. Nền tảng tự động thu hồi (burn) Xu qua thuế giao dịch, đảm bảo nền kinh tế luôn cân bằng, chống lạm phát và tạo dòng tiền (Cash Flow) liên tục.
 2. **Cơ Chế Viral & Drama Hóa (Community Gamification):**
    Tích hợp Tòa Án Tình Yêu, Tường Thành Phong Sát (Wall of Shame), và PK Cướp Thẻ. Bằng cách đánh vào tâm lý "hóng drama", sự tò mò và tính cạnh tranh của Gen Z, các tính năng này tạo ra động lực ép người dùng phải mở app và tương tác mỗi ngày.
-3. **Agentic AI & Tối ưu Chi phí Vận hành (Low-Cost Operation):**
-   Sử dụng các mô hình ngôn ngữ lớn (LLM như Claude/OpenAI) để sinh kịch bản Tarot mỗi sáng và trợ lý chat mỏ hỗn. Giải pháp này tiết kiệm tối đa chi phí API đắt đỏ nhưng vẫn mang lại trải nghiệm tương tác đột phá, thông minh và mang đậm dấu ấn cá nhân.
+3. **Mô Hình "Cò Mối" (Affiliate & Matchmaker):**
+   Biến mỗi người dùng thành một "Đại sứ phát triển người dùng". Trao phần thưởng hoa hồng cho người dùng khi họ "ép duyên" thành công bạn bè của mình, tạo ra **Chi phí Thu hút Khách hàng (CAC) tiệm cận 0**.
 
 ---
 
@@ -55,65 +47,40 @@ Dự án sở hữu 3 hệ thống "đột phá lõi" được thiết kế đ�
 *   **⚖️ Tòa Án Tình Yêu & Tường Phong Sát:** Trừng phạt những kẻ bùng kèo hẹn hò. Kẻ thua kiện bị bêu tên công khai 24h trên Tường Phong Sát và bị cộng đồng "ném cà chua" (tốn Xu ảo).
 *   **⚔️ PK Cướp Đoạt Thẻ Bài (The Steal):** Dùng thẻ Đạo Tặc mua bằng Xu để kích hoạt minigame đối kháng 10 giây. Người thắng sẽ cướp trắng Thẻ Bài Profile đắt giá từ tay kẻ khác.
 *   **🎧 Vibe Check Nửa Đêm:** Đúng 23:00, "Đài Phát Thanh Tình Yêu" mở cửa. Tính năng ghép đôi ẩn danh hoàn toàn dựa trên bài hát đối phương đang nghe qua tích hợp API Spotify.
-*   **👼 Nghề Cò Mối / Bà Nguyệt (Wingman):** Trao quyền cho người dùng đi "ép duyên" bạn bè. Nếu những cặp đôi này match và đi hẹn hò thật, "Cò Mối" sẽ nhận được phần trăm hoa hồng vô cùng hấp dẫn.
-*   **🤖 AI Wingman (Trợ lý mỏ hỗn):** Bói bài Tarot/Chiêm tinh mỗi sáng để phá băng (Ice-breaker), và đưa ra các gợi ý trả lời siêu mặn mòi khi bạn bí từ.
+*   **🤖 AI Wingman (Trợ lý mỏ hỗn):** Tích hợp Agentic AI dự đoán tử vi/Tarot mỗi sáng và hỗ trợ người dùng đưa ra các gợi ý trả lời siêu mặn mòi, tăng vọt tỷ lệ phản hồi tin nhắn (Reply Rate).
 
 ---
 
-## 🔬 Kiến Trúc Công Nghệ (Technical Architecture)
+## 🔬 Động Cơ Kỹ Thuật Độc Quyền (Proprietary Tech Engine)
 
-Dự án tuân thủ nghiêm ngặt mô hình **Modular Monolith** kết hợp với **Feature-First Architecture** cho tính bền vững, chuẩn bị sẵn sàng cho K8s Scaling:
+Kiến trúc của Q-Love được xây dựng chuẩn mực cho K8s Scaling, đáp ứng hàng triệu người dùng đồng thời (CCU):
 
-*   **Core Backend (Golang + Fiber):** Tốc độ phản hồi cực cao, thiết kế Clean Architecture phân tách rõ ràng Handler, Service, Repository.
-*   **Database (PostgreSQL + PostGIS):** Tận dụng index `GIST(location)` để xử lý thuật toán Radar quét hàng triệu user trong bán kính 50km dưới 50ms.
-*   **Realtime Engine (Redis + WebSockets):** Xử lý luồng chat ẩn danh "The Purge" và thông báo đẩy (Push Notification) thời gian thực.
-*   **Mobile App (Flutter + Riverpod):** Giao diện Dark-first, Glassmorphism chuẩn Gen Z, mượt mà ở 60fps/120fps.
+*   **Core Backend (Golang + Fiber):** Tốc độ phản hồi vi giây, thiết kế Clean Architecture chịu tải cao.
+*   **Geo-Spatial Database (PostgreSQL + PostGIS):** Tận dụng thuật toán quét Radar theo thời gian thực để tìm kiếm bạn bè trong bán kính 50km dưới 50ms.
+*   **Realtime Engine (Redis + WebSockets):** Xử lý luồng chat ẩn danh tốc độ cao và Pub/Sub phân tán.
+*   **Mobile App (Flutter):** Trải nghiệm Native mượt mà (120fps) với thiết kế Dark-first, Glassmorphism cực kỳ nịnh mắt.
 
 ---
 
-## 📂 Cấu Trúc Mã Nguồn (Monorepo)
+## 📂 Hồ Sơ Dự Án (Confidential Documentation)
 
 ```text
 Q-Love/
-├── backend/
-│   └── server/          # 🚀 Golang Fiber API Server
-├── frontend/
-│   ├── app/             # 📱 Flutter Mobile Application
-│   └── admin/           # 💻 React Web Admin Dashboard
-├── docs/                # 📚 Tài liệu BA, BRD, Kiến trúc, UI/UX, API
-├── .github/workflows/   # ⚙️ CI/CD Pipelines (Github Actions)
-└── docker-compose.yml   # 🐳 Cấu hình môi trường Local (DB, Redis)
-```
-
----
-
-## 🏁 Bắt Đầu Nhanh (Quick Start)
-
-### 1. Khởi chạy Hạ tầng (Local Infrastructure)
-Bạn cần cài đặt **Docker** và **Docker Compose**.
-```bash
-docker-compose up -d
-```
-*Lệnh này sẽ khởi chạy PostgreSQL (kèm PostGIS) ở port 5432 và Redis ở port 6379.*
-
-### 2. Khởi chạy Backend API (Golang)
-```bash
-cd backend/server
-go mod tidy
-go run cmd/main.go
-```
-*API sẽ lắng nghe tại `http://localhost:3000`.*
-
-### 3. Khởi chạy Mobile App (Flutter)
-```bash
-cd frontend/app
-flutter pub get
-flutter run
+├── backend/             # Mã nguồn Backend API (Closed Source)
+├── frontend/            # Mã nguồn Mobile App & Admin Dashboard (Closed Source)
+├── docs/                # 📚 Tài liệu Mật (Confidential Docs)
+│   ├── brd.md           # Business Requirements (Mô hình kiếm tiền & Khai thác)
+│   ├── architecture.md  # Sơ đồ Kiến trúc & Luồng dữ liệu bảo mật
+│   ├── ba.md            # Phân tích Nghiệp vụ (Use-cases)
+│   ├── ui_ux.md         # Đặc tả chuẩn giao diện (UI/UX Guidelines)
+│   ├── api.yaml         # Đặc tả OpenAPI 3.0
+│   └── erd.md           # Database Schema chuẩn Serializable
+└── docker-compose.yml   # Khởi tạo môi trường Test & Staging
 ```
 
 ---
 
 <div align="center">
-  <i>Được xây dựng bằng 💻 và ☕ bởi đội ngũ tinh nhuệ của <b>Q-Tech</b>.</i><br>
-  Bản quyền © 2026 Q-Tech Team. Áp dụng giấy phép AGPL-3.0.
+  <i>Tài liệu này thuộc quyền sở hữu của <b>Q-Tech</b>. Nghiêm cấm sao chép dưới mọi hình thức.</i><br>
+  <b>Sẵn sàng cho Vòng gọi vốn.</b>
 </div>
