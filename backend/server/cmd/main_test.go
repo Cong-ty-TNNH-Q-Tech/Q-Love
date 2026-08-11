@@ -18,11 +18,19 @@ func TestMainServer(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to make request to health endpoint: %v", err)
 	}
-	defer resp.Body.Close()
+	resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected status OK, got %v", resp.Status)
 	}
+
+	// Test ping endpoint
+	resp2, _ := http.Get("http://localhost:3000/ping")
+	resp2.Body.Close()
+
+	// Test version endpoint
+	resp3, _ := http.Get("http://localhost:3000/version")
+	resp3.Body.Close()
 
 	// Gracefully shutdown the server so the test can finish
 	if app != nil {

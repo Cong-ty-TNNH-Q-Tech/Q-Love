@@ -25,6 +25,14 @@ func setupApp() *fiber.App {
 		})
 	})
 
+	a.Get("/ping", func(c *fiber.Ctx) error {
+		return c.SendString("pong")
+	})
+
+	a.Get("/version", func(c *fiber.Ctx) error {
+		return c.SendString("v1.0.0")
+	})
+
 	return a
 }
 
