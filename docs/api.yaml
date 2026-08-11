@@ -125,14 +125,14 @@ components:
         vote_count: { type: integer }
         created_at: { type: string, format: date-time }
 
-    StockProfile:
+    CardProfile:
       type: object
       properties:
         user_id: { type: string, format: uuid }
-        ticker: { type: string, example: "$NVA" }
+        ticker: { type: string, example: "#NVA" }
         current_price: { type: number, example: 147.5 }
-        total_supply: { type: integer, example: 1000 }
-        available_supply: { type: integer, example: 820 }
+        total_cards: { type: integer, example: 1000 }
+        available_cards: { type: integer, example: 820 }
         is_halted: { type: boolean, description: "Circuit Breaker đang kích hoạt" }
 
     WalletTransaction:
@@ -142,7 +142,7 @@ components:
         amount: { type: number, example: -50, description: "Âm = chi, Dương = thu" }
         type:
           type: string
-          enum: [deposit, contract_hold, contract_release, penalty, stock_buy, stock_sell, cv_lookup, clan_create, island_revive]
+          enum: [deposit, contract_hold, contract_release, penalty, card_buy, card_sell, cv_lookup, clan_create, island_revive]
         reference_id: { type: string, format: uuid, nullable: true }
         created_at: { type: string, format: date-time }
 
@@ -321,7 +321,7 @@ paths:
           schema: { type: integer, default: 0 }
         - in: query
           name: type
-          schema: { type: string, description: "Lọc theo loại giao dịch (VD: stock_buy)" }
+          schema: { type: string, description: "Lọc theo loại giao dịch (VD: card_buy)" }
       responses:
         '200':
           description: Danh sách giao dịch
@@ -844,12 +844,12 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
 
   # -----------------------------------------------------------
-  # 8. SÀN CHỨNG KHOÁN (STOCKS)
+  # 8. Chợ Thẻ Bài Profile (CARDS)
   # -----------------------------------------------------------
-  /stocks/{user_id}:
+  /cards/{user_id}:
     get:
-      summary: Xem thông tin cổ phiếu của một Profile
-      tags: [Stocks]
+      summary: Xem thông tin Thẻ Bài của một Profile
+      tags: [Cards]
       parameters:
         - in: path
           name: user_id
@@ -857,10 +857,10 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '200':
-          description: Thông tin cổ phiếu
+          description: Thông tin Thẻ Bài
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/StockProfile' }
+              schema: { $ref: '#/components/schemas/CardProfile' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           description: "Chưa đạt Level 5 để mở tính năng Sàn giao dịch"
@@ -869,11 +869,11 @@ paths:
               schema: { $ref: '#/components/schemas/ErrorResponse' }
         '404': { $ref: '#/components/responses/NotFound' }
 
-  /stocks/trade:
+  /cards/trade:
     post:
-      summary: Đặt lệnh mua/bán Cổ phiếu Profile
+      summary: Đặt lệnh mua/bán Thẻ Bài Profile
       description: "Áp dụng phí giao dịch 2%. Nếu Circuit Breaker đang kích hoạt → trả về 503."
-      tags: [Stocks]
+      tags: [Cards]
       requestBody:
         required: true
         content:
@@ -900,7 +900,7 @@ paths:
                   fee: { type: number, description: "Phí giao dịch 2%" }
                   new_wallet_balance: { type: number }
         '400':
-          description: "Không đủ Xu hoặc không đủ cổ phiếu để bán"
+          description: "Không đủ Xu hoặc không đủ Thẻ Bài để bán"
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -1010,3 +1010,112 @@ paths:
                   status: { type: string, example: "ok" }
                   version: { type: string, example: "1.1.0" }
                   uptime_seconds: { type: integer }
+
+  # =============================================================
+  # 10. BOUNTY HUNTER
+  # =============================================================
+  /bounties:
+    post:
+      summary: Đăng lệnh truy nã hẹn hò
+      tags: [Bounties]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description: { type: string }
+                reward_amount: { type: integer }
+      responses:
+        '201':
+          description: Created
+  /bounties/{id}/apply:
+    post:
+      summary: Nộp đơn ứng tuyển lệnh truy nã
+      tags: [Bounties]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Applied
+
+  # =============================================================
+  # 11. BLIND AUCTION
+  # =============================================================
+  /auctions/{id}/bid:
+    post:
+      summary: Trả giá cho phiên đấu giá mù
+      tags: [Auctions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bid_amount: { type: integer }
+      responses:
+        '200':
+          description: Bid placed
+
+  # =============================================================
+  # 12. VIRAL GAMIFICATION
+  # =============================================================
+  /wall-of-shames/{user_id}/throw-tomato:
+    post:
+      summary: Ném cà chua vào đối tượng bị phong sát
+      tags: [Drama]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Thrown successfully
+  /vibe-checks/match:
+    post:
+      summary: Match qua Spotify Track
+      tags: [Vibe]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                track_id: { type: string }
+      responses:
+        '200':
+          description: Matched
+  /wingmans/referral:
+    post:
+      summary: Tạo link ghép đôi cho bạn bè
+      tags: [Wingman]
+      responses:
+        '201':
+          description: Link created
+  /cards/steal:
+    post:
+      summary: Kích hoạt PK cướp Thẻ Bài
+      tags: [Cards, Minigame]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target_user_id: { type: string }
+      responses:
+        '200':
+          description: PK Match created

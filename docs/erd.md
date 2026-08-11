@@ -21,9 +21,9 @@ erDiagram
     MATCHES ||--o{ CHAT_MESSAGES : "contains"
     USERS ||--o{ COURT_CASES : "plaintiff / defendant"
     USERS ||--o{ DATING_CONTRACTS : "userA / userB"
-    USERS ||--o| STOCK_PROFILES : "is listed as"
-    USERS ||--o{ STOCK_TRANSACTIONS : "trades"
-    STOCK_PROFILES ||--o{ STOCK_TRANSACTIONS : "receives"
+    USERS ||--o| card_profiles : "is listed as"
+    USERS ||--o{ card_transactions : "trades"
+    card_profiles ||--o{ card_transactions : "receives"
     USERS ||--o{ EX_RATINGS : "reviews / is reviewed"
     USERS ||--o{ WALLET_TRANSACTIONS : "makes"
     COURT_CASES ||--o{ COURT_VOTES : "receives"
@@ -125,7 +125,7 @@ erDiagram
 | `id` | UUID | Primary Key | |
 | `user_id` | UUID | FK(users.id) | |
 | `amount` | NUMERIC | Not Null | Số lượng Xu (+ hoặc -) |
-| `type` | VARCHAR(50) | | `deposit`, `contract_hold`, `penalty`, `stock_trade`, vv... |
+| `type` | VARCHAR(50) | | `deposit`, `contract_hold`, `penalty`, `card_trade`, vv... |
 | `reference_id` | UUID | | ID của luồng phát sinh (VD: id của Dating Contract) |
 | `created_at`| TIMESTAMP | Default NOW() | Thời gian giao dịch |
 
@@ -206,6 +206,9 @@ erDiagram
 | `name` | VARCHAR(100) | Unique | Tên bang hội |
 | `leader_id` | UUID | FK(users.id) | Bang chủ |
 | `weekly_score` | INT | Default 0 | Điểm tuần (từ GPS check-in) |
+| `campfire_streak`| INT | Default 0 | Số ngày giữ được Lửa Trại |
+| `daily_active_members` | INT | Default 0 | Số người tương tác trong ngày (Reset 00:00) |
+| `last_campfire_at` | TIMESTAMP | | Thời gian tiếp củi lần cuối |
 
 **Bảng `clan_members`** (Thành viên Bang hội)
 | Column | Type | Constraints | Description |
@@ -235,26 +238,26 @@ erDiagram
 
 ---
 
-### 2.4. Kinh Tế Ảo (Sàn Chứng Khoán)
+### 2.4. Kinh Tế Ảo (Chợ Thẻ Bài Profile)
 
-**Bảng `stock_profiles`** (Định giá Profile)
+**Bảng `card_profiles`** (Định giá Profile)
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `user_id` | UUID | PK, FK(users.id) | Chủ sở hữu profile ($Mã) |
 | `current_price` | NUMERIC(15,2) | Default 100 | Giá hiện tại (Tính bằng công thức) |
-| `total_supply` | INT | Default 1000 | Tổng cung cổ phiếu |
-| `available_supply` | INT | Default 1000 | Số cổ phiếu tự do lưu hành (chưa bị mua) |
+| `total_cards` | INT | Default 1000 | Tổng cung Thẻ Bài |
+| `available_cards` | INT | Default 1000 | Số Thẻ Bài tự do lưu hành (chưa bị mua) |
 | `match_count_cached` | INT | Default 0 | Caching số lượt match mới (phục vụ tính giá) |
 | `locket_count_cached` | INT | Default 0 | Caching số lượt gửi Locket (phục vụ tính giá) |
 | `clan_upvote_cached` | INT | Default 0 | Caching số lượt Clan upvote (phục vụ tính giá) |
 | `court_penalty_cached` | INT | Default 0 | Caching số đơn kiện Tòa án (phục vụ tính giá) |
 
-**Bảng `stock_transactions`** (Giao dịch Mua/Bán)
+**Bảng `card_transactions`** (Giao dịch Mua/Bán)
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | UUID | Primary Key | |
-| `trader_id` | UUID | FK(users.id) | Người đặt lệnh |
-| `target_user_id`| UUID | FK(users.id) | Cổ phiếu của Profile nào |
+| `collector_id` | UUID | FK(users.id) | Người đặt lệnh |
+| `target_user_id`| UUID | FK(users.id) | Thẻ Bài của Profile nào |
 | `type` | VARCHAR(10) | | `buy` hoặc `sell` |
 | `quantity` | INT | | Số lượng |
 | `price_at_transaction` | NUMERIC | | Giá khớp lệnh |
@@ -285,6 +288,78 @@ erDiagram
 | `expires_at` | TIMESTAMP | | Thời điểm hết hạn phạt (NULL = vĩnh viễn) |
 | `created_at` | TIMESTAMP | Default NOW() | |
 
+### 2.6. Gamification Đột Phá (Bounty & Đấu Giá)
+
+**Bảng `bounties`** (Bảng Truy Nã Hẹn Hò)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `user_id` | UUID | FK(users.id) | Người đăng Bounty |
+| `description` | TEXT | | Mô tả (VD: Cần người đi xem phim) |
+| `reward_amount` | INT | | Số Xu thưởng |
+| `status` | VARCHAR(20) | Default 'open' | `open`, `matched`, `completed`, `cancelled` |
+| `winner_id` | UUID | FK(users.id), Nullable | Người trúng tuyển |
+| `created_at` | TIMESTAMP | Default NOW() | |
+
+**Bảng `blind_auctions`** (Phiên Đấu Giá Đặc Quyền)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `target_user_id` | UUID | FK(users.id) | Profile Top-Tier bị đem đấu giá |
+| `start_time` | TIMESTAMP | | |
+| `end_time` | TIMESTAMP | | |
+| `current_highest_bid`| INT | Default 0 | |
+| `winner_id` | UUID | FK(users.id), Nullable | Người thắng cuộc |
+| `status` | VARCHAR(20) | Default 'active' | `active`, `completed` |
+
+**Bảng `auction_bids`** (Lượt Trả Giá)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `auction_id` | UUID | FK(blind_auctions.id) | |
+| `bidder_id` | UUID | FK(users.id) | |
+| `bid_amount` | INT | | |
+| `created_at` | TIMESTAMP | Default NOW() | |
+
+**Bảng `wall_of_shames`** (Tường Thành Phong Sát)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `user_id` | UUID | FK(users.id) | Người bị phong sát |
+| `reason` | TEXT | | Lý do (VD: Bùng kèo Tòa án) |
+| `tomatoes_thrown`| INT | Default 0 | Số cà chua bị ném (1 quả = 1 Xu) |
+| `expires_at` | TIMESTAMP | | Hết hạn sau 24h |
+| `created_at` | TIMESTAMP | Default NOW() | |
+
+**Bảng `vibe_checks`** (Ghép đôi Spotify)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `user1_id` | UUID | FK(users.id) | |
+| `user2_id` | UUID | FK(users.id) | |
+| `track_id` | VARCHAR(100) | | ID bài hát Spotify |
+| `created_at` | TIMESTAMP | Default NOW() | |
+
+**Bảng `wingman_referrals`** (Cò Mối - Ép Duyên)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `wingman_id` | UUID | FK(users.id) | Người làm mối |
+| `target1_id` | UUID | FK(users.id) | |
+| `target2_id` | UUID | FK(users.id) | |
+| `status` | VARCHAR(20) | Default 'pending'| `pending`, `matched`, `dated`, `rewarded` |
+| `created_at` | TIMESTAMP | Default NOW() | |
+
+**Bảng `card_steals`** (Trận PK Cướp Thẻ)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `attacker_id` | UUID | FK(users.id) | Người cướp |
+| `defender_id` | UUID | FK(users.id) | Người bị cướp |
+| `target_card_id`| UUID | FK(users.id) | Thẻ Bài đang tranh giành |
+| `result` | VARCHAR(20) | | `attacker_won`, `defender_won` |
+| `created_at` | TIMESTAMP | Default NOW() | |
+
 ---
 
 ## 3. Tối ưu hóa Database (Database Optimization Notes)
@@ -300,5 +375,5 @@ erDiagram
 
 | Version | Ngày | Thay đổi |
 | :--- | :--- | :--- |
-| v1.1 | 2026-08-11 | Thêm bảng `notifications`, `user_violations`; Bổ sung cột `created_at` vào `chat_messages`; Thêm `available_supply` vào `stock_profiles`; Thêm `radius_meters` vào `landmarks`. |
+| v1.1 | 2026-08-11 | Thêm bảng `notifications`, `user_violations`; Bổ sung cột `created_at` vào `chat_messages`; Thêm `available_cards` vào `card_profiles`; Thêm `radius_meters` vào `landmarks`. |
 | v1.0 | 2026-08-11 | Khởi tạo schema ban đầu. |

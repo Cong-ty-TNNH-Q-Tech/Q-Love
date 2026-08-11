@@ -18,7 +18,7 @@
 - **Người dùng Độc thân (User):** Tác nhân chính sử dụng app để kết bạn, quẹt thẻ, gửi Locket, cày game.
 - **Thành viên Clan (Clan Member):** Người dùng thuộc một bang hội cụ thể, tham gia đua top địa bàn.
 - **Bồi thẩm đoàn (Jury User):** Người dùng ngẫu nhiên được hệ thống chọn để phân xử các vụ kiện tụng tình cảm.
-- **Nhà đầu tư ảo (Trader):** Người dùng tham gia mua/bán cổ phiếu profile trong tính năng sàn chứng khoán.
+- **Nhà đầu tư ảo (Collector):** Người dùng tham gia mua/bán Thẻ Bài profile trong tính năng Chợ Thẻ Bài Profile.
 - **Hệ thống AI (AI Engine):** Tác nhân tự động phân tích hội thoại, xử lý mờ ảnh và điều phối bot.
 - **Quản trị viên (Admin):** Kiểm duyệt nội dung, xử lý tranh chấp cấp cao, quản lý hệ thống voucher.
 
@@ -48,7 +48,7 @@
 
 ### GIAI ĐOẠN 3: THAO TÚNG TỐI THƯỢNG (PHASE 3 - UPDATE 2.0)
 - **UC-P3-009:** Đánh giá và Tra cứu CV Tình Trường (Ex-Rating).
-- **UC-P3-010:** Mua bán cổ phần Profile (Sàn Chứng Khoán Độc Thân).
+- **UC-P3-010:** Mua bán Thẻ Bài Profile (Chợ Thẻ Bài Profile Độc Thân).
 - **UC-P3-011:** Sắp xếp ghép đôi hỗn loạn hàng tuần (Đêm Săn Mồi "The Purge").
 
 ---
@@ -134,19 +134,19 @@
 
 ### NHÓM 3: PHASE 3 - THAO TÚNG TỐI THƯỢNG & DOANH THU ĐỘT PHÁ
 
-#### 5. UC-P3-010: Mua bán cổ phần Profile (Sàn Chứng Khoán Độc Thân)
-- **Mô tả ngắn:** Biến các profile cá nhân thành các mã cổ phiếu tài chính ảo. Giá trị mã tăng/giảm dựa trên các chỉ số hoạt động, tương tác và mức độ săn đón của cộng đồng đối với profile đó.
+#### 5. UC-P3-010: Mua bán Thẻ Bài Profile (Chợ Thẻ Bài Profile Độc Thân)
+- **Mô tả ngắn:** Biến các profile cá nhân thành các mã Thẻ Bài tài chính ảo. Giá trị mã tăng/giảm dựa trên các chỉ số hoạt động, tương tác và mức độ săn đón của cộng đồng đối với profile đó.
 - **Luồng cơ bản:**
 
 | Hành động của tác nhân | Phản ứng của hệ thống | Dữ liệu |
 | :--- | :--- | :--- |
-| 1. Người dùng (Trader) vào sàn, tìm kiếm mã cổ phiếu của một Profile (Ví dụ: Mã $NVA của Nguyễn Văn A). | 2. Hệ thống hiển thị biểu đồ hình nến giá trị của mã $NVA cùng tập chỉ số: Lượt match, Điểm Clan đóng góp, Tổng số chuỗi Locket đang giữ. | - Mã cổ phiếu (stock_code) |
-| 3. Người dùng nhập số lượng cổ phần muốn mua và nhấn "Đặt lệnh mua". | 4. Hệ thống kiểm tra thanh khoản và số lượng "Cổ phiếu tự do lưu hành" của profile đó. Thực hiện khớp lệnh qua cơ chế Order-matching engine ảo. | - Số lượng mua*<br>- Giá đặt mua* |
-| | 5. Cập nhật bảng danh sách cổ đông của $NVA. Khi giá trị $NVA tăng, Trader có thể đặt lệnh "Bán" để ăn chênh lệch xu. | - Sổ lệnh (Order Book) |
+| 1. Người dùng (Collector) vào sàn, tìm kiếm mã Thẻ Bài của một Profile (Ví dụ: Mã #NVA của Nguyễn Văn A). | 2. Hệ thống hiển thị biểu đồ hình nến giá trị của mã #NVA cùng tập chỉ số: Lượt match, Điểm Clan đóng góp, Tổng số chuỗi Locket đang giữ. | - Mã Thẻ Bài (card_code) |
+| 3. Người dùng nhập số lượng Thẻ Bài muốn mua và nhấn "Đặt lệnh mua". | 4. Hệ thống kiểm tra thanh khoản và số lượng "Thẻ Bài tự do lưu hành" của profile đó. Thực hiện khớp lệnh qua cơ chế Order-matching engine ảo. | - Số lượng mua*<br>- Giá đặt mua* |
+| | 5. Cập nhật bảng danh sách Người Sưu Tầm của #NVA. Khi giá trị #NVA tăng, Collector có thể đặt lệnh "Bán" để ăn chênh lệch xu. | - Sổ lệnh (Order Book) |
 
 - **Luồng ngoại lệ:** 
-  - *Mã cổ phiếu "Hủy niêm yết" (User hủy tài khoản hoặc kết đôi thành công thoát ế):* Hệ thống kích hoạt trạng thái "Mừng Đám Cưới", toàn bộ người nắm giữ cổ phần mã này vào thời điểm hủy niêm yết sẽ được hệ thống mua lại với mức giá trần cố định + thưởng thêm Quà tặng từ quỹ của App làm tiền mừng.
-- **Yêu cầu đặc biệt:** Thuật toán tính giá cổ phiếu phải cập nhật liên tục 5 phút/lần dựa trên công thức: `Giá = 100 Xu (Giá sàn IPO) + (Số lượt Match mới * 0.4) + (Lượt gửi Locket * 0.3) + (Số thành viên Clan upvote * 0.3) - (Số đơn kiện từ Tòa Án * 0.5)`. Cần có giới hạn biên độ tăng/giảm (trần/sàn) trong ngày để chống bơm thổi (Pump & Dump).
+  - *Mã Thẻ Bài "Hủy niêm yết" (User hủy tài khoản hoặc kết đôi thành công thoát ế):* Hệ thống kích hoạt trạng thái "Mừng Đám Cưới", toàn bộ người nắm giữ Thẻ Bài mã này vào thời điểm hủy niêm yết sẽ được hệ thống mua lại với mức giá trần cố định + thưởng thêm Quà tặng từ quỹ của App làm tiền mừng.
+- **Yêu cầu đặc biệt:** Thuật toán tính giá Thẻ Bài phải cập nhật liên tục 5 phút/lần dựa trên công thức: `Giá = 100 Xu (Giá sàn Giá Khởi Điểm) + (Số lượt Match mới * 0.4) + (Lượt gửi Locket * 0.3) + (Số thành viên Clan upvote * 0.3) - (Số đơn kiện từ Tòa Án * 0.5)`. Cần có giới hạn biên độ tăng/giảm (trần/sàn) trong ngày để chống bơm thổi (Pump & Dump).
 - **Tiền điều kiện:** Người dùng đạt Level 5 trong app mới được mở tính năng Sàn giao dịch.
 - **Điều kiện sau:** Xu được luân chuyển giữa các ví người dùng, tạo dòng tiền lưu thông cực lớn trong hệ sinh thái app.
 - **Điểm mở rộng:** Không có.
@@ -185,6 +185,8 @@
 | 3. Người dùng nhập Tên bang, slogan, upload logo và nhấn "Xác nhận tạo". | 4. Hệ thống trừ 500 Xu, tạo bản ghi `clans` mới, thêm người tạo vào `clan_members` với `role = leader`. | - Tên bang (unique)<br>- Logo URL<br>- `leader_id` |
 | 5. Bang chủ vào tab "Quản lý thành viên" và nhấn "Mời bạn bè". | 6. Hệ thống tìm kiếm user theo tên/SĐT và gửi lời mời tham gia vào In-App Notification của người được mời. | - Danh sách user được mời |
 | 7. Người được mời nhận thông báo và nhấn "Chấp nhận". | 8. Hệ thống thêm bản ghi vào `clan_members` với `role = member`. Tự động cập nhật số thành viên hiển thị. | - `clan_id`, `user_id` |
+| 9. **(Lửa Trại)** Thành viên A check-in hoặc gửi Locket vào nhóm. | 10. Hệ thống tính A là 1 người tương tác. Nếu đạt 3 người tương tác trong ngày, Lửa Trại được "Tiếp củi", `campfire_streak` tăng 1. | - `daily_active_members` |
+| 11. **(Lửa Trại)** Đêm 00:00, Cronjob quét database. | 12. Nếu `last_campfire_at` > 24h, Lửa tắt (`campfire_streak = 0`). Nếu `campfire_streak >= 7`, Clan được Buff x1.5 điểm chiếm thành tuần đó. | - `campfire_streak` mới |
 
 - **Luồng ngoại lệ:**
   - *Tên bang đã tồn tại:* Hệ thống báo lỗi `Tên bang hội đã có người dùng. Vui lòng chọn tên khác.`
@@ -235,7 +237,9 @@
 - **Yêu cầu đặc biệt:** Prompt gửi sang OpenAI phải được ẩn danh hoàn toàn (không gửi tên thật, SĐT). Toàn bộ dữ liệu chat phải xử lý trong RAM của Backend, không log ra file.
 - **Tiền điều kiện:** Hai người đã Match và có ít nhất 5 tin nhắn trong chatroom.
 - **Điều kiện sau:** Gợi ý AI được hiển thị để người dùng lựa chọn.
-- **Điểm mở rộng:** Tính năng "Phân tích nhân cách" — AI đọc 50 tin nhắn gần nhất và đưa ra nhận xét "Đối phương có vẻ đang thích bạn/chán bạn".
+- **Điểm mở rộng:** 
+  - "Phân tích nhân cách" — AI đọc 50 tin nhắn gần nhất và đưa ra nhận xét "Đối phương có vẻ đang thích bạn/chán bạn".
+  - "Bói bài Tarot & Chiêm tinh mỗi sáng" (Daily Ice-breaker) — Tự động dùng API AI (Claude/OpenAI) sinh ra 1 quẻ bói/chiêm tinh dựa trên Cung hoàng đạo của 2 người và gửi vào lúc 08:00 sáng hàng ngày để tạo chủ đề nói chuyện.
 
 ---
 
@@ -278,6 +282,52 @@
 - **Tiền điều kiện:** Tài khoản đã xác thực, không đang bị ban.
 - **Điều kiện sau:** Cuộc trò chuyện kết thúc sạch (không lưu log ẩn danh), hoặc Match chính thức được tạo nếu cả 2 đồng ý lộ diện.
 - **Điểm mở rộng:** Phiên bản "The Purge VIP" cho Premium user — ghép đôi theo Hệ Tâm Linh thay vì hoàn toàn ngẫu nhiên.
+
+---
+
+#### 12. UC-P2-012: Bảng Truy Nã Hẹn Hò (Bounty Hunter Mode)
+- **Mô tả ngắn:** Tạo một "chợ đen" mini cho phép người dùng (Thợ săn) nộp đơn ứng tuyển cho các cuộc hẹn hò có treo thưởng Xu ảo (Bounty). 
+- **Luồng cơ bản:**
+  - Người dùng có Xu đăng Lệnh truy nã (VD: "Tìm bạn xem phim, thưởng 500 Xu"). Số Xu bị hệ thống tạm giữ.
+  - Các Thợ săn thấy lệnh trên Bảng chung, gửi 1 câu thả thính để ứng tuyển.
+  - Người đăng chọn 1 Thợ săn ưng ý nhất -> Trạng thái thành "Matched".
+  - Khi gặp mặt và quét mã QR TOTP thành công, Xu thưởng được tự động chuyển cho Thợ săn.
+
+#### 13. UC-P3-013: Đấu Giá Đặc Quyền (Top-Tier Blind Auction)
+- **Mô tả ngắn:** Cuối tháng, hệ thống tự động đưa Top 5 user có giá trị Thẻ Bài cao nhất lên Sàn đấu giá mù.
+- **Luồng cơ bản:**
+  - Phiên đấu giá diễn ra trong 24h. Người dùng dùng Xu ảo bỏ thầu ẩn danh.
+  - Ai trả giá cao nhất sẽ thắng thầu.
+  - Đặc quyền: Tài khoản của Top-Tier bị "Khóa" độc quyền với người thắng thầu trong 24h (chỉ được nhắn tin với người thắng thầu). Số Xu đấu giá được chia 50-50 cho Top-Tier và hệ thống (đốt Xu chống lạm phát).
+
+#### 14. UC-P3-014: Tường Thành Phong Sát (Wall of Shame)
+- **Mô tả ngắn:** Kẻ thua kiện ở Tòa Án sẽ bị đưa lên Tường Thành Phong Sát trong 24h. Người dùng khác có thể ném cà chua (tốn Xu) vào profile này.
+- **Luồng cơ bản:**
+  - Sau phán quyết Có Tội, hệ thống tạo bản ghi `wall_of_shames`.
+  - Người dùng truy cập tab Drama thấy danh sách phong sát.
+  - Người dùng bấm nút "Ném cà chua". Hệ thống trừ 1 Xu và tăng biến đếm `tomatoes_thrown`. Xu này bị thu hồi (burn).
+
+#### 15. UC-P2-015: Vibe Check Nửa Đêm (Đài Phát Thanh Tình Yêu)
+- **Mô tả ngắn:** Lúc 23:00, tính năng quét quanh đây chuyển sang mode ẩn danh. Người dùng chỉ nghe được nhạc Spotify đối phương đang nghe.
+- **Luồng cơ bản:**
+  - 23:00, hệ thống lấy track Spotify hiện tại của user qua Spotify API.
+  - Người dùng vuốt phải bài hát nếu thấy hợp gu (Vibe Match).
+  - Cả 2 cùng thích bài hát -> Mở khóa chatroom ẩn danh.
+
+#### 16. UC-P1-016: Nghề Cò Mối / Bà Nguyệt (Wingman Gamification)
+- **Mô tả ngắn:** Người dùng (Wingman) gửi thẻ ghép đôi cho 2 người khác. Nếu họ thành đôi, Wingman nhận hoa hồng.
+- **Luồng cơ bản:**
+  - Wingman chia sẻ link ép duyên cho User A và User B.
+  - A và B bấm vào link, tạo thành Match.
+  - Nếu A và B có đi hẹn hò thật (quét QR TOTP), hệ thống trích 10% giá trị Thẻ Bài (hoặc thưởng Xu) cho Wingman.
+
+#### 17. UC-P3-017: PK Cướp Đoạt Thẻ Bài (The Steal)
+- **Mô tả ngắn:** Người dùng mua thẻ "Đạo Tặc" giá cao để cướp Thẻ Bài từ một người Sưu Tầm khác.
+- **Luồng cơ bản:**
+  - A muốn cướp Thẻ Bài `#NVA` của B. A mua thẻ Đạo Tặc (1000 Xu) và kích hoạt.
+  - A và B bước vào phòng PK (Mini-game nhanh 10 giây).
+  - Nếu A thắng: Thẻ Bài `#NVA` thuộc về A. B mất thẻ.
+  - Nếu B thắng: A mất thẻ Đạo Tặc. B nhận được 500 Xu bồi thường (lấy từ thẻ của A).
 
 ---
 
