@@ -142,3 +142,90 @@ func TestWingmanService_ProcessCommission_Success(t *testing.T) {
 		t.Errorf("Expected no error, got %v", err)
 	}
 }
+
+func TestWingmanService_AcceptReferral_Errors(t *testing.T) {
+	db, mock, err := setupTestDB()
+	if err != nil {
+		t.Fatalf("Failed to open mock sql db, got error: %v", err)
+	}
+
+	service := NewWingmanService(db)
+	refID := uuid.New()
+	target1ID := uuid.New()
+	invalidUserID := uuid.New()
+
+	// 1. Referral not found
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT .* FROM "wingman_referrals"`).
+		WithArgs(refID, sqlmock.AnyArg()).
+		WillReturnError(gorm.ErrRecordNotFound)
+	mock.ExpectRollback()
+
+	_, err = service.AcceptReferral(context.Background(), refID, target1ID)
+	if err == nil || err.Error() != "referral not found" {
+		t.Errorf("Expected referral not found error, got %v", err)
+	}
+
+	// 2. Referral not pending
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT .* FROM "wingman_referrals"`).
+		WithArgs(refID, sqlmock.AnyArg()).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "status"}).
+			AddRow(refID, "matched"))
+	mock.ExpectRollback()
+
+	_, err = service.AcceptReferral(context.Background(), refID, target1ID)
+	if err == nil || err.Error() != "referral is no longer pending" {
+		t.Errorf("Expected referral is no longer pending error, got %v", err)
+	}
+
+	// 3. Referral expired
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT .* FROM "wingman_referrals"`).
+		WithArgs(refID, sqlmock.AnyArg()).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "status", "expires_at"}).
+			AddRow(refID, "pending", time.Now().Add(-1*time.Hour)))
+	mock.ExpectRollback()
+
+	_, err = service.AcceptReferral(context.Background(), refID, target1ID)
+	if err == nil || err.Error() != "referral link expired" {
+		t.Errorf("Expected referral link expired error, got %v", err)
+	}
+
+	// 4. Invalid user
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT .* FROM "wingman_referrals"`).
+		WithArgs(refID, sqlmock.AnyArg()).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "status", "expires_at", "target1_id", "target2_id"}).
+			AddRow(refID, "pending", time.Now().Add(1*time.Hour), target1ID, uuid.New()))
+	mock.ExpectRollback()
+
+	_, err = service.AcceptReferral(context.Background(), refID, invalidUserID)
+	if err == nil || err.Error() != "user is not part of this referral" {
+		t.Errorf("Expected user is not part of this referral error, got %v", err)
+	}
+}
+
+func TestWingmanService_ProcessCommission_Errors(t *testing.T) {
+	db, mock, err := setupTestDB()
+	if err != nil {
+		t.Fatalf("Failed to open mock sql db, got error: %v", err)
+	}
+
+	service := NewWingmanService(db)
+	refID := uuid.New()
+	wingmanID := uuid.New()
+
+	// 1. Invalid status
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT .* FROM "wingman_referrals"`).
+		WithArgs(refID, sqlmock.AnyArg()).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "status", "wingman_id"}).
+			AddRow(refID, "pending", wingmanID))
+	mock.ExpectRollback()
+
+	err = service.ProcessCommission(context.Background(), refID)
+	if err == nil || err.Error() != "invalid status for commission" {
+		t.Errorf("Expected invalid status for commission error, got %v", err)
+	}
+}
