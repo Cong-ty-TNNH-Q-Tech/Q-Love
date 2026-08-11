@@ -1,3 +1,7 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package services
 
 import (
@@ -9,8 +13,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 )
 
 type WingmanService interface {
@@ -20,11 +24,21 @@ type WingmanService interface {
 }
 
 type wingmanService struct {
-	db *gorm.DB
+	wingmanRepo repository.WingmanRepository
+	walletRepo  repository.WalletRepository
+	txManager   repository.TransactionManager
 }
 
-func NewWingmanService(db *gorm.DB) WingmanService {
-	return &wingmanService{db: db}
+func NewWingmanService(
+	wingmanRepo repository.WingmanRepository, 
+	walletRepo repository.WalletRepository, 
+	txManager repository.TransactionManager,
+) WingmanService {
+	return &wingmanService{
+		wingmanRepo: wingmanRepo,
+		walletRepo:  walletRepo,
+		txManager:   txManager,
+	}
 }
 
 func (s *wingmanService) CreateReferral(ctx context.Context, wingmanID, target1ID, target2ID uuid.UUID) (*models.WingmanReferral, error) {
@@ -46,17 +60,19 @@ func (s *wingmanService) CreateReferral(ctx context.Context, wingmanID, target1I
 		ExpiresAt: time.Now().Add(48 * time.Hour), // Link expires in 48 hours
 	}
 
-	if err := s.db.WithContext(ctx).Create(referral).Error; err != nil {
+	if err := s.wingmanRepo.CreateReferral(ctx, referral); err != nil {
 		return nil, err
 	}
 	return referral, nil
 }
 
 func (s *wingmanService) AcceptReferral(ctx context.Context, referralID, acceptingUserID uuid.UUID) (*models.WingmanReferral, error) {
-	var referral models.WingmanReferral
+	var referral *models.WingmanReferral
 
-	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.First(&referral, "id = ?", referralID).Error; err != nil {
+	err := s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
+		var err error
+		referral, err = s.wingmanRepo.GetReferralByID(txCtx, referralID)
+		if err != nil {
 			return errors.New("referral not found")
 		}
 
@@ -73,9 +89,8 @@ func (s *wingmanService) AcceptReferral(ctx context.Context, referralID, accepti
 		}
 
 		// For simplicity, we assume one person clicking the link accepts it and creates a match.
-		// In a real scenario, we might need both to accept. Let's mark it as matched.
 		referral.Status = "matched"
-		if err := tx.Save(&referral).Error; err != nil {
+		if err := s.wingmanRepo.UpdateReferral(txCtx, referral); err != nil {
 			return err
 		}
 		
@@ -85,14 +100,14 @@ func (s *wingmanService) AcceptReferral(ctx context.Context, referralID, accepti
 	if err != nil {
 		return nil, err
 	}
-	return &referral, nil
+	return referral, nil
 }
 
 func (s *wingmanService) ProcessCommission(ctx context.Context, referralID uuid.UUID) error {
 	// Using SERIALIZABLE transaction to prevent race conditions on wallet
-	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		var referral models.WingmanReferral
-		if err := tx.First(&referral, "id = ?", referralID).Error; err != nil {
+	return s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
+		referral, err := s.wingmanRepo.GetReferralByID(txCtx, referralID)
+		if err != nil {
 			return err
 		}
 
@@ -104,30 +119,24 @@ func (s *wingmanService) ProcessCommission(ctx context.Context, referralID uuid.
 		commissionAmount := 10.0
 
 		// Update Wingman Wallet
-		var wallet models.UserWallet
-		if err := tx.FirstOrCreate(&wallet, models.UserWallet{UserID: referral.WingmanID}).Error; err != nil {
-			return err
-		}
-
-		wallet.Balance += commissionAmount
-		if err := tx.Save(&wallet).Error; err != nil {
+		if err := s.walletRepo.AddCommission(txCtx, referral.WingmanID, commissionAmount); err != nil {
 			return err
 		}
 
 		// Log Transaction
-		txn := models.WalletTransaction{
+		txn := &models.WalletTransaction{
 			ID:          uuid.New(),
 			UserID:      referral.WingmanID,
 			Amount:      commissionAmount,
 			Type:        "wingman_commission",
 			ReferenceID: referral.ID,
 		}
-		if err := tx.Create(&txn).Error; err != nil {
+		if err := s.walletRepo.CreateTransaction(txCtx, txn); err != nil {
 			return err
 		}
 
 		// Mark referral as rewarded
 		referral.Status = "rewarded"
-		return tx.Save(&referral).Error
+		return s.wingmanRepo.UpdateReferral(txCtx, referral)
 	}, &sql.TxOptions{Isolation: sql.LevelSerializable}) // Ensure strong consistency
 }
