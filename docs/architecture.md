@@ -24,7 +24,7 @@ graph TD
     subgraph Backend_Golang [Backend Server - Golang]
         E[API Router / Middleware]
         F[REST API Service (CRUD, Auth)]
-        G[WebSocket Hub (Chat, Stock, Map)]
+        G[WebSocket Hub (Chat, Card, Map)]
         H[Background Workers / Cron (Image Blur, Streak)]
     end
 
@@ -77,7 +77,7 @@ graph TD
 ### 2.3. Tầng Backend (Golang Monolith)
 Kiến trúc Backend được thiết kế theo dạng **Modular Monolith** bằng ngôn ngữ Golang để dễ triển khai (Deploy) nhưng vẫn chia rõ ranh giới các module:
 - **REST API Service:** Xử lý các logic cơ bản (Đăng nhập, Sửa profile, Nạp Xu, Matchmaking, Tạo vụ án Tòa án).
-- **WebSocket Hub:** Trái tim của hệ thống Real-time. Duy trì hàng vạn kết nối đồng thời. Xử lý logic nhảy giá Cổ phiếu ngay lập tức, chat 1-1, và đẩy tọa độ GPS Real-time khi chạy bo "Đêm săn mồi".
+- **WebSocket Hub:** Trái tim của hệ thống Real-time. Duy trì hàng vạn kết nối đồng thời. Xử lý logic nhảy giá Thẻ Bài ngay lập tức, chat 1-1, và đẩy tọa độ GPS Real-time khi chạy bo "Đêm săn mồi".
 - **Background Workers (Cronjobs):** 
   - *Blur Image Worker:* Nhận ảnh từ user, dùng thư viện `bimg` (C++) để làm mờ ngay trên Server.
   - *Streak/Ghosting Checker:* Quét Database mỗi nửa đêm, nếu User không tương tác thì trừ Streak và làm "héo" đảo tình yêu.
@@ -232,7 +232,7 @@ graph LR
 | **Wallet & Finance** | Đối soát giao dịch Xu, xem `wallet_transactions` toàn hệ thống |
 | **User Management** | Ban/Unban tài khoản, xóa huy hiệu, gỡ Shadowban thủ công |
 | **Voucher Management** | Tạo và quản lý mã Voucher đổi Xu (Highlands, CGV...) |
-| **Stock Circuit Breaker** | Bật/Tắt thủ công lệnh tạm dừng giao dịch của một mã cổ phiếu |
+| **Card Circuit Breaker** | Bật/Tắt thủ công lệnh tạm dừng giao dịch của một mã Thẻ Bài |
 
 ---
 

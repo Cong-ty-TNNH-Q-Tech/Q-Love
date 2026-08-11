@@ -98,24 +98,24 @@ Tài liệu này đặc tả các Tiêu chí chấp nhận (Acceptance Criteria 
 
 ---
 
-## 5. UC-P3-010: Sàn Chứng Khoán Profile
+## 5. UC-P3-010: Chợ Thẻ Bài Profile Profile
 
-### AC1: Tính giá IPO ban đầu
-- **Given** Một user đạt Level 5 và lần đầu mở tính năng Sàn Chứng Khoán.
-- **When** Hệ thống khởi tạo mã cổ phiếu cho profile này (VD: $NVA).
-- **Then** Giá trị khởi điểm (IPO) của mã $NVA được set mặc định là 100 Xu ảo.
+### AC1: Tính giá Giá Khởi Điểm ban đầu
+- **Given** Một user đạt Level 5 và lần đầu mở tính năng Chợ Thẻ Bài Profile.
+- **When** Hệ thống khởi tạo mã Thẻ Bài cho profile này (VD: #NVA).
+- **Then** Giá trị khởi điểm (Giá Khởi Điểm) của mã #NVA được set mặc định là 100 Xu ảo.
 
 ### AC2: Khớp lệnh Mua thành công
-- **Given** Trader có 500 Xu trong ví. Mã $NVA đang giao dịch ở giá 120 Xu.
-- **When** Trader đặt lệnh mua 2 cổ phiếu $NVA với giá thị trường (Market price).
-- **Then** Hệ thống trừ 240 Xu của Trader (Cộng thêm 2% phí giao dịch nếu có).
-- **And** Trader được thêm vào danh sách Cổ đông của mã $NVA, sở hữu 2 cổ phiếu.
+- **Given** Collector có 500 Xu trong ví. Mã #NVA đang giao dịch ở giá 120 Xu.
+- **When** Collector đặt lệnh mua 2 Thẻ Bài #NVA với giá thị trường (Market price).
+- **Then** Hệ thống trừ 240 Xu của Collector (Cộng thêm 2% phí giao dịch nếu có).
+- **And** Collector được thêm vào danh sách Người Sưu Tầm của mã #NVA, sở hữu 2 Thẻ Bài.
 
 ### AC3: Cập nhật giá theo công thức động (5 phút/lần)
-- **Given** Profile $NVA vừa nhận được 10 lượt Match mới và 1 lượt gửi Locket trong 5 phút qua.
+- **Given** Profile #NVA vừa nhận được 10 lượt Match mới và 1 lượt gửi Locket trong 5 phút qua.
 - **When** Hệ thống chạy Cron Job tính giá định kỳ.
-- **Then** Giá mới của $NVA được cộng thêm: `(10 * 0.4) + (1 * 0.3) = 4.3 Xu`.
-- **And** Biểu đồ hình nến (Candlestick chart) của mã $NVA trên sàn tự động vẽ thêm 1 nhịp tăng giá.
+- **Then** Giá mới của #NVA được cộng thêm: `(10 * 0.4) + (1 * 0.3) = 4.3 Xu`.
+- **And** Biểu đồ hình nến (Candlestick chart) của mã #NVA trên sàn tự động vẽ thêm 1 nhịp tăng giá.
 
 ---
 
@@ -146,6 +146,23 @@ Tài liệu này đặc tả các Tiêu chí chấp nhận (Acceptance Criteria 
 - **When** Người dùng cố gắng nhấn "Tạo Bang hội".
 - **Then** Nút bấm bị vô hiệu hóa (Greyed out) hoặc hiển thị popup báo lỗi "Bạn cần đạt Level 3 và có tối thiểu 500 Xu".
 
+### AC3: Tiếp củi Lửa Trại thành công
+- **Given** Lửa Trại của Bang hội đang có 2 thành viên tương tác trong ngày.
+- **When** Thành viên thứ 3 tiến hành Check-in GPS hoặc gửi Locket vào nhóm.
+- **Then** Hệ thống cập nhật `daily_active_members` = 3.
+- **And** `campfire_streak` tăng thêm 1 ngày, gửi thông báo "Lửa trại đang cháy rực" cho toàn bộ bang hội.
+
+### AC4: Lửa Trại tắt do thiếu tương tác
+- **Given** Bang hội chỉ có 2 thành viên tương tác trong ngày.
+- **When** Đồng hồ điểm 00:00, Cronjob quét hệ thống.
+- **Then** `last_campfire_at` được xác định là quá 24h.
+- **And** Hệ thống reset `campfire_streak` về 0 và gửi thông báo "Lửa trại đã tắt".
+
+### AC5: Nhận Buff x1.5 điểm
+- **Given** Bang hội đã duy trì Lửa Trại liên tục đạt `campfire_streak` >= 7.
+- **When** Một thành viên thực hiện Check-in chiếm địa bàn thành công (được 10 điểm).
+- **Then** Điểm cộng vào `weekly_score` của Bang hội được tự động nhân 1.5 lần (thành 15 điểm).
+
 ---
 
 ## 8. UC-P2-005: Đảo Tình Yêu 3D (Streak Gamification)
@@ -168,6 +185,12 @@ Tài liệu này đặc tả các Tiêu chí chấp nhận (Acceptance Criteria 
 - **Given** Trong một đoạn chat, người dùng A gõ tin nhắn nhưng xóa đi viết lại 3 lần hoặc chat bị dừng quá lâu.
 - **When** Người dùng A bấm vào icon "Trợ lý AI".
 - **Then** AI tự động đọc 5 dòng chat gần nhất và đưa ra 3 gợi ý tin nhắn phản hồi (sarcastic, hài hước, thả thính).
+
+### AC2: Bói bài Tarot mỗi sáng (Daily Ice-breaker)
+- **Given** Người dùng A và B đã match và đang trò chuyện.
+- **When** Đồng hồ điểm 08:00 sáng mỗi ngày.
+- **Then** AI tự động sinh một quẻ bói Tarot/Chiêm tinh (dựa trên Cung hoàng đạo của A và B).
+- **And** Gửi thẳng kết quả vào chatroom để gợi ý chủ đề nói chuyện.
 
 ---
 
@@ -210,18 +233,18 @@ Tài liệu này đặc tả các Tiêu chí chấp nhận (Acceptance Criteria 
 
 ---
 
-## 13. AC Bổ Sung: Circuit Breaker Sàn Chứng Khoán (Chống Pump & Dump)
+## 13. AC Bổ Sung: Circuit Breaker Chợ Thẻ Bài Profile (Chống Pump & Dump)
 
 ### AC1: Tạm dừng giao dịch khi giá biến động bất thường
-- **Given** Mã cổ phiếu `$NVA` đang giao dịch ở 200 Xu.
-- **When** Trong vòng **5 phút**, giá `$NVA` tăng hoặc giảm hơn **30%** (lên 260 Xu hoặc xuống 140 Xu).
-- **Then** Hệ thống tự động kích hoạt **Circuit Breaker**: tạm dừng toàn bộ lệnh mua/bán của mã `$NVA` trong **15 phút**.
-- **And** Hiển thị banner trên trang cổ phiếu: *"Giao dịch tạm dừng do biến động bất thường. Tiếp tục lúc [thời gian]."*
+- **Given** Mã Thẻ Bài `#NVA` đang giao dịch ở 200 Xu.
+- **When** Trong vòng **5 phút**, giá `#NVA` tăng hoặc giảm hơn **30%** (lên 260 Xu hoặc xuống 140 Xu).
+- **Then** Hệ thống tự động kích hoạt **Circuit Breaker**: tạm dừng toàn bộ lệnh mua/bán của mã `#NVA` trong **15 phút**.
+- **And** Hiển thị banner trên trang Thẻ Bài: *"Giao dịch tạm dừng do biến động bất thường. Tiếp tục lúc [thời gian]."*
 
-### AC2: Thông báo cho cổ đông hiện hữu
-- **Given** Circuit Breaker vừa được kích hoạt cho mã `$NVA`.
+### AC2: Thông báo cho Người Sưu Tầm hiện hữu
+- **Given** Circuit Breaker vừa được kích hoạt cho mã `#NVA`.
 - **When** Hệ thống thực thi lệnh tạm dừng.
-- **Then** Toàn bộ user đang nắm giữ cổ phiếu `$NVA` nhận được **push notification** thông báo tình trạng tạm dừng.
+- **Then** Toàn bộ user đang nắm giữ Thẻ Bài `#NVA` nhận được **push notification** thông báo tình trạng tạm dừng.
 - **And** Các lệnh đang chờ khớp (Pending Orders) bị **hủy tự động**, Xu được hoàn trả vào ví.
 
 ---
@@ -239,3 +262,87 @@ Tài liệu này đặc tả các Tiêu chí chấp nhận (Acceptance Criteria 
 - **Given** Vụ kiện đã nhận đủ 50 phiếu và đã có kết quả (guilty/not_guilty).
 - **When** Người dùng A cố gắng rút đơn.
 - **Then** Nút "Rút đơn" bị vô hiệu hóa (greyed-out), hệ thống hiển thị thông báo *"Vụ án đã có phán quyết và không thể rút lại."*
+
+---
+
+## 15. UC-P2-012: Bảng Truy Nã Hẹn Hò (Bounty Hunter Mode)
+
+### AC1: Đăng lệnh truy nã
+- **Given** Người dùng A có đủ Xu trong ví.
+- **When** A đăng một lệnh truy nã hẹn hò với tiền thưởng X Xu.
+- **Then** Lệnh được hiển thị lên bảng chung, hệ thống đóng băng X Xu trong ví của A.
+
+### AC2: Nộp đơn và Hoàn thành
+- **Given** Lệnh truy nã của A đang "open".
+- **When** B nộp đơn ứng tuyển, A chọn B làm người thắng cuộc (matched).
+- **And** A và B gặp mặt ngoài đời, quét mã QR thành công.
+- **Then** Trạng thái lệnh chuyển thành "completed", hệ thống chuyển X Xu từ ví A (đang đóng băng) sang ví B.
+
+---
+
+## 16. UC-P3-013: Đấu Giá Đặc Quyền (Top-Tier Blind Auction)
+
+### AC1: Mở phiên đấu giá mù
+- **Given** Là ngày cuối tháng.
+- **When** Hệ thống tự động chọn ra Top 5 user có giá trị Thẻ Bài cao nhất.
+- **Then** Khởi tạo phiên đấu giá (blind auction) cho từng Top-Tier trong 24h.
+
+### AC2: Đấu giá thành công và nhận đặc quyền
+- **Given** Phiên đấu giá của Top-Tier C kết thúc.
+- **When** Người dùng A là người trả giá cao nhất (Winner).
+- **Then** Hệ thống khóa chat của C, C chỉ được phép nhắn tin với A trong vòng 24h tiếp theo.
+- **And** Số Xu trúng thầu được chia 50% cho C và 50% bị hệ thống thu hồi (burn).
+
+---
+
+## 17. UC-P3-014: Tường Thành Phong Sát (Wall of Shame)
+
+### AC1: Bị đưa lên Tường thành
+- **Given** Người dùng A vừa bị Tòa Án phán quyết "Có Tội".
+- **When** Phán quyết được lưu vào hệ thống.
+- **Then** Thông tin của A tự động xuất hiện trên Tường Thành Phong Sát với thời hạn 24h.
+
+### AC2: Ném cà chua
+- **Given** Người dùng B đang xem Tường Thành Phong Sát và có đủ Xu.
+- **When** B nhấn nút "Ném Cà Chua" vào A.
+- **Then** Hệ thống trừ 1 Xu của B.
+- **And** Biến đếm `tomatoes_thrown` của A tăng lên 1, đồng thời có hiệu ứng animation cà chua đập vào avatar.
+
+---
+
+## 18. UC-P2-015: Vibe Check Nửa Đêm
+
+### AC1: Lấy bài hát Spotify
+- **Given** Là 23:00 đêm, người dùng A mở app.
+- **When** A vào tab Vibe Check.
+- **Then** Hệ thống gọi API Spotify để lấy bài hát A đang nghe. Nếu A không nghe gì, yêu cầu A chọn 1 bài hát thủ công.
+
+### AC2: Match qua bài hát
+- **Given** A đang nghe bài "Lối Nhỏ", B cũng đang nghe bài "Lối Nhỏ" (hoặc B lướt thấy và bấm Like).
+- **When** Cả hai cùng Like bài hát của nhau.
+- **Then** Hệ thống tạo Match ẩn danh và mở chatroom có thời hạn 60 phút.
+
+---
+
+## 19. UC-P1-016: Nghề Cò Mối / Bà Nguyệt
+
+### AC1: Nhận hoa hồng Cò mối
+- **Given** User C (Wingman) đã gửi link ghép đôi cho A và B.
+- **When** A và B đồng ý Match, sau đó gặp mặt thành công (quét QR).
+- **Then** Hệ thống ghi nhận trạng thái `rewarded` cho C.
+- **And** C nhận được 10% tổng giá trị Thẻ Bài của A và B (Quy đổi ra Xu).
+
+---
+
+## 20. UC-P3-017: PK Cướp Đoạt Thẻ Bài (The Steal)
+
+### AC1: Mua thẻ Đạo Tặc
+- **Given** A muốn cướp Thẻ `#NVA` từ B.
+- **When** A vào cửa hàng mua Thẻ Đạo Tặc (1000 Xu).
+- **Then** Hệ thống trừ 1000 Xu và cấp vật phẩm cho A.
+
+### AC2: Kích hoạt PK và Thua cuộc
+- **Given** A dùng Thẻ Đạo Tặc nhắm vào B.
+- **When** Cả hai vào phòng PK minigame 10 giây.
+- **And** B thắng minigame.
+- **Then** A mất Thẻ Đạo Tặc. B giữ được Thẻ `#NVA` và nhận được 500 Xu (trích từ giá trị Thẻ Đạo Tặc của A).

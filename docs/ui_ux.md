@@ -45,8 +45,8 @@ Q-Love nhắm đến Gen Z và Millennials — thế hệ thích những thứ *
 |:---|:---|:---|:---|
 | `--color-gold` | `#FFB830` | `hsl(42, 100%, 59%)` | Premium badge, Xu currency icon |
 | `--color-gold-dark` | `#E09B00` | `hsl(42, 100%, 44%)` | Pressed state của gold elements |
-| `--color-teal` | `#00D4AA` | `hsl(168, 100%, 42%)` | Stock price up, Success state |
-| `--color-red-stock` | `#FF4757` | `hsl(355, 100%, 64%)` | Stock price down, Error |
+| `--color-teal` | `#00D4AA` | `hsl(168, 100%, 42%)` | Card price up, Success state |
+| `--color-red-card` | `#FF4757` | `hsl(355, 100%, 64%)` | Card price down, Error |
 
 #### Background & Surface
 | Token | Hex | Mục đích |
@@ -177,8 +177,8 @@ App Root
     │       ├── AIWingmanSheet
     │       └── ContractSheet
     ├── Tab 4: Market (Sàn CK + Court)
-    │   ├── MarketTabsScreen (Stock / Court)
-    │   ├── StockDetailScreen
+    │   ├── MarketTabsScreen (Card / Court)
+    │   ├── CardDetailScreen
     │   └── CourtCaseDetailScreen
     └── Tab 5: Profile
         ├── ProfileScreen
@@ -244,8 +244,8 @@ App Root
 
 | ID | Tên màn hình | Tab | Priority |
 |:---|:---|:---|:---:|
-| S-027 | Stock Market (Sàn CK) | Market | P2 |
-| S-028 | Stock Detail (Biểu đồ nến) | Market | P2 |
+| S-027 | Card Market (Sàn CK) | Market | P2 |
+| S-028 | Card Detail (Biểu đồ nến) | Market | P2 |
 | S-029 | Trade Order Sheet | Market | P2 |
 | S-030 | Ex-Rating (Đánh giá sau Unmatch) | Chat | P2 |
 | S-031 | CV Tình Trường (Kết quả tra cứu) | Profile | P2 |
@@ -451,17 +451,17 @@ App Root
 
 ---
 
-### 4.5. Flow: Sàn Chứng Khoán (S-027 → S-028 → S-029)
+### 4.5. Flow: Chợ Thẻ Bài Profile (S-027 → S-028 → S-029)
 
 ```
-[S-027] Stock Market Screen
-    │  Header: "📈 Sàn Chứng Khoán Độc Thân"
+[S-027] Card Market Screen
+    │  Header: "📈 Chợ Thẻ Bài Profile Độc Thân"
     │
     │  Tabs: [Trending 🔥] [Đang tăng ↑] [Đang giảm ↓] [Danh mục]
     │
-    │  List item mỗi cổ phiếu:
+    │  List item mỗi Thẻ Bài:
     │  ┌────────────────────────────────┐
-    │  │ [Avatar] $NVA  Nguyễn Văn A   │
+    │  │ [Avatar] #NVA  Nguyễn Văn A   │
     │  │          147.5 Xu  +4.3 (+3%) │ ← Màu teal nếu tăng
     │  │          [Mini Sparkline Chart]│
     │  └────────────────────────────────┘
@@ -470,8 +470,8 @@ App Root
     │  ⚡ "$ABC đang tạm dừng giao dịch — Còn 12:34"
     │  (Màu vàng, sticky top)
     ▼
-[S-028] Stock Detail Screen
-    │  Header: "$NVA — Nguyễn Văn A"
+[S-028] Card Detail Screen
+    │  Header: "#NVA — Nguyễn Văn A"
     │  Avatar + Level badge
     │
     │  [Thẻ bài 3D Hologram - Trading Card chiếm 45% màn hình]
@@ -484,13 +484,13 @@ App Root
     │  │ Biến động   │ +4.3 (+3%)  │
     │  │ Lượt Match  │ 12 (hôm nay)│
     │  │ Clan Score  │ 85 điểm     │
-    │  │ Cổ đông     │ 23 người    │
+    │  │ Người Sưu Tầm     │ 23 người    │
     │  └─────────────┴──────────────┘
     │
     │  [  🛒 MUA  ] [  📤 BÁN  ]
     ▼
 [S-029] Trade Order Bottom Sheet
-    │  "Mua cổ phiếu $NVA"
+    │  "Mua Thẻ Bài #NVA"
     │  Giá hiện tại: 147.5 Xu
     │
     │  Số lượng: [ - ] [ 2 ] [ + ]
