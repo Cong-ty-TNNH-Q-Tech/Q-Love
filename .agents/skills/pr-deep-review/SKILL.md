@@ -26,7 +26,7 @@ Khi nhận được yêu cầu review, AI BẮT BUỘC phải thực hiện tu�
 Sử dụng tư duy tuần tự (sequential thinking) để soi xét PR qua 10 khía cạnh:
 
 - **Vòng 1 - Metadata & Issue Link:** PR đã link Issue chưa? Tên commit/PR chuẩn semantic không?
-- **Vòng 2 - Documentation & Changelog:** Có khớp hoàn toàn với tài liệu hệ thống (openapi, ERD) không? BẮT BUỘC kiểm tra xem tác giả đã cập nhật `CHANGELOG.md` cho các thay đổi mới chưa.
+- **Vòng 2 - Documentation, Changelog & ASO:** Có khớp hoàn toàn với tài liệu hệ thống (openapi, ERD) không? BẮT BUỘC kiểm tra xem tác giả đã cập nhật `CHANGELOG.md` cho các thay đổi mới chưa. Nếu là PR liên quan đến Mobile App, bắt buộc phải kiểm tra sự tuân thủ theo các quy tắc trong skill `/app-store-optimization`.
 - **Vòng 3 - Open Source Rules & Architecture:** Code có phá vỡ cấu trúc (Hexagonal, MVC) và tuân thủ `AGENTS.md` không? Các file code mới tạo BẮT BUỘC phải có thông tin Copyright & License (VD: GNU AGPLv3) ở các dòng đầu tiên.
 - **Vòng 4 - SOLID & Design Patterns:** Có vi phạm SRP, OCP, LSP, ISP, DIP không? Tight coupling?
 - **Vòng 5 - Logical Correctness & Edge Cases:** Luồng chính chạy đúng không? Đã bẫy lỗi triệt để chưa?
