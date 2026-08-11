@@ -1101,9 +1101,48 @@ paths:
     post:
       summary: Tạo link ghép đôi cho bạn bè
       tags: [Wingman]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [target1_id, target2_id]
+              properties:
+                target1_id: { type: string, format: uuid }
+                target2_id: { type: string, format: uuid }
       responses:
         '201':
           description: Link created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  deep_link: { type: string }
+                  expires_at: { type: string, format: date-time }
+  /wingmans/referral/{id}/accept:
+    post:
+      summary: Chấp nhận ghép đôi từ Cò Mối
+      tags: [Wingman]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Accepted and Matched
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  match_id: { type: string, format: uuid }
+                  status: { type: string }
   /cards/steal:
     post:
       summary: Kích hoạt PK cướp Thẻ Bài

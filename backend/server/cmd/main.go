@@ -5,6 +5,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"gorm.io/gorm"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/api"
 )
 
 var app *fiber.App
@@ -16,6 +18,9 @@ func setupApp() *fiber.App {
 
 	// Middleware
 	a.Use(logger.New())
+
+	var db *gorm.DB // In a real setup, connect to PostgreSQL here
+	api.RegisterRoutes(a, db)
 
 	// Routes
 	a.Get("/health", func(c *fiber.Ctx) error {
