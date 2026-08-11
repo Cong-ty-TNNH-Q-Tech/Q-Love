@@ -51,10 +51,20 @@ jobs:
           args: --timeout=5m
         continue-on-error: true # Bỏ qua lỗi tạm thời khi code còn trống
 
-      - name: Run Unit Tests
+      - name: Run Unit Tests and Enforce 90% Coverage
         run: |
           if [ "$(ls -A .)" ] && [ -f "go.mod" ]; then
-            go test -v ./... || exit 0
+            go test -v -coverprofile=coverage.out ./... || exit 1
+            if [ -f "coverage.out" ]; then
+              COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}')
+              echo "Total Test Coverage: $COVERAGE%"
+              if (( $(echo "$COVERAGE < 90.0" | bc -l) )); then
+                echo "::error::Test coverage ($COVERAGE%) is below the required 90%. Failing the build."
+                exit 1
+              else
+                echo "✅ Coverage requirement met!"
+              fi
+            fi
           else
             echo "Skipping tests, directory is empty or missing go.mod"
           fi
