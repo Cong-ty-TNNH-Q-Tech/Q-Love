@@ -7,21 +7,38 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
-func main() {
-	app := fiber.New(fiber.Config{
+var app *fiber.App
+
+func setupApp() *fiber.App {
+	a := fiber.New(fiber.Config{
 		AppName: "Q-Love Backend v1.0",
 	})
 
 	// Middleware
-	app.Use(logger.New())
+	a.Use(logger.New())
 
 	// Routes
-	app.Get("/health", func(c *fiber.Ctx) error {
+	a.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
-			"status": "ok",
+			"status":  "ok",
 			"message": "Q-Love API is running",
 		})
 	})
 
-	log.Fatal(app.Listen(":3000"))
+	a.Get("/ping", func(c *fiber.Ctx) error {
+		return c.SendString("pong")
+	})
+
+	a.Get("/version", func(c *fiber.Ctx) error {
+		return c.SendString("v1.0.0")
+	})
+
+	return a
+}
+
+func main() {
+	app = setupApp()
+	if err := app.Listen(":3000"); err != nil {
+		log.Printf("Server stopped: %v", err)
+	}
 }

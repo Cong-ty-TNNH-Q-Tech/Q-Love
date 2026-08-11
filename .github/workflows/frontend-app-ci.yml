@@ -8,13 +8,10 @@ on:
       - '.github/workflows/frontend-app-ci.yml'
   pull_request:
     branches: [main, develop]
-    paths:
-      - 'frontend/app/**'
-      - '.github/workflows/frontend-app-ci.yml'
 
 jobs:
   lint-and-test:
-    name: Lint & Test
+    name: App Lint & Test
     runs-on: ubuntu-latest
     defaults:
       run:
