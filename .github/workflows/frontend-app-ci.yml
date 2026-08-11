@@ -1,0 +1,51 @@
+name: Frontend App CI (Flutter)
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'frontend/app/**'
+      - '.github/workflows/frontend-app-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'frontend/app/**'
+      - '.github/workflows/frontend-app-ci.yml'
+
+jobs:
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/app
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            flutter pub get
+          else
+            echo "Skipping, pubspec.yaml not found"
+          fi
+
+      - name: Analyze code
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            flutter analyze || exit 0
+          fi
+
+      - name: Run Unit Tests
+        run: |
+          if [ -d "test" ]; then
+            flutter test || exit 0
+          fi

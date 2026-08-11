@@ -1,0 +1,72 @@
+name: Báo cáo lỗi (Bug Report)
+description: Báo cáo lỗi để giúp hệ thống tốt hơn
+title: "[BUG] "
+labels: ["bug"]
+assignees:
+  - ThanhTrunggDEV
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cảm ơn bạn đã báo cáo lỗi! Vui lòng điền thông tin chi tiết nhất có thể.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Mô tả lỗi
+      description: Lỗi bạn gặp phải là gì?
+      placeholder: Viết rõ ràng vấn đề bạn đang gặp phải...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Các bước tái hiện (Steps to reproduce)
+      description: Làm sao để chúng tôi có thể gặp lỗi giống bạn?
+      placeholder: |
+        1. Vào màn hình '...'
+        2. Click vào nút '...'
+        3. Vuốt xuống đến '...'
+        4. Thấy lỗi
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Kết quả mong muốn (Expected behavior)
+      description: Điều gì đáng lẽ phải xảy ra?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Thành phần bị lỗi
+      description: Lỗi xảy ra ở đâu?
+      options:
+        - Mobile App (Flutter)
+        - Admin Dashboard (React)
+        - Backend API (Golang)
+        - Database/Bản đồ
+        - Hệ thống Notification (FCM)
+        - Khác
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Môi trường / Phiên bản
+      description: Phiên bản hệ điều hành, thiết bị, hoặc version App/API.
+      placeholder: VD: iOS 17.5 / iPhone 15 Pro / App v1.0.1
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Screenshots
+      description: Vui lòng đính kèm ảnh chụp màn hình, video hoặc log lỗi (nếu có).

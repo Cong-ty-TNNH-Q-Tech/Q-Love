@@ -1,0 +1,52 @@
+name: Đề xuất tính năng (Feature Request)
+description: Đề xuất ý tưởng hoặc tính năng mới cho dự án
+title: "[FEATURE] "
+labels: ["enhancement"]
+assignees:
+  - ThanhTrunggDEV
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cảm ơn bạn đã đóng góp ý tưởng cho dự án! Vui lòng làm rõ ngữ cảnh và lý do tại sao tính năng này lại cần thiết.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Vấn đề bạn đang gặp phải là gì?
+      description: Tính năng này giải quyết nỗi đau hoặc sự bất tiện nào?
+      placeholder: "Mình luôn cảm thấy bực mình khi..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Đề xuất giải pháp
+      description: Mô tả rõ cách mà bạn muốn tính năng này hoạt động.
+      placeholder: "Mình nghĩ hệ thống nên có một nút để..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Các giải pháp thay thế đã thử
+      description: Bạn có đang dùng cách thủ công (workaround) nào khác không?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Phạm vi ảnh hưởng
+      description: Tính năng này sẽ được thêm vào đâu?
+      options:
+        - Mobile App (Flutter)
+        - Admin Dashboard (React)
+        - Backend API (Golang)
+        - AI Agent
+        - Khác
+    validations:
+      required: true
