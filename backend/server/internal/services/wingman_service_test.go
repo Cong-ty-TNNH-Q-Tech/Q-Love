@@ -49,7 +49,9 @@ func TestWingmanService_CreateReferral(t *testing.T) {
 	target2ID := uuid.New()
 
 	mock.ExpectBegin()
-	mock.ExpectQuery(`INSERT INTO "wingman_referrals"`).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(uuid.New()))
+	mock.ExpectExec(`INSERT INTO "wingman_referrals"`).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
 	referral, err := service.CreateReferral(context.Background(), wingmanID, target1ID, target2ID)
@@ -78,11 +80,13 @@ func TestWingmanService_AcceptReferral_Success(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectQuery(`SELECT .* FROM "wingman_referrals"`).
-		WithArgs(refID).
+		WithArgs(refID, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "status", "expires_at", "target1_id", "target2_id"}).
 			AddRow(refID, "pending", time.Now().Add(1*time.Hour), target1ID, uuid.New()))
 	
-	mock.ExpectExec(`UPDATE "wingman_referrals"`).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec(`UPDATE "wingman_referrals"`).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
 	referral, err := service.AcceptReferral(context.Background(), refID, target1ID)
@@ -106,24 +110,30 @@ func TestWingmanService_ProcessCommission_Success(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectQuery(`SELECT .* FROM "wingman_referrals"`).
-		WithArgs(refID).
+		WithArgs(refID, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "status", "wingman_id"}).
 			AddRow(refID, "matched", wingmanID))
 	
 	// mock FirstOrCreate UserWallet
 	mock.ExpectQuery(`SELECT .* FROM "user_wallets"`).
-		WithArgs(wingmanID).
+		WithArgs(wingmanID, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"user_id", "balance"}).
 			AddRow(wingmanID, 0))
 	
 	// save wallet
-	mock.ExpectExec(`UPDATE "user_wallets"`).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec(`UPDATE "user_wallets"`).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
 	
 	// Create transaction
-	mock.ExpectQuery(`INSERT INTO "wallet_transactions"`).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(uuid.New()))
+	mock.ExpectExec(`INSERT INTO "wallet_transactions"`).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
 	
 	// Save referral
-	mock.ExpectExec(`UPDATE "wingman_referrals"`).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec(`UPDATE "wingman_referrals"`).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	mock.ExpectCommit()
 
