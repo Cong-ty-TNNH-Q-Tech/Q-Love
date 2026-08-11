@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -15,8 +17,15 @@ import (
 func TestGenerateUploadURL_Validation(t *testing.T) {
 	app := fiber.New()
 	
-	// Pass nil for r2Client, since we just test validation which happens before using the client
-	h := NewUploadHandler(nil)
+	// Create dummy client to avoid panic
+	cfg := &config.Config{
+		R2AccountID:       "dummy",
+		R2AccessKeyID:     "dummy",
+		R2SecretAccessKey: "dummy",
+		R2BucketName:      "dummy",
+	}
+	dummyClient, _ := storage.NewR2Client(cfg)
+	h := NewUploadHandler(dummyClient)
 	app.Post("/upload", h.GenerateUploadURL)
 
 	tests := []struct {
@@ -26,6 +35,15 @@ func TestGenerateUploadURL_Validation(t *testing.T) {
 		expectedError string
 	}{
 
+		{
+			name: "Valid request",
+			payload: PresignedURLRequest{
+				Filename:      "test.jpg",
+				ContentType:   "image/jpeg",
+				ContentLength: 5000000,
+			},
+			expectedCode: 200,
+		},
 		{
 			name: "Invalid content type",
 			payload: PresignedURLRequest{
@@ -70,6 +88,13 @@ func TestGenerateUploadURL_Validation(t *testing.T) {
 			}
 
 
+
+			if tt.name == "Valid request" {
+				if resp.StatusCode != 200 {
+					t.Errorf("Expected status 200, got %d", resp.StatusCode)
+				}
+				return
+			}
 
 			if resp.StatusCode != tt.expectedCode {
 				t.Errorf("Expected status %d, got %d", tt.expectedCode, resp.StatusCode)
