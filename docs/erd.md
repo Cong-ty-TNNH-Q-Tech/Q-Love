@@ -47,6 +47,7 @@ erDiagram
         uuid user1_id FK
         uuid user2_id FK
         int streak_score
+        int highest_streak_score
         timestamp last_interaction_at
     }
     DATING_CONTRACTS {
@@ -146,7 +147,8 @@ erDiagram
 | `id` | UUID | Primary Key | |
 | `user1_id` | UUID | FK(users.id) | |
 | `user2_id` | UUID | FK(users.id) | |
-| `streak_score`| INT | Default 0 | Điểm chuỗi tương tác (Streak) |
+| `streak_score`| INT | Default 0 | Điểm chuỗi tương tác (Streak hiện tại) |
+| `highest_streak_score`| INT | Default 0 | Điểm chuỗi cao nhất (Dùng cho điều kiện Tòa án) |
 | `island_level`| INT | Default 1 | Cấp độ Đảo Tình Yêu 3D |
 | `last_interaction_at` | TIMESTAMP | | Thời gian nhắn/gửi locket cuối cùng |
 
@@ -184,7 +186,7 @@ erDiagram
 | `deposit_amount` | NUMERIC | Not Null | Số Xu cọc mỗi bên (VD: 100) |
 | `status` | VARCHAR(20) | | `pending`, `active`, `completed`, `cancelled` |
 | `cancelled_by_id` | UUID | FK(users.id) | Lưu lại ai là người hủy kèo để trừ tiền phạt |
-| `qr_token` | VARCHAR(255)| | Mã Dynamic QR để quét gặp mặt |
+| `totp_secret` | VARCHAR(255)| | Secret Key để sinh mã Dynamic QR (thuật toán TOTP) |
 | `appointment_time` | TIMESTAMP | | Giờ hẹn dự kiến |
 | `created_at` | TIMESTAMP | Default NOW() | |
 
@@ -220,7 +222,7 @@ erDiagram
 | `plaintiff_id` | UUID | FK(users.id) | Nguyên đơn (Người kiện) |
 | `defendant_id` | UUID | FK(users.id) | Bị đơn (Người bị kiện) |
 | `reason` | VARCHAR(100) | | Lý do kiện (Ghosting, Trap...) |
-| `status` | VARCHAR(20) | | `voting`, `guilty`, `settled` (Hòa giải) |
+| `status` | VARCHAR(20) | | `voting`, `guilty`, `not_guilty`, `settled` (Hòa giải) |
 | `created_at` | TIMESTAMP | Default NOW() | |
 
 **Bảng `court_votes`** (Phiếu bầu của Bồi thẩm đoàn)
@@ -242,6 +244,10 @@ erDiagram
 | `current_price` | NUMERIC(15,2) | Default 100 | Giá hiện tại (Tính bằng công thức) |
 | `total_supply` | INT | Default 1000 | Tổng cung cổ phiếu |
 | `available_supply` | INT | Default 1000 | Số cổ phiếu tự do lưu hành (chưa bị mua) |
+| `match_count_cached` | INT | Default 0 | Caching số lượt match mới (phục vụ tính giá) |
+| `locket_count_cached` | INT | Default 0 | Caching số lượt gửi Locket (phục vụ tính giá) |
+| `clan_upvote_cached` | INT | Default 0 | Caching số lượt Clan upvote (phục vụ tính giá) |
+| `court_penalty_cached` | INT | Default 0 | Caching số đơn kiện Tòa án (phục vụ tính giá) |
 
 **Bảng `stock_transactions`** (Giao dịch Mua/Bán)
 | Column | Type | Constraints | Description |

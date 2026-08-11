@@ -59,7 +59,7 @@ graph TD
     
     F -- "Trigger" --> L
     H -- "Trigger" --> L
-    L -. "4. Silent Push Wakeup" .-> B
+    L -. "4. Push Data -> Extension -> Reload" .-> B
 ```
 
 ---
@@ -81,16 +81,17 @@ Kiến trúc Backend được thiết kế theo dạng **Modular Monolith** bằ
 - **Background Workers (Cronjobs):** 
   - *Blur Image Worker:* Nhận ảnh từ user, dùng thư viện `bimg` (C++) để làm mờ ngay trên Server.
   - *Streak/Ghosting Checker:* Quét Database mỗi nửa đêm, nếu User không tương tác thì trừ Streak và làm "héo" đảo tình yêu.
+  - *Matchmaking Worker:* Hàng đợi chuyên biệt xử lý ghép đôi (The Purge) khi có lượng lớn người dùng cùng truy cập, đảm bảo không nghẽn Server chính.
 
 ### 2.4. Tầng Cơ sở dữ liệu (Database Layer)
 - **PostgreSQL (PostGIS):** Lưu trữ persistent data (Dữ liệu vĩnh viễn). Sử dụng Transactions ở mức Serializable để tính toán biến động Xu an toàn.
 - **Redis (In-memory):** 
-  - Dùng để làm Pub/Sub (Phát sóng) tin nhắn chat giữa các Socket nodes.
+  - Dùng **Redis Streams** (thay vì Pub/Sub) để phát sóng và lưu trữ tạm thời tin nhắn chat giữa các Socket nodes, đảm bảo không mất tin nhắn nếu server restart đột ngột.
   - Lưu trữ trạng thái Online/Offline của User.
   - Cache lại danh sách "Người quanh đây" để giảm tải cho PostGIS.
 
 ### 2.5. External Services (Dịch vụ bên thứ ba)
-- **FCM / APNs (Push Notification):** Cực kỳ quan trọng để gửi "Silent Push" (Thông báo ngầm) xuống máy User B. Khi máy User B nhận được tín hiệu này, nó sẽ âm thầm đánh thức (Wake up) cái Widget Locket để tải ảnh mờ mới về hiển thị mà không cần bật màn hình.
+- **FCM / APNs (Push Notification):** Cực kỳ quan trọng để gửi Push Data xuống máy User B. Trên iOS, hệ thống sử dụng **Notification Service Extension** nhận Push, ngầm tải ảnh và lưu vào `AppGroups`, sau đó gọi `reloadTimelines` để cập nhật Widget lập tức mà không sợ bị OS chặn (không dùng "Silent Push Wakeup" truyền thống vì tỷ lệ fail cao).
 - **OpenAI/Claude API:** Xử lý text thông minh cho tính năng Trợ lý ảo (AI Wingman).
 
 ---
@@ -102,8 +103,8 @@ Kiến trúc Backend được thiết kế theo dạng **Modular Monolith** bằ
 2. **Backend** lưu ảnh gốc lên **Cloudflare R2**.
 3. **Backend** kiểm tra `streak_score` trong **PostgreSQL**.
 4. **Backend (Worker)** xử lý làm mờ ảnh (Blur) và lưu bản mờ đè lên bản gốc ở **R2**.
-5. **Backend** gọi API của **FCM/APNs** để bắn Silent Push.
-6. **Widget User B** nhận Silent Push -> Tự động gọi URL tải ảnh từ **Cloudflare R2** về hiển thị.
+5. **Backend** gọi API của **FCM/APNs** để bắn Push Notification (có chứa URL ảnh).
+6. **Notification Service Extension (iOS)** nhận Push -> Ngầm tải ảnh từ URL, lưu vào `AppGroups` -> Ra lệnh cho Widget Reload.
  *(Tất cả quá trình này diễn ra dưới 3 giây)*
 
 ### 3.2. Luồng giao dịch Khế Ước (Dating Contract)
@@ -131,7 +132,7 @@ lib/
 │   ├── auth/               # Cụm Đăng nhập / Đăng ký
 │   │   ├── data/           # Models, Data Sources (API calls), Repositories
 │   │   ├── domain/         # Entities, Use cases (Business Rules)
-│   │   └── presentation/   # Screens, Controllers (Riverpod/Bloc)
+│   │   └── presentation/   # Screens, Controllers (Sử dụng chuẩn BLoC)
 │   ├── dating_contract/    # Cụm tính năng Khế Ước
 │   ├── locket_widget/      # Cụm tính năng chụp ảnh Locket
 │   ├── court_cases/        # Cụm tính năng Tòa Án
@@ -296,7 +297,7 @@ graph TD
 
     F -- "Trigger Push" --> L
     H -- "Trigger Push" --> L
-    L -. "Silent Push Wakeup" .-> B
+    L -. "Push Data -> Extension -> Reload" .-> B
 
     O -- "HTTPS + Admin JWT" --> I_Admin
     I_Admin --> PG

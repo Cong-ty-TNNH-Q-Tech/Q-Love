@@ -83,7 +83,7 @@
 
 | Hành động của tác nhân | Phản ứng của hệ thống | Dữ liệu |
 | :--- | :--- | :--- |
-| 1. Người dùng chọn nút "Đâm Đơn Kiện" trong hộp thoại chat bị bỏ rơi. | 2. Hệ thống chạy Cron Job quét database để xác thực điều kiện kiện cáo (im lặng > 48 tiếng, streak cũ > 5 ngày). | - ID Phòng chat<br>- Thống tra cứu lịch sử nhắn tin |
+| 1. Người dùng chọn nút "Đâm Đơn Kiện" trong hộp thoại chat bị bỏ rơi. | 2. Hệ thống quét database để xác thực điều kiện (im lặng > 48 tiếng, và `highest_streak_score` > 5 ngày). | - ID Phòng chat<br>- Kiểm tra bảng `matches` |
 | 3. Người dùng chọn lý do kiện (Ví dụ: Trapboy/Trapgirl, Đột ngột biến mất, Nói lời cay đắng) và nhấn xác nhận. | 4. Hệ thống ẩn danh thông tin cá nhân, chụp 5 block chat cuối cùng và tạo một bản ghi vụ kiện mới. | - Lý do kiện*<br>- Block chat ẩn danh |
 | | 5. Hệ thống phân phối vụ kiện này vào hàng đợi (Redis Queue) của mục "Hóng Drama" thuộc 50 người dùng ngẫu nhiên thuộc các Clan khác. | - ID Vụ kiện (case_id) |
 | 6. Các Bồi thẩm đoàn vào đọc tình huống và bấm vote "Có tội" hoặc "Vô tội". | 7. Sau 12 tiếng, hệ thống chốt số lượng vote. Nếu tỷ lệ "Có tội" > 65%, hệ thống thực thi lệnh trừng phạt lên tài khoản bị kiện. | - Lượt vote (bool) |
@@ -123,7 +123,7 @@
 | :--- | :--- | :--- |
 | 1. Tại giao diện chat, User A chọn "Lên lịch hẹn hò" và nhập số xu muốn cọc (Ví dụ: 100 xu). | 2. Hệ thống kiểm tra số dư ví ảo của User A. Nếu đủ, thực hiện lệnh đóng băng (Hold) số xu đó. | - Số xu cọc*<br>- Thời gian hẹn*<br>- Địa điểm hẹn (Landmark ID)* |
 | 3. User B nhận được lời mời, bấm "Xác nhận khế ước" và hệ thống tự động khóa số xu tương ứng trong ví User B. | 4. Hệ thống cập nhật trạng thái bản ghi `dating_contracts` sang `active` và chuyển `balance → hold_balance` trong bảng `user_wallets` bằng một DB Transaction (Serializable Isolation) duy nhất. | - Trạng thái: `active` (Đang chờ) |
-| 5. Đến giờ hẹn, hai người gặp nhau tại quán, một người bật mã Dynamic QR Code (cập nhật 30s/lần), người kia quét mã. | 6. Hệ thống xác nhận quét QR thành công (GPS chỉ dùng làm dữ liệu cảnh báo phụ, không bắt buộc). Giải phóng lệnh đóng băng, hoàn lại xu cho cả hai. | - Mã Dynamic QR Token<br>- Tọa độ GPS (Optional) |
+| 5. Đến giờ hẹn, hai người gặp nhau, một người bật mã Dynamic QR Code (sinh từ thuật toán `TOTP` dưới Client, đổi 30s/lần), người kia quét mã. | 6. Hệ thống xác thực mã TOTP thành công. Giải phóng lệnh đóng băng, hoàn lại xu cho cả hai. | - Mã TOTP Code<br>- Tọa độ GPS (Optional) |
 
 - **Luồng ngoại lệ:** 
   - *Một bên không đến (Bùng kèo):* Quá giờ hẹn 30 phút mà không quét mã QR, hệ thống kiểm tra: Nếu User vắng mặt có gói **Q-Love Premium** và chưa dùng quyền miễn trừ trong tháng -> Hủy lịch hẹn, không trừ cọc, hoàn xu cho cả hai. Nếu không có hoặc đã hết quyền -> Tịch thu 100 xu chuyển thẳng vào ví người đến đúng giờ (trừ 10% phí vận hành).
@@ -266,7 +266,7 @@
 | Hành động của tác nhân | Phản ứng của hệ thống | Dữ liệu |
 | :--- | :--- | :--- |
 | 1. Đến 22h00 tối Thứ 6, hệ thống chạy Cron Job kích hoạt sự kiện "The Purge". | 2. Hệ thống hiển thị banner đếm ngược trên màn hình chính của tất cả user đang online. | - Thời gian còn lại |
-| 3. Người dùng bấm "Tham gia ngay". | 4. Hệ thống thêm user vào hàng đợi ghép đôi (Redis Queue). Thuật toán ghép đôi ngẫu nhiên, không hiển thị Avatar/Tên/Vị trí. Chỉ hiển thị "Đối tượng ẩn danh 🎭". | - Hàng đợi ghép đôi (Redis) |
+| 3. Người dùng bấm "Tham gia ngay". | 4. Hệ thống thêm user vào hàng đợi (Redis Queue). Sau đó, **Matchmaking Worker** chạy độc lập sẽ xử lý thuật toán ghép đôi, giảm tải cho Server chính. Chỉ hiển thị "Đối tượng ẩn danh 🎭". | - Hàng đợi ghép đôi (Redis) |
 | 5. Hai người bắt đầu chat ẩn danh trong 10 phút. | 6. Sau 10 phút, hệ thống hiển thị nút "Lộ diện" cho cả 2. Chỉ khi **cả 2 cùng bấm "Lộ diện"** trong 30 giây, Avatar và Profile thật mới được hiển thị. | - Timer 10 phút<br>- Consent của cả 2 bên |
 | 7. Nếu cả 2 cùng bấm "Lộ diện". | 8. Hệ thống reveal Profile và hỏi "Bạn có muốn Match chính thức không?". Nếu cả 2 đồng ý, tạo `matches` record như bình thường. | - Match mới (optional) |
 
