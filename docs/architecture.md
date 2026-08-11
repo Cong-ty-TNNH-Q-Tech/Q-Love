@@ -303,3 +303,16 @@ graph TD
     I_Admin --> PG
     I_Admin --> D
 ```
+
+---
+
+## 8. Kiến trúc Triển khai (Deployment Architecture) với Docker
+
+Hệ thống được đóng gói bằng Docker và vận hành tự động qua GitHub Actions:
+
+- **Đóng gói (Containerization):** Cả Backend API (Golang) và Admin Web (React) đều có file `Dockerfile` riêng, được tối ưu hóa theo multi-stage build để giảm dung lượng image.
+- **Lưu trữ Image (Registry):** Sử dụng **GitHub Container Registry (GHCR)** thay vì Amazon ECR để lưu trữ các Docker image (`ghcr.io/cong-ty-tnnh-q-tech/q-love/backend` và `admin`).
+- **Tự động hóa (CI/CD):** 
+  - Mỗi khi code được push/merge vào `main`, GitHub Actions sẽ tự động kích hoạt tiến trình Buildx.
+  - Image được build, gắn tag theo chuỗi SHA của commit, và push lên GHCR.
+  - Sau khi push thành công, hệ thống sẽ gọi **Deploy Webhook** để báo cho Server/VPS (thông qua Portainer hoặc Watchtower) tiến hành pull image mới về và khởi động lại container (Rolling Update), đảm bảo tính liên tục của dịch vụ.

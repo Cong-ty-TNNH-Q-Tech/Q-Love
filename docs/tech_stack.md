@@ -74,8 +74,8 @@ Toàn bộ quy trình tích hợp và triển khai liên tục (CI/CD) được 
        │
        ▼
 [2. Docker Build & Push]
-   - docker build -t q-love-api:sha-{commit}
-   - Push to Amazon ECR
+   - Docker Buildx (Cache optimized)
+   - Push to GitHub Container Registry (GHCR)
        │
        ▼
 [3. Deploy to Staging (Auto)]
