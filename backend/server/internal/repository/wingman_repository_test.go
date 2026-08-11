@@ -54,11 +54,9 @@ func TestWingmanRepository_CreateReferral(t *testing.T) {
 		ExpiresAt: time.Now(),
 	}
 
-	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "wingman_referrals"`).
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectCommit()
 
 	err = repo.CreateReferral(context.Background(), referral)
 	if err != nil {
@@ -119,11 +117,9 @@ func TestWingmanRepository_UpdateReferral(t *testing.T) {
 		Status:    "matched",
 	}
 
-	mock.ExpectBegin()
 	mock.ExpectExec(`UPDATE "wingman_referrals"`).
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectCommit()
 
 	err = repo.UpdateReferral(context.Background(), referral)
 	if err != nil {

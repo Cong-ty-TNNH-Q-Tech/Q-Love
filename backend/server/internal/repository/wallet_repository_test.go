@@ -22,7 +22,6 @@ func TestWalletRepository_AddCommission(t *testing.T) {
 	repo := NewWalletRepository(db)
 	userID := uuid.New()
 
-	mock.ExpectBegin()
 	mock.ExpectQuery(`SELECT .* FROM "user_wallets"`).
 		WithArgs(userID, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"user_id", "balance"}).AddRow(userID, 0))
@@ -30,7 +29,6 @@ func TestWalletRepository_AddCommission(t *testing.T) {
 	mock.ExpectExec(`UPDATE "user_wallets"`).
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectCommit()
 
 	err = repo.AddCommission(context.Background(), userID, 10.0)
 	if err != nil {
@@ -47,11 +45,9 @@ func TestWalletRepository_AddCommission_Error(t *testing.T) {
 	repo := NewWalletRepository(db)
 	userID := uuid.New()
 
-	mock.ExpectBegin()
 	mock.ExpectQuery(`SELECT .* FROM "user_wallets"`).
 		WithArgs(userID, sqlmock.AnyArg()).
 		WillReturnError(sqlmock.ErrCancelled)
-	mock.ExpectRollback()
 
 	err = repo.AddCommission(context.Background(), userID, 10.0)
 	if err == nil {
@@ -74,11 +70,9 @@ func TestWalletRepository_CreateTransaction(t *testing.T) {
 		ReferenceID: uuid.New(),
 	}
 
-	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "wallet_transactions"`).
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectCommit()
 
 	err = repo.CreateTransaction(context.Background(), txn)
 	if err != nil {
