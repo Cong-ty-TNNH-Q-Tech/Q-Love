@@ -30,6 +30,7 @@ func setupTestDB() (*gorm.DB, sqlmock.Sqlmock, error) {
 	})
 	gdb, err := gorm.Open(dialector, &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
+		SkipDefaultTransaction: true,
 	})
 	if err != nil {
 		return nil, nil, err
