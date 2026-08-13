@@ -1408,6 +1408,201 @@ paths:
           content:
             application/json:
               schema:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              example: { code: 400, message: "ERR_INSUFFICIENT_BALANCE" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # -----------------------------------------------------------
+  # 10. HEALTH CHECK
+  # -----------------------------------------------------------
+  /health:
+    get:
+      summary: Health check endpoint (dùng cho Uptime Monitor và K8s probes)
+      tags: [System]
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: "ok" }
+                  version: { type: string, example: "1.1.0" }
+                  uptime_seconds: { type: integer }
+
+  # =============================================================
+  # 10. BOUNTY HUNTER
+  # =============================================================
+  /bounties:
+    post:
+      summary: Đăng lệnh truy nã hẹn hò
+      tags: [Bounties]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description: { type: string }
+                reward_amount: { type: integer }
+      responses:
+        '201':
+          description: Created
+  /bounties/{id}/apply:
+    post:
+      summary: Nộp đơn ứng tuyển lệnh truy nã
+      tags: [Bounties]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Applied
+
+  # =============================================================
+  # 11. BLIND AUCTION
+  # =============================================================
+  /auctions/{id}/bid:
+    post:
+      summary: Trả giá cho phiên đấu giá mù
+      tags: [Auctions]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bid_amount: { type: integer }
+      responses:
+        '200':
+          description: Bid placed
+
+  # =============================================================
+  # 12. VIRAL GAMIFICATION
+  # =============================================================
+  /wall-of-shames/{user_id}/throw-tomato:
+    post:
+      summary: Ném cà chua vào đối tượng bị phong sát
+      tags: [Drama]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Thrown successfully
+  /vibe-checks/match:
+    post:
+      summary: Match qua Spotify Track
+      tags: [Vibe]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                track_id: { type: string }
+      responses:
+        '200':
+          description: Matched
+  /wingmans/referral:
+    post:
+      summary: Tạo link ghép đôi cho bạn bè
+      tags: [Wingman]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [target1_id, target2_id]
+              properties:
+                target1_id: { type: string, format: uuid }
+                target2_id: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Link created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  deep_link: { type: string }
+                  expires_at: { type: string, format: date-time }
+  /wingmans/referral/{id}/accept:
+    post:
+      summary: Chấp nhận ghép đôi từ Cò Mối
+      tags: [Wingman]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Accepted and Matched
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  match_id: { type: string, format: uuid }
+                  status: { type: string }
+  /cards/steal:
+    post:
+      summary: Kích hoạt PK cướp Thẻ Bài
+      tags: [Cards, Minigame]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target_user_id: { type: string }
+      responses:
+        '200':
+          description: PK Match created
+  # =============================================================
+  # 13. CLANS
+  # =============================================================
+  /clans:
+    post:
+      summary: Tạo Bang hội (Tốn phí Xu)
+      tags: [Clans]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, example: "Q-Tech Lovers" }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
                 type: object
                 properties:
                   id: { type: string, format: uuid }
@@ -1417,3 +1612,49 @@ paths:
           description: "Lỗi tên Bang hội đã tồn tại hoặc không hợp lệ"
         '402':
           description: "Không đủ Xu để tạo Bang hội"
+
+  # =============================================================
+  # 14. CHAT (WebSocket & Real-time)
+  # =============================================================
+  /chat/ws:
+    get:
+      summary: Kết nối WebSocket nhận tin nhắn Real-time
+      tags: [Chat]
+      responses:
+        '101':
+          description: "Switching Protocols (WebSocket Connected)"
+  /chat/messages:
+    post:
+      summary: Gửi tin nhắn chat
+      tags: [Chat]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [match_id, target_id, type, content]
+              properties:
+                match_id: { type: string, format: uuid }
+                target_id: { type: string, format: uuid }
+                type: { type: string, example: "text" }
+                content: { type: string, example: "Hello" }
+      responses:
+        '201':
+          description: "Đã gửi"
+  /chat/messages/{match_id}:
+    get:
+      summary: Lấy lịch sử chat
+      tags: [Chat]
+      parameters:
+        - name: match_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: before
+          in: query
+          required: false
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: "Lịch sử tin nhắn"
