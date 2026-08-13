@@ -48,10 +48,8 @@ func TestChatRepository_SaveMessage(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
-	err = repo.SaveMessage(context.Background(), msg)
-	if err != nil {
-		t.Errorf("error was not expected while saving message: %s", err)
-	}
+	err = repo.Create(context.Background(), msg)
+	assert.NoError(t, err)
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)

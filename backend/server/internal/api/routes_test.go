@@ -25,8 +25,9 @@ func TestRegisterRoutes(t *testing.T) {
 	}
 	r2Client, _ := storage.NewR2Client(cfg)
 	var db *gorm.DB
+	var redisClient *redis.Client
 
-	RegisterRoutes(app, db, r2Client, cfg)
+	RegisterRoutes(app, db, r2Client, redisClient, cfg)
 
 	// test wingmans route
 	req := httptest.NewRequest("POST", "/api/v1/wingman/referrals", nil)

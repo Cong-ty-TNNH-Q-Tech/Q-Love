@@ -11,13 +11,13 @@ import (
 )
 
 type MockChatRepository struct {
-	SaveMessageFunc          func(ctx context.Context, msg *models.ChatMessage) error
+	CreateFunc               func(ctx context.Context, msg *models.ChatMessage) error
 	GetMessagesByMatchIDFunc func(ctx context.Context, matchID uuid.UUID, limit int, before *time.Time) ([]models.ChatMessage, error)
 }
 
-func (m *MockChatRepository) SaveMessage(ctx context.Context, msg *models.ChatMessage) error {
-	if m.SaveMessageFunc != nil {
-		return m.SaveMessageFunc(ctx, msg)
+func (m *MockChatRepository) Create(ctx context.Context, msg *models.ChatMessage) error {
+	if m.CreateFunc != nil {
+		return m.CreateFunc(ctx, msg)
 	}
 	return nil
 }
@@ -31,7 +31,7 @@ func (m *MockChatRepository) GetMessagesByMatchID(ctx context.Context, matchID u
 
 func TestChatService_SaveMessage(t *testing.T) {
 	mockRepo := &MockChatRepository{
-		SaveMessageFunc: func(ctx context.Context, msg *models.ChatMessage) error {
+		CreateFunc: func(ctx context.Context, msg *models.ChatMessage) error {
 			return nil
 		},
 	}
