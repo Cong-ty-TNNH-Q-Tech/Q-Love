@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Q-Tech. All rights reserved.
+// Licensed under the GNU AGPLv3 License.
+
 import 'package:flutter/material.dart';
 import 'widgets/spotify_card_widget.dart';
 

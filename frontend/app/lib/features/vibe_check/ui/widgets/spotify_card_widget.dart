@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Q-Tech. All rights reserved.
+// Licensed under the GNU AGPLv3 License.
+
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -33,8 +36,10 @@ class _SpotifyCardWidgetState extends State<SpotifyCardWidget> {
   Future<void> _initAudio() async {
     try {
       if (widget.previewUrl.isNotEmpty) {
-        // Mock a 30-sec preview or load actual previewUrl
-        // await _player.setUrl(widget.previewUrl);
+        final uri = Uri.tryParse(widget.previewUrl);
+        if (uri != null && uri.hasAbsolutePath) {
+          await _player.setUrl(widget.previewUrl);
+        }
       }
     } catch (e) {
       debugPrint("Error loading audio: $e");
