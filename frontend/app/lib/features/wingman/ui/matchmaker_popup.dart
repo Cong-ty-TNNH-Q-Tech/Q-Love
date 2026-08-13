@@ -33,7 +33,7 @@ class MatchmakerPopup extends StatelessWidget {
         border: Border.all(color: Colors.white.withOpacity(0.1)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF2D55).withOpacity(0.2),
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
             blurRadius: 30,
             spreadRadius: 5,
           )
@@ -85,9 +85,9 @@ class MatchmakerPopup extends StatelessWidget {
                     if (state is MatchmakerSuccess) {
                       Navigator.of(context).pop();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Ghép đôi thành công! Chờ họ đồng ý nhé.'),
-                          backgroundColor: Color(0xFFFF2D55),
+                        SnackBar(
+                          content: const Text('Ghép đôi thành công! Chờ họ đồng ý nhé.'),
+                          backgroundColor: Theme.of(context).colorScheme.primary,
                         ),
                       );
                     } else if (state is WingmanError) {
@@ -98,7 +98,7 @@ class MatchmakerPopup extends StatelessWidget {
                   },
                   builder: (context, state) {
                     if (state is WingmanLoading) {
-                      return const CircularProgressIndicator(color: Color(0xFFFF2D55));
+                      return CircularProgressIndicator(color: Theme.of(context).colorScheme.primary);
                     }
                     return ElevatedButton(
                       onPressed: () {
@@ -107,14 +107,14 @@ class MatchmakerPopup extends StatelessWidget {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF2D55),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,
                         minimumSize: const Size(double.infinity, 56),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                         elevation: 8,
-                        shadowColor: const Color(0xFFFF2D55).withOpacity(0.5),
+                        shadowColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
                       ),
                       child: const Text(
                         'Ghép Đôi Ngay',
