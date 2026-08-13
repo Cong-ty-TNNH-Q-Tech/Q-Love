@@ -6,6 +6,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"github.com/google/uuid"
@@ -14,7 +15,7 @@ import (
 )
 
 type ShameService interface {
-	GetActiveShames(ctx context.Context, limit, offset int) ([]models.WallOfShame, error)
+	GetActiveShames(ctx context.Context, limit, offset int) ([]models.WallOfShameResponse, error)
 	ThrowTomato(ctx context.Context, throwerID uuid.UUID, shameID uuid.UUID) error
 }
 
@@ -36,7 +37,7 @@ func NewShameService(
 	}
 }
 
-func (s *shameService) GetActiveShames(ctx context.Context, limit, offset int) ([]models.WallOfShame, error) {
+func (s *shameService) GetActiveShames(ctx context.Context, limit, offset int) ([]models.WallOfShameResponse, error) {
 	return s.shameRepo.GetActiveShames(ctx, limit, offset)
 }
 
@@ -80,5 +81,5 @@ func (s *shameService) ThrowTomato(ctx context.Context, throwerID uuid.UUID, sha
 		}
 
 		return nil
-	})
+	}, &sql.TxOptions{Isolation: sql.LevelSerializable})
 }

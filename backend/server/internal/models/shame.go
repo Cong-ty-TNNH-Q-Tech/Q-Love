@@ -21,3 +21,9 @@ type WallOfShame struct {
 	UpdatedAt      time.Time      `gorm:"autoUpdateTime" json:"updated_at"`
 	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
 }
+
+type WallOfShameResponse struct {
+	WallOfShame
+	UserName  string `json:"user_name"`
+	AvatarURL string `json:"avatar_url"`
+}
