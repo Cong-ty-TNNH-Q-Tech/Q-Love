@@ -7,7 +7,6 @@ package repository
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
@@ -58,11 +57,11 @@ func TestShameRepository_IncrementTomatoCount(t *testing.T) {
 	repo := NewShameRepository(db)
 	shameID := uuid.New()
 
-	mock.ExpectExec(`UPDATE "wall_of_shames" SET tomatoes_thrown = tomatoes_thrown \+ 1, updated_at = \$1 WHERE id = \$2`).
-		WithArgs(sqlmock.AnyArg(), shameID).
+	mock.ExpectExec(`UPDATE "wall_of_shames" SET tomatoes_thrown = tomatoes_thrown \+ \$1 WHERE id = \$2`).
+		WithArgs(1, shameID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err = repo.IncrementTomatoCount(context.Background(), shameID)
+	err = repo.IncrementTomatoCount(context.Background(), shameID, 1)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -77,44 +76,10 @@ func TestShameRepository_IncrementTomatoCount_Error(t *testing.T) {
 	shameID := uuid.New()
 
 	mock.ExpectExec(`UPDATE "wall_of_shames"`).
-		WithArgs(sqlmock.AnyArg(), shameID).
+		WithArgs(1, shameID).
 		WillReturnError(sqlmock.ErrCancelled)
 
-	err = repo.IncrementTomatoCount(context.Background(), shameID)
-	if err == nil {
-		t.Error("Expected error")
-	}
-}
-
-func TestShameRepository_LogTomatoThrow(t *testing.T) {
-	db, mock, err := setupTestDB()
-	if err != nil {
-		t.Fatal(err)
-	}
-	repo := NewShameRepository(db)
-
-	mock.ExpectExec(`INSERT INTO "tomato_throws"`).
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
-		WillReturnResult(sqlmock.NewResult(1, 1))
-
-	err = repo.LogTomatoThrow(context.Background(), uuid.New(), uuid.New())
-	if err != nil {
-		t.Errorf("Expected no error, got %v", err)
-	}
-}
-
-func TestShameRepository_LogTomatoThrow_Error(t *testing.T) {
-	db, mock, err := setupTestDB()
-	if err != nil {
-		t.Fatal(err)
-	}
-	repo := NewShameRepository(db)
-
-	mock.ExpectExec(`INSERT INTO "tomato_throws"`).
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
-		WillReturnError(sqlmock.ErrCancelled)
-
-	err = repo.LogTomatoThrow(context.Background(), uuid.New(), uuid.New())
+	err = repo.IncrementTomatoCount(context.Background(), shameID, 1)
 	if err == nil {
 		t.Error("Expected error")
 	}

@@ -88,17 +88,9 @@ func TestShameHandler_ThrowTomato(t *testing.T) {
 		t.Errorf("Expected Bad Request, got %v", respInvalidID.StatusCode)
 	}
 
-	// Invalid body
-	reqInvalidBody := httptest.NewRequest(http.MethodPost, "/shames/"+shameID+"/tomato", bytes.NewBuffer([]byte("invalid")))
-	reqInvalidBody.Header.Set("Content-Type", "application/json")
-	respInvalidBody, _ := app.Test(reqInvalidBody)
-	if respInvalidBody.StatusCode != http.StatusBadRequest {
-		t.Errorf("Expected Bad Request, got %v", respInvalidBody.StatusCode)
-	}
-
 	// Service error (Insufficient Balance)
 	mockSvc.throwTomatoFn = func(ctx context.Context, throwerID uuid.UUID, shameID uuid.UUID) error {
-		return errors.New("insufficient balance")
+		return errors.New("insufficient balance to throw a tomato")
 	}
 	respInsuff, _ := app.Test(req)
 	if respInsuff.StatusCode != http.StatusBadRequest {
