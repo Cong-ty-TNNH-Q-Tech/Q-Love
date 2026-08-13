@@ -15,7 +15,14 @@ import (
 func TestMainServer(t *testing.T) {
 	// Setup app locally instead of using global
 	cfg := config.LoadConfig()
-	app := setupApp(cfg)
+	
+	// Skip real db connection for tests
+	cfg.DatabaseDSN = "skip"
+
+	app, err := setupApp(cfg)
+	if err != nil {
+		t.Fatalf("setupApp failed: %v", err)
+	}
 
 	// Start the server in a goroutine
 	go func() {

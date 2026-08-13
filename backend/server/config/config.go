@@ -18,6 +18,7 @@ type Config struct {
 	Port              string
 	SentryDSN         string
 	Environment       string
+	DatabaseDSN       string
 }
 
 func LoadConfig() *Config {
@@ -31,6 +32,7 @@ func LoadConfig() *Config {
 		Port:              getEnv("PORT", "3000"),
 		SentryDSN:         getEnv("SENTRY_DSN", ""),
 		Environment:       getEnv("APP_ENV", "development"),
+		DatabaseDSN:       getEnv("DATABASE_DSN", "host=localhost user=postgres password=postgres dbname=qlove port=5432 sslmode=disable"),
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/api"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/database"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
 	"github.com/getsentry/sentry-go"
@@ -19,14 +20,22 @@ import (
 	"gorm.io/gorm"
 )
 
-func setupApp(cfg *config.Config) *fiber.App {
+func setupApp(cfg *config.Config) (*fiber.App, error) {
 	// Init Logger & Sentry
 	logger.InitLogger(cfg.Environment, cfg.SentryDSN)
+
+	// Init PostgreSQL Database
+	db, err := database.NewPostgresDB(cfg)
+	if err != nil {
+		logger.Log.Error("Failed to initialize PostgreSQL Database", zap.Error(err))
+		return nil, err
+	}
 
 	// Init R2 Storage Client
 	r2Client, err := storage.NewR2Client(cfg)
 	if err != nil {
-		logger.Log.Fatal("Failed to initialize R2 Storage Client", zap.Error(err))
+		logger.Log.Error("Failed to initialize R2 Storage Client", zap.Error(err))
+		return nil, err
 	}
 
 	app := fiber.New(fiber.Config{
@@ -42,8 +51,6 @@ func setupApp(cfg *config.Config) *fiber.App {
 		WaitForDelivery: true,
 	}))
 
-	var db *gorm.DB // In a real setup, connect to PostgreSQL here
-	
 	// Health Check
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
@@ -55,12 +62,15 @@ func setupApp(cfg *config.Config) *fiber.App {
 	// Register API Routes
 	api.RegisterRoutes(app, db, r2Client)
 
-	return app
+	return app, nil
 }
 
 func main() {
 	cfg := config.LoadConfig()
-	app := setupApp(cfg)
+	app, err := setupApp(cfg)
+	if err != nil {
+		logger.Log.Fatal("Failed to setup app", zap.Error(err))
+	}
 	
 	// Flush buffered events before the program terminates
 	defer sentry.Flush(2 * time.Second)
