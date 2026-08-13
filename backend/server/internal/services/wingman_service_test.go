@@ -36,6 +36,8 @@ func (m *mockWingmanRepo) UpdateReferral(ctx context.Context, referral *models.W
 type mockWalletRepo struct {
 	addCommissionFn     func(ctx context.Context, userID uuid.UUID, amount float64) error
 	createTransactionFn func(ctx context.Context, txn *models.WalletTransaction) error
+	getWalletForUpdateFn func(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error)
+	updateBalanceFn      func(ctx context.Context, userID uuid.UUID, delta float64) error
 }
 
 func (m *mockWalletRepo) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error {
@@ -43,6 +45,18 @@ func (m *mockWalletRepo) AddCommission(ctx context.Context, userID uuid.UUID, am
 }
 func (m *mockWalletRepo) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error {
 	return m.createTransactionFn(ctx, txn)
+}
+func (m *mockWalletRepo) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
+	if m.getWalletForUpdateFn != nil {
+		return m.getWalletForUpdateFn(ctx, userID)
+	}
+	return nil, nil
+}
+func (m *mockWalletRepo) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error {
+	if m.updateBalanceFn != nil {
+		return m.updateBalanceFn(ctx, userID, delta)
+	}
+	return nil
 }
 
 type mockTxManager struct{}

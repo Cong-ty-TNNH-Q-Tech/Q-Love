@@ -7,6 +7,7 @@ package api
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/api/handlers"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/middleware"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
@@ -14,19 +15,32 @@ import (
 )
 
 func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
-	api := app.Group("/api/v1")
-
-	// Wingman routes
 	wingmanRepo := repository.NewWingmanRepository(db)
 	walletRepo := repository.NewWalletRepository(db)
+	shameRepo := repository.NewShameRepository(db)
 	txManager := repository.NewTransactionManager(db)
+
 	wingmanService := services.NewWingmanService(wingmanRepo, walletRepo, txManager)
+	shameService := services.NewShameService(shameRepo, walletRepo, txManager)
+
 	wingmanHandler := handlers.NewWingmanHandler(wingmanService)
-	wingmanGroup := api.Group("/wingmans")
-	wingmanGroup.Post("/referral", wingmanHandler.CreateReferral)
-	wingmanGroup.Post("/referral/:id/accept", wingmanHandler.AcceptReferral)
+	shameHandler := handlers.NewShameHandler(shameService)
+
+	// API v1 group
+	v1 := app.Group("/api/v1")
+
+	// Wingman routes
+	v1.Post("/wingman/referrals", wingmanHandler.CreateReferral)
+	v1.Post("/wingman/referrals/:id/accept", wingmanHandler.AcceptReferral)
+
+	// Shame (Wall of Shame) routes
+	shameGroup := v1.Group("/shames", middleware.JWTMiddleware(""))
+	shameGroup.Get("/", shameHandler.GetActiveShames)
+	shameGroup.Post("/:id/tomato", shameHandler.ThrowTomato)
+
 	// Upload routes
 	uploadHandler := handlers.NewUploadHandler(r2Client)
-	uploadGroup := api.Group("/upload")
+	uploadGroup := v1.Group("/upload")
 	uploadGroup.Post("/presigned-url", uploadHandler.GenerateUploadURL)
+
 }

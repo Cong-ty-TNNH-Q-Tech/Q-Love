@@ -34,3 +34,20 @@ func TestNewR2Client(t *testing.T) {
 		t.Error("Expected a url, got empty string")
 	}
 }
+
+func TestGeneratePresignedURL_Error(t *testing.T) {
+	cfg := &config.Config{
+		R2AccountID:       "dummy",
+		R2AccessKeyID:     "dummy",
+		R2SecretAccessKey: "dummy",
+		R2BucketName:      "dummy",
+	}
+	client, _ := NewR2Client(cfg)
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // Cancel the context immediately
+	
+	_, err := client.GeneratePresignedURL(ctx, "test.jpg", "image/jpeg", 100)
+	if err == nil {
+		t.Fatal("Expected error due to cancelled context, got nil")
+	}
+}

@@ -15,6 +15,8 @@ import (
 type WalletRepository interface {
 	AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error
 	CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error
+	GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error)
+	UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error
 }
 
 type walletRepository struct {
@@ -35,6 +37,21 @@ func (r *walletRepository) AddCommission(ctx context.Context, userID uuid.UUID, 
 
 	wallet.Balance += amount
 	return db.WithContext(ctx).Save(&wallet).Error
+}
+
+func (r *walletRepository) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
+	var wallet models.UserWallet
+	db := GetDB(ctx, r.db)
+	if err := db.WithContext(ctx).Set("gorm:query_option", "FOR UPDATE").FirstOrCreate(&wallet, models.UserWallet{UserID: userID}).Error; err != nil {
+		return nil, err
+	}
+	return &wallet, nil
+}
+
+func (r *walletRepository) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error {
+	db := GetDB(ctx, r.db)
+	return db.WithContext(ctx).Model(&models.UserWallet{}).Where("user_id = ?", userID).
+		UpdateColumn("balance", gorm.Expr("balance + ?", delta)).Error
 }
 
 func (r *walletRepository) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error {

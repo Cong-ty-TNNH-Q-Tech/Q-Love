@@ -29,7 +29,7 @@ func TestRegisterRoutes(t *testing.T) {
 	RegisterRoutes(app, db, r2Client)
 
 	// test wingmans route
-	req := httptest.NewRequest("POST", "/api/v1/wingmans/referral", nil)
+	req := httptest.NewRequest("POST", "/api/v1/wingman/referrals", nil)
 	resp, err := app.Test(req, -1)
 	if err != nil {
 		t.Fatalf("Failed to test route: %v", err)
