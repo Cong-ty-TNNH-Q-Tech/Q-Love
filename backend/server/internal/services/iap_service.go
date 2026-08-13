@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"time"
 
@@ -77,7 +78,7 @@ func (s *iapService) ProcessRevenueCatWebhook(ctx context.Context, event Revenue
 		}
 
 		err = s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
-			// Kiểm tra transaction_id đã xử lý chưa
+			// 1. Check idempotency: Ensure the transaction ID hasn't been processed
 			exists, err := s.walletRepo.CheckTransactionExists(txCtx, txID)
 			if err != nil {
 				return err
@@ -86,13 +87,13 @@ func (s *iapService) ProcessRevenueCatWebhook(ctx context.Context, event Revenue
 				return ErrTransactionExists
 			}
 
-			// Cộng xu
+			// 2. Process deposit
 			err = s.walletRepo.UpdateBalance(txCtx, userID, coins)
 			if err != nil {
 				return err
 			}
 
-			// Ghi log
+			// 3. Record transaction
 			return s.walletRepo.CreateTransaction(txCtx, &models.WalletTransaction{
 				ID:        txID,
 				UserID:    userID,
@@ -100,7 +101,7 @@ func (s *iapService) ProcessRevenueCatWebhook(ctx context.Context, event Revenue
 				Type:      "iap_deposit",
 				CreatedAt: time.Now(),
 			})
-		})
+		}, &sql.TxOptions{Isolation: sql.LevelSerializable})
 
 		if err != nil {
 			if errors.Is(err, ErrTransactionExists) {
@@ -129,7 +130,7 @@ func (s *iapService) ProcessRevenueCatWebhook(ctx context.Context, event Revenue
 				expiresAt = time.Now().AddDate(0, 1, 0) // Default 1 month
 			}
 			return s.userPremRepo.ActivatePremium(txCtx, userID, expiresAt)
-		})
+		}, &sql.TxOptions{Isolation: sql.LevelSerializable})
 
 		if err != nil {
 			logger.Log.Error("Failed to activate premium", zap.Error(err))
