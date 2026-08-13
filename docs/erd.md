@@ -63,6 +63,13 @@ erDiagram
         uuid defendant_id FK
         varchar status
     }
+    CLAN_MEMBERS {
+        uuid id PK
+        uuid clan_id FK
+        uuid user_id FK
+        varchar role
+        timestamp joined_at
+    }
     CLANS {
         uuid id PK
         varchar name
@@ -285,8 +292,27 @@ erDiagram
 | `type` | VARCHAR(50) | Not Null | Loại vi phạm: `nsfw_image`, `fake_gps`, `purge_ban`, `court_shadowban`... |
 | `reason` | TEXT | | Mô tả chi tiết vi phạm |
 | `is_active` | BOOLEAN | Default true | Lệnh phạt còn hiệu lực hay không |
-| `expires_at` | TIMESTAMP | | Thời điểm hết hạn phạt (NULL = vĩnh viễn) |
-| `created_at` | TIMESTAMP | Default NOW() | |
+| expires_at   | timestamp   | Thời điểm hết hạn hiệu lực vi phạm (Soft Ban / Shadowban) |
+
+### 2.6. Bang hội (Clans)
+
+**Bảng: CLANS**
+| Cột | Kiểu dữ liệu | Mô tả |
+| :--- | :--- | :--- |
+| id | uuid | Khóa chính (PK) |
+| name | varchar | Tên Bang hội |
+| leader_id | uuid | ID của người thành lập (FK -> users.id) |
+| weekly_score | int | Điểm số trong tuần của bang hội |
+| created_at | timestamp | Thời gian tạo bang hội |
+
+**Bảng: CLAN_MEMBERS**
+| Cột | Kiểu dữ liệu | Mô tả |
+| :--- | :--- | :--- |
+| id | uuid | Khóa chính (PK) |
+| clan_id | uuid | ID Bang hội (FK -> clans.id) |
+| user_id | uuid | ID thành viên (FK -> users.id) |
+| role | varchar | Vai trò (member, elder, leader) |
+| joined_at | timestamp | Thời gian gia nhập |
 
 ### 2.6. Gamification Đột Phá (Bounty & Đấu Giá)
 
