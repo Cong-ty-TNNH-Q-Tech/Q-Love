@@ -16,16 +16,26 @@ type LocketService interface {
 }
 
 type locketService struct {
-	chatRepo  repository.ChatRepository
-	matchRepo repository.MatchRepository
-	r2Client  *storage.R2Client
+	chatRepo      repository.ChatRepository
+	matchRepo     repository.MatchRepository
+	violationRepo repository.UserViolationRepository
+	nsfwService   NSFWService
+	r2Client      *storage.R2Client
 }
 
-func NewLocketService(chatRepo repository.ChatRepository, matchRepo repository.MatchRepository, r2Client *storage.R2Client) LocketService {
+func NewLocketService(
+	chatRepo repository.ChatRepository,
+	matchRepo repository.MatchRepository,
+	violationRepo repository.UserViolationRepository,
+	nsfwService NSFWService,
+	r2Client *storage.R2Client,
+) LocketService {
 	return &locketService{
-		chatRepo:  chatRepo,
-		matchRepo: matchRepo,
-		r2Client:  r2Client,
+		chatRepo:      chatRepo,
+		matchRepo:     matchRepo,
+		violationRepo: violationRepo,
+		nsfwService:   nsfwService,
+		r2Client:      r2Client,
 	}
 }
 
@@ -34,6 +44,31 @@ func (s *locketService) SendLocket(ctx context.Context, senderID uuid.UUID, matc
 	_, err := s.matchRepo.FindByID(ctx, matchID)
 	if err != nil {
 		return errors.New("match not found")
+	}
+
+	// AI Check NSFW
+	isNSFW, _, err := s.nsfwService.CheckNSFW(ctx, file)
+	if err != nil {
+		return errors.New("failed to check image content")
+	}
+
+	if isNSFW {
+		// 1. Log violation
+		violation := &models.UserViolation{
+			UserID: senderID,
+			Type:   "nsfw_image",
+			Reason: "System detected high skin ratio (>30%)",
+		}
+		_ = s.violationRepo.Create(ctx, violation)
+
+		// 2. Check 3 strikes rule
+		count, _ := s.violationRepo.CountActiveViolationsByType(ctx, senderID, "nsfw_image")
+		if count >= 3 {
+			_ = s.violationRepo.BanUser(ctx, senderID)
+			return errors.New("tài khoản của bạn đã bị khóa do vi phạm gửi ảnh nhạy cảm 3 lần")
+		}
+
+		return errors.New("ảnh chứa nội dung nhạy cảm, không được phép gửi")
 	}
 
 	// Upload to R2 (Simplified for now, assuming worker processes blur later)
