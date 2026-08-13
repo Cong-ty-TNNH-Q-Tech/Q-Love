@@ -1,6 +1,6 @@
 module github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server
 
-go 1.22.0
+go 1.25.0
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
