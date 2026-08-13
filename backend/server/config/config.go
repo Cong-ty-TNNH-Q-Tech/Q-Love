@@ -19,6 +19,7 @@ type Config struct {
 	SentryDSN         string
 	Environment       string
 	DatabaseDSN       string
+	RedisURL          string
 }
 
 func LoadConfig() *Config {
@@ -33,6 +34,7 @@ func LoadConfig() *Config {
 		SentryDSN:         getEnv("SENTRY_DSN", ""),
 		Environment:       getEnv("APP_ENV", "development"),
 		DatabaseDSN:       getEnv("DATABASE_DSN", "host=localhost user=postgres password=postgres dbname=qlove port=5432 sslmode=disable"),
+		RedisURL:          getEnv("REDIS_URL", "redis://localhost:6379/0"),
 	}
 }
 

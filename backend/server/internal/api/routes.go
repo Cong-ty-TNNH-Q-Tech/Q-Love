@@ -10,11 +10,15 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/middleware"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/websocket"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
+	"github.com/gofiber/websocket/v2"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
+	"context"
 )
 
-func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
+func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, redisClient *redis.Client) {
 	wingmanRepo := repository.NewWingmanRepository(db)
 	walletRepo := repository.NewWalletRepository(db)
 	shameRepo := repository.NewShameRepository(db)
@@ -28,6 +32,13 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 	wingmanHandler := handlers.NewWingmanHandler(wingmanService)
 	shameHandler := handlers.NewShameHandler(shameService)
 	clanHandler := handlers.NewClanHandler(clanService)
+
+	// Chat & Websocket
+	chatRepo := repository.NewChatMessageRepository(db)
+	chatService := services.NewChatService(chatRepo)
+	hub := websocket.NewHub(redisClient)
+	go hub.Run(context.Background())
+	chatHandler := handlers.NewChatHandler(chatService, hub)
 
 	// API v1 group
 	v1 := app.Group("/api/v1")
@@ -51,4 +62,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 	clanGroup := v1.Group("/clans", middleware.JWTMiddleware(""))
 	clanGroup.Post("/", clanHandler.CreateClan)
 
+	// Chat routes
+	chatGroup := v1.Group("/chat")
+	chatGroup.Get("/ws", chatHandler.Upgrade, websocket.New(chatHandler.WSHandler))
+	chatGroup.Post("/messages", middleware.JWTMiddleware(""), chatHandler.SendMessage)
+	chatGroup.Get("/messages/:match_id", middleware.JWTMiddleware(""), chatHandler.GetMessages)
 }
