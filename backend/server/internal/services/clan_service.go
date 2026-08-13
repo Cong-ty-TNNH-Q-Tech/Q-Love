@@ -6,6 +6,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
@@ -98,7 +99,7 @@ func (s *clanService) CreateClan(ctx context.Context, userID uuid.UUID, name, sl
 		}
 
 		return nil
-	})
+	}, &sql.TxOptions{Isolation: sql.LevelSerializable})
 
 	if err != nil {
 		return nil, err
