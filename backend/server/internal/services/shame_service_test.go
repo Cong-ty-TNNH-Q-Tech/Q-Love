@@ -12,7 +12,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"qlove/internal/models"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 )
 
 // --- Mocks for ShameRepo ---

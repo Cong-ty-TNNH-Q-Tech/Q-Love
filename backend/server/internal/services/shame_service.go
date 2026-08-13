@@ -10,8 +10,8 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"qlove/internal/models"
-	"qlove/internal/repository"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 )
 
 type ShameService interface {
