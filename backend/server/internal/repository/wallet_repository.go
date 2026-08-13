@@ -17,6 +17,7 @@ type WalletRepository interface {
 	CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error
 	GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error)
 	UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error
+	CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error)
 }
 
 type walletRepository struct {
@@ -50,8 +51,23 @@ func (r *walletRepository) GetWalletForUpdate(ctx context.Context, userID uuid.U
 
 func (r *walletRepository) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error {
 	db := GetDB(ctx, r.db)
-	return db.WithContext(ctx).Model(&models.UserWallet{}).Where("user_id = ?", userID).
+	return db.WithContext(ctx).
+		Model(&models.UserWallet{}).
+		Where("user_id = ?", userID).
 		UpdateColumn("balance", gorm.Expr("balance + ?", delta)).Error
+}
+
+func (r *walletRepository) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) {
+	var count int64
+	db := GetDB(ctx, r.db)
+	err := db.WithContext(ctx).
+		Model(&models.WalletTransaction{}).
+		Where("id = ?", txID).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
 
 func (r *walletRepository) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error {

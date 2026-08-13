@@ -38,12 +38,12 @@ type IAPService interface {
 }
 
 type iapService struct {
-	txManager    database.TxManager
+	txManager    repository.TransactionManager
 	walletRepo   repository.WalletRepository
 	userPremRepo repository.UserPremiumRepository
 }
 
-func NewIAPService(txManager database.TxManager, walletRepo repository.WalletRepository, userPremRepo repository.UserPremiumRepository) IAPService {
+func NewIAPService(txManager repository.TransactionManager, walletRepo repository.WalletRepository, userPremRepo repository.UserPremiumRepository) IAPService {
 	return &iapService{
 		txManager:    txManager,
 		walletRepo:   walletRepo,
@@ -77,9 +77,9 @@ func (s *iapService) ProcessRevenueCatWebhook(ctx context.Context, event Revenue
 			return nil // Return 200 OK to stop retrying
 		}
 
-		err = s.txManager.WithTransaction(ctx, func(tx *gorm.DB) error {
+		err = s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
 			// Kiểm tra transaction_id đã xử lý chưa
-			exists, err := s.walletRepo.WithTx(tx).CheckTransactionExists(ctx, txID)
+			exists, err := s.walletRepo.CheckTransactionExists(txCtx, txID)
 			if err != nil {
 				return err
 			}
@@ -88,14 +88,19 @@ func (s *iapService) ProcessRevenueCatWebhook(ctx context.Context, event Revenue
 			}
 
 			// Cộng xu
-			err = s.walletRepo.WithTx(tx).AddBalance(ctx, userID, coins)
+			err = s.walletRepo.UpdateBalance(txCtx, userID, coins)
 			if err != nil {
 				return err
 			}
 
 			// Ghi log
-			err = s.walletRepo.WithTx(tx).LogTransaction(ctx, txID, userID, coins, "iap_deposit", uuid.Nil)
-			return err
+			return s.walletRepo.CreateTransaction(txCtx, &models.WalletTransaction{
+				ID:        txID,
+				UserID:    userID,
+				Amount:    coins,
+				Type:      "iap_deposit",
+				CreatedAt: time.Now(),
+			})
 		})
 
 		if err != nil {
@@ -117,14 +122,14 @@ func (s *iapService) ProcessRevenueCatWebhook(ctx context.Context, event Revenue
 			return nil
 		}
 
-		err = s.txManager.WithTransaction(ctx, func(tx *gorm.DB) error {
+		err = s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
 			var expiresAt time.Time
 			if event.ExpirationAtMs > 0 {
 				expiresAt = time.UnixMilli(event.ExpirationAtMs)
 			} else {
 				expiresAt = time.Now().AddDate(0, 1, 0) // Default 1 month
 			}
-			return s.userPremRepo.WithTx(tx).ActivatePremium(ctx, userID, expiresAt)
+			return s.userPremRepo.ActivatePremium(txCtx, userID, expiresAt)
 		})
 
 		if err != nil {

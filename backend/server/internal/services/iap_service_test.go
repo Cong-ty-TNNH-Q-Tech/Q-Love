@@ -2,21 +2,20 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
-	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/database"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 // MockTxManager
 type MockTxManager struct{}
 
-func (m *MockTxManager) WithTransaction(ctx context.Context, fn func(tx *gorm.DB) error) error {
-	return fn(nil)
+func (m *MockTxManager) WithTransaction(ctx context.Context, fn func(ctx context.Context) error, opts ...*sql.TxOptions) error {
+	return fn(ctx)
 }
 
 // MockWalletRepo
@@ -24,11 +23,7 @@ type MockWalletRepoIAP struct {
 	repository.WalletRepository
 	CheckTxFunc func(ctx context.Context, txID uuid.UUID) (bool, error)
 	AddBalFunc  func(ctx context.Context, userID uuid.UUID, amount float64) error
-	LogTxFunc   func(ctx context.Context, id, userID uuid.UUID, amount float64, txType string, refID uuid.UUID) error
-}
-
-func (m *MockWalletRepoIAP) WithTx(tx *gorm.DB) repository.WalletRepository {
-	return m
+	LogTxFunc   func(ctx context.Context, txn *models.WalletTransaction) error
 }
 
 func (m *MockWalletRepoIAP) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) {
@@ -38,16 +33,16 @@ func (m *MockWalletRepoIAP) CheckTransactionExists(ctx context.Context, txID uui
 	return false, nil
 }
 
-func (m *MockWalletRepoIAP) AddBalance(ctx context.Context, userID uuid.UUID, amount float64) error {
+func (m *MockWalletRepoIAP) UpdateBalance(ctx context.Context, userID uuid.UUID, amount float64) error {
 	if m.AddBalFunc != nil {
 		return m.AddBalFunc(ctx, userID, amount)
 	}
 	return nil
 }
 
-func (m *MockWalletRepoIAP) LogTransaction(ctx context.Context, id, userID uuid.UUID, amount float64, txType string, refID uuid.UUID) error {
+func (m *MockWalletRepoIAP) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error {
 	if m.LogTxFunc != nil {
-		return m.LogTxFunc(ctx, id, userID, amount, txType, refID)
+		return m.LogTxFunc(ctx, txn)
 	}
 	return nil
 }
@@ -56,10 +51,6 @@ func (m *MockWalletRepoIAP) LogTransaction(ctx context.Context, id, userID uuid.
 type MockUserPremiumRepoIAP struct {
 	repository.UserPremiumRepository
 	ActivateFunc func(ctx context.Context, userID uuid.UUID, expiresAt time.Time) error
-}
-
-func (m *MockUserPremiumRepoIAP) WithTx(tx *gorm.DB) repository.UserPremiumRepository {
-	return m
 }
 
 func (m *MockUserPremiumRepoIAP) ActivatePremium(ctx context.Context, userID uuid.UUID, expiresAt time.Time) error {
@@ -80,9 +71,9 @@ func TestIAPService_ProcessRevenueCatWebhook_Deposit(t *testing.T) {
 			}
 			return nil
 		},
-		LogTxFunc: func(ctx context.Context, id, userID uuid.UUID, amount float64, txType string, refID uuid.UUID) error {
-			if txType != "iap_deposit" {
-				t.Errorf("Expected iap_deposit, got %s", txType)
+		LogTxFunc: func(ctx context.Context, txn *models.WalletTransaction) error {
+			if txn.Type != "iap_deposit" {
+				t.Errorf("Expected iap_deposit, got %s", txn.Type)
 			}
 			return nil
 		},
