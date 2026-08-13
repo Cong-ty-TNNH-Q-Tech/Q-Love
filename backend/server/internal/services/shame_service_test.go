@@ -19,15 +19,15 @@ import (
 
 type mockShameRepo struct {
 	getActiveShamesFn      func(ctx context.Context, limit, offset int) ([]models.WallOfShame, error)
-	incrementTomatoCountFn func(ctx context.Context, tx *gorm.DB, shameID uuid.UUID, count int) error
+	incrementTomatoCountFn func(ctx context.Context, shameID uuid.UUID, count int) error
 }
 
 func (m *mockShameRepo) GetActiveShames(ctx context.Context, limit, offset int) ([]models.WallOfShame, error) {
 	return m.getActiveShamesFn(ctx, limit, offset)
 }
 
-func (m *mockShameRepo) IncrementTomatoCount(ctx context.Context, tx *gorm.DB, shameID uuid.UUID, count int) error {
-	return m.incrementTomatoCountFn(ctx, tx, shameID, count)
+func (m *mockShameRepo) IncrementTomatoCount(ctx context.Context, shameID uuid.UUID, count int) error {
+	return m.incrementTomatoCountFn(ctx, shameID, count)
 }
 
 // We will also use mockWalletRepo and mockTxManager from wingman_service_test.go
@@ -37,9 +37,9 @@ func (m *mockShameRepo) IncrementTomatoCount(ctx context.Context, tx *gorm.DB, s
 // So let's name it `shameMockWalletRepo`.
 
 type shameMockWalletRepo struct {
-	getWalletForUpdateFn func(ctx context.Context, tx *gorm.DB, userID uuid.UUID) (*models.UserWallet, error)
-	updateBalanceFn      func(ctx context.Context, tx *gorm.DB, userID uuid.UUID, delta float64) error
-	createTransactionFn  func(ctx context.Context, tx *gorm.DB, txn *models.WalletTransaction) error
+	getWalletForUpdateFn func(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error)
+	updateBalanceFn      func(ctx context.Context, userID uuid.UUID, delta float64) error
+	createTransactionFn  func(ctx context.Context, txn *models.WalletTransaction) error
 }
 
 // Ensure it implements repository.WalletRepository (it doesn't have AddCommission, but go interface duck typing handles it if we don't pass it as WalletRepository directly).
@@ -51,14 +51,14 @@ func (m *shameMockWalletRepo) GetWallet(ctx context.Context, userID uuid.UUID) (
 	return nil, nil
 }
 func (m *shameMockWalletRepo) CreateWallet(ctx context.Context, userID uuid.UUID) error { return nil }
-func (m *shameMockWalletRepo) GetWalletForUpdate(ctx context.Context, tx *gorm.DB, userID uuid.UUID) (*models.UserWallet, error) {
-	return m.getWalletForUpdateFn(ctx, tx, userID)
+func (m *shameMockWalletRepo) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
+	return m.getWalletForUpdateFn(ctx, userID)
 }
-func (m *shameMockWalletRepo) UpdateBalance(ctx context.Context, tx *gorm.DB, userID uuid.UUID, delta float64) error {
-	return m.updateBalanceFn(ctx, tx, userID, delta)
+func (m *shameMockWalletRepo) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error {
+	return m.updateBalanceFn(ctx, userID, delta)
 }
-func (m *shameMockWalletRepo) CreateTransaction(ctx context.Context, tx *gorm.DB, txn *models.WalletTransaction) error {
-	return m.createTransactionFn(ctx, tx, txn)
+func (m *shameMockWalletRepo) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error {
+	return m.createTransactionFn(ctx, txn)
 }
 func (m *shameMockWalletRepo) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error {
 	return nil
@@ -90,18 +90,18 @@ func TestShameService_ThrowTomato_Success(t *testing.T) {
 	shameID := uuid.New()
 
 	shameRepo := &mockShameRepo{
-		incrementTomatoCountFn: func(ctx context.Context, tx *gorm.DB, shameID uuid.UUID, count int) error {
+		incrementTomatoCountFn: func(ctx context.Context, shameID uuid.UUID, count int) error {
 			return nil
 		},
 	}
 	walletRepo := &shameMockWalletRepo{
-		getWalletForUpdateFn: func(ctx context.Context, tx *gorm.DB, userID uuid.UUID) (*models.UserWallet, error) {
+		getWalletForUpdateFn: func(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
 			return &models.UserWallet{UserID: throwerID, Balance: 10.0}, nil
 		},
-		updateBalanceFn: func(ctx context.Context, tx *gorm.DB, userID uuid.UUID, delta float64) error {
+		updateBalanceFn: func(ctx context.Context, userID uuid.UUID, delta float64) error {
 			return nil
 		},
-		createTransactionFn: func(ctx context.Context, tx *gorm.DB, txn *models.WalletTransaction) error {
+		createTransactionFn: func(ctx context.Context, txn *models.WalletTransaction) error {
 			return nil
 		},
 	}
@@ -119,7 +119,7 @@ func TestShameService_ThrowTomato_InsufficientBalance(t *testing.T) {
 	shameID := uuid.New()
 
 	walletRepo := &shameMockWalletRepo{
-		getWalletForUpdateFn: func(ctx context.Context, tx *gorm.DB, userID uuid.UUID) (*models.UserWallet, error) {
+		getWalletForUpdateFn: func(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
 			return &models.UserWallet{UserID: throwerID, Balance: 0.5}, nil // Not enough
 		},
 	}
@@ -137,7 +137,7 @@ func TestShameService_ThrowTomato_DBError(t *testing.T) {
 	shameID := uuid.New()
 
 	walletRepo := &shameMockWalletRepo{
-		getWalletForUpdateFn: func(ctx context.Context, tx *gorm.DB, userID uuid.UUID) (*models.UserWallet, error) {
+		getWalletForUpdateFn: func(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
 			return nil, errors.New("db error")
 		},
 	}

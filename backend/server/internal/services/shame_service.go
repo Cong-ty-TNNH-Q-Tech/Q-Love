@@ -22,13 +22,13 @@ type ShameService interface {
 type shameService struct {
 	shameRepo  repository.ShameRepository
 	walletRepo repository.WalletRepository
-	txManager  repository.TxManager
+	txManager  repository.TransactionManager
 }
 
 func NewShameService(
 	shameRepo repository.ShameRepository,
 	walletRepo repository.WalletRepository,
-	txManager repository.TxManager,
+	txManager repository.TransactionManager,
 ) ShameService {
 	return &shameService{
 		shameRepo:  shameRepo,
@@ -42,9 +42,9 @@ func (s *shameService) GetActiveShames(ctx context.Context, limit, offset int) (
 }
 
 func (s *shameService) ThrowTomato(ctx context.Context, throwerID uuid.UUID, shameID uuid.UUID) error {
-	return s.txManager.WithSerializableTransaction(ctx, func(tx *gorm.DB) error {
+	return s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
 		// 1. Get wallet and lock it for update
-		wallet, err := s.walletRepo.GetWalletForUpdate(ctx, tx, throwerID)
+		wallet, err := s.walletRepo.GetWalletForUpdate(txCtx, throwerID)
 		if err != nil {
 			return err
 		}
@@ -56,7 +56,7 @@ func (s *shameService) ThrowTomato(ctx context.Context, throwerID uuid.UUID, sha
 		}
 
 		// 3. Deduct balance
-		err = s.walletRepo.UpdateBalance(ctx, tx, throwerID, -cost)
+		err = s.walletRepo.UpdateBalance(txCtx, throwerID, -cost)
 		if err != nil {
 			return err
 		}
@@ -69,13 +69,13 @@ func (s *shameService) ThrowTomato(ctx context.Context, throwerID uuid.UUID, sha
 			Type:        "THROW_TOMATO",
 			ReferenceID: shameID,
 		}
-		err = s.walletRepo.CreateTransaction(ctx, tx, walletTx)
+		err = s.walletRepo.CreateTransaction(txCtx, walletTx)
 		if err != nil {
 			return err
 		}
 
 		// 5. Increment tomato count on wall of shame
-		err = s.shameRepo.IncrementTomatoCount(ctx, tx, shameID, 1)
+		err = s.shameRepo.IncrementTomatoCount(txCtx, shameID, 1)
 		if err != nil {
 			return err
 		}

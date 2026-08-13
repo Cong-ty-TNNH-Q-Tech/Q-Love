@@ -15,7 +15,7 @@ import (
 
 type ShameRepository interface {
 	GetActiveShames(ctx context.Context, limit, offset int) ([]models.WallOfShame, error)
-	IncrementTomatoCount(ctx context.Context, tx *gorm.DB, shameID uuid.UUID, count int) error
+	IncrementTomatoCount(ctx context.Context, shameID uuid.UUID, count int) error
 }
 
 type shameRepository struct {
@@ -37,11 +37,8 @@ func (r *shameRepository) GetActiveShames(ctx context.Context, limit, offset int
 	return shames, err
 }
 
-func (r *shameRepository) IncrementTomatoCount(ctx context.Context, tx *gorm.DB, shameID uuid.UUID, count int) error {
-	db := tx
-	if db == nil {
-		db = r.db
-	}
+func (r *shameRepository) IncrementTomatoCount(ctx context.Context, shameID uuid.UUID, count int) error {
+	db := GetDB(ctx, r.db)
 	return db.WithContext(ctx).
 		Model(&models.WallOfShame{}).
 		Where("id = ?", shameID).
