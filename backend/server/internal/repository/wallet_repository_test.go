@@ -138,19 +138,86 @@ func TestWalletRepository_UpdateBalance(t *testing.T) {
 }
 
 func TestWalletRepository_UpdateBalance_Error(t *testing.T) {
-	db, mock, err := setupTestDB()
+	db, mock, err := sqlmock.New()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Failed to create sqlmock: %v", err)
 	}
-	repo := NewWalletRepository(db)
+	defer db.Close()
+
+	gormDB, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: db,
+	}), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("Failed to open gorm db: %v", err)
+	}
+
+	repo := NewWalletRepository(gormDB)
 	userID := uuid.New()
+	delta := 50.0
 
-	mock.ExpectExec(`UPDATE "user_wallets"`).
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg()).
-		WillReturnError(sqlmock.ErrCancelled)
+	// Expect UPDATE query and simulate an error
+	mock.ExpectBegin()
+	mock.ExpectExec(`UPDATE "user_wallets" SET "balance"=balance \+ \$1 WHERE user_id = \$2`).
+		WithArgs(delta, userID).
+		WillReturnError(gorm.ErrInvalidDB)
+	mock.ExpectRollback()
 
-	err = repo.UpdateBalance(context.Background(), userID, -10.0)
+	err = repo.UpdateBalance(context.Background(), userID, delta)
 	if err == nil {
-		t.Error("Expected error")
+		t.Errorf("Expected error, got nil")
+	}
+}
+
+func TestWalletRepository_CheckTransactionExists(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Failed to create sqlmock: %v", err)
+	}
+	defer db.Close()
+
+	gormDB, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: db,
+	}), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("Failed to open gorm db: %v", err)
+	}
+
+	repo := NewWalletRepository(gormDB)
+	txID := uuid.New()
+
+	// 1. Transaction exists
+	mock.ExpectQuery(`SELECT count\(\*\) FROM "wallet_transactions" WHERE id = \$1`).
+		WithArgs(txID).
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+
+	exists, err := repo.CheckTransactionExists(context.Background(), txID)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if !exists {
+		t.Errorf("Expected exists to be true")
+	}
+
+	// 2. Transaction does not exist
+	mock.ExpectQuery(`SELECT count\(\*\) FROM "wallet_transactions" WHERE id = \$1`).
+		WithArgs(txID).
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
+
+	exists, err = repo.CheckTransactionExists(context.Background(), txID)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if exists {
+		t.Errorf("Expected exists to be false")
+	}
+
+	// 3. DB Error
+	mock.ExpectQuery(`SELECT count\(\*\) FROM "wallet_transactions" WHERE id = \$1`).
+		WithArgs(txID).
+		WillReturnError(gorm.ErrInvalidDB)
+
+	_, err = repo.CheckTransactionExists(context.Background(), txID)
+	if err == nil {
+		t.Errorf("Expected error, got nil")
 	}
 }

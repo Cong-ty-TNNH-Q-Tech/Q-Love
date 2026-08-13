@@ -140,3 +140,71 @@ func TestIAPService_ProcessRevenueCatWebhook_InvalidUser(t *testing.T) {
 		t.Fatalf("Expected ErrInvalidWebhookPayload, got %v", err)
 	}
 }
+
+func TestIAPService_ProcessRevenueCatWebhook_UnknownProduct(t *testing.T) {
+	svc := NewIAPService(&MockTxManager{}, &MockWalletRepoIAP{}, &MockUserPremiumRepoIAP{})
+	event := RevenueCatEvent{
+		Type:          "NON_RENEWING_PURCHASE",
+		AppUserID:     uuid.New().String(),
+		ProductID:     "unknown_product",
+		TransactionID: "tx_12345",
+	}
+	err := svc.ProcessRevenueCatWebhook(context.Background(), event)
+	if err != nil {
+		t.Fatalf("Expected nil, got %v", err)
+	}
+}
+
+func TestIAPService_ProcessRevenueCatWebhook_TransactionExists(t *testing.T) {
+	walletRepo := &MockWalletRepoIAP{
+		CheckTxFunc: func(ctx context.Context, txID uuid.UUID) (bool, error) {
+			return true, nil
+		},
+	}
+	svc := NewIAPService(&MockTxManager{}, walletRepo, &MockUserPremiumRepoIAP{})
+	event := RevenueCatEvent{
+		Type:          "NON_RENEWING_PURCHASE",
+		AppUserID:     uuid.New().String(),
+		ProductID:     "coin_pack_100",
+		TransactionID: "tx_12345",
+	}
+	err := svc.ProcessRevenueCatWebhook(context.Background(), event)
+	if err != nil {
+		t.Fatalf("Expected nil (ErrTransactionExists is swallowed and returns nil), got %v", err)
+	}
+}
+
+func TestIAPService_ProcessRevenueCatWebhook_PremiumError(t *testing.T) {
+	errExpected := errors.New("db error")
+	userPremRepo := &MockUserPremiumRepoIAP{
+		ActivateFunc: func(ctx context.Context, userID uuid.UUID, expiresAt time.Time) error {
+			return errExpected
+		},
+	}
+	svc := NewIAPService(&MockTxManager{}, &MockWalletRepoIAP{}, userPremRepo)
+	event := RevenueCatEvent{
+		Type:          "INITIAL_PURCHASE",
+		AppUserID:     uuid.New().String(),
+		ProductID:     "qlove_premium_1month",
+		TransactionID: "tx_99999",
+	}
+	err := svc.ProcessRevenueCatWebhook(context.Background(), event)
+	if err != errExpected {
+		t.Fatalf("Expected %v, got %v", errExpected, err)
+	}
+}
+
+func TestIAPService_ProcessRevenueCatWebhook_IgnoreOtherTypes(t *testing.T) {
+	svc := NewIAPService(&MockTxManager{}, &MockWalletRepoIAP{}, &MockUserPremiumRepoIAP{})
+	event := RevenueCatEvent{
+		Type:          "CANCELLATION",
+		AppUserID:     uuid.New().String(),
+		ProductID:     "coin_pack_100",
+		TransactionID: "tx_12345",
+	}
+	err := svc.ProcessRevenueCatWebhook(context.Background(), event)
+	if err != nil {
+		t.Fatalf("Expected nil, got %v", err)
+	}
+}
+
