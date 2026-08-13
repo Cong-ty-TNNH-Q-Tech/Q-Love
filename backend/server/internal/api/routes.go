@@ -30,8 +30,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 	v1 := app.Group("/api/v1")
 
 	// Wingman routes
-	v1.Post("/wingman/referrals", wingmanHandler.CreateReferral)
-	v1.Post("/wingman/referrals/:id/accept", wingmanHandler.AcceptReferral)
+	wingmanGroup := v1.Group("/wingman", middleware.JWTMiddleware(""))
+	wingmanGroup.Post("/referrals", wingmanHandler.CreateReferral)
+	wingmanGroup.Post("/referrals/:id/accept", wingmanHandler.AcceptReferral)
 
 	// Shame (Wall of Shame) routes
 	shameGroup := v1.Group("/shames", middleware.JWTMiddleware(""))
@@ -40,7 +41,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 
 	// Upload routes
 	uploadHandler := handlers.NewUploadHandler(r2Client)
-	uploadGroup := v1.Group("/upload")
+	uploadGroup := v1.Group("/upload", middleware.JWTMiddleware(""))
 	uploadGroup.Post("/presigned-url", uploadHandler.GenerateUploadURL)
 
 }

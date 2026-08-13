@@ -52,6 +52,10 @@ func TestCreateReferral(t *testing.T) {
 	app := fiber.New()
 	mockSvc := &mockWingmanService{}
 	h := NewWingmanHandler(mockSvc)
+	app.Use(func(c *fiber.Ctx) error {
+		c.Locals("user_id", uuid.New())
+		return c.Next()
+	})
 	app.Post("/wingmans/referral", h.CreateReferral)
 
 	t.Run("Success", func(t *testing.T) {
@@ -83,6 +87,10 @@ func TestCreateReferral(t *testing.T) {
 		appErr := fiber.New()
 		errSvc := &mockWingmanService{shouldError: true}
 		hErr := NewWingmanHandler(errSvc)
+		appErr.Use(func(c *fiber.Ctx) error {
+			c.Locals("user_id", uuid.New())
+			return c.Next()
+		})
 		appErr.Post("/wingmans/referral", hErr.CreateReferral)
 
 		payload := CreateReferralRequest{
@@ -104,6 +112,16 @@ func TestAcceptReferral(t *testing.T) {
 	app := fiber.New()
 	mockSvc := &mockWingmanService{}
 	h := NewWingmanHandler(mockSvc)
+	app.Use(func(c *fiber.Ctx) error {
+		userID := uuid.New()
+		if authHeader := c.Get("X-User-ID"); authHeader != "" {
+			if parsed, err := uuid.Parse(authHeader); err == nil {
+				userID = parsed
+			}
+		}
+		c.Locals("user_id", userID)
+		return c.Next()
+	})
 	app.Post("/wingmans/referral/:id/accept", h.AcceptReferral)
 
 	t.Run("Success", func(t *testing.T) {
@@ -129,6 +147,10 @@ func TestAcceptReferral(t *testing.T) {
 		appErr := fiber.New()
 		errSvc := &mockWingmanService{shouldError: true, errMessage: "referral link expired"}
 		hErr := NewWingmanHandler(errSvc)
+		appErr.Use(func(c *fiber.Ctx) error {
+			c.Locals("user_id", uuid.New())
+			return c.Next()
+		})
 		appErr.Post("/wingmans/referral/:id/accept", hErr.AcceptReferral)
 
 		req := httptest.NewRequest("POST", "/wingmans/referral/"+uuid.New().String()+"/accept", nil)
@@ -142,6 +164,10 @@ func TestAcceptReferral(t *testing.T) {
 		appErr := fiber.New()
 		errSvc := &mockWingmanService{shouldError: true, errMessage: "database connection lost"}
 		hErr := NewWingmanHandler(errSvc)
+		appErr.Use(func(c *fiber.Ctx) error {
+			c.Locals("user_id", uuid.New())
+			return c.Next()
+		})
 		appErr.Post("/wingmans/referral/:id/accept", hErr.AcceptReferral)
 
 		req := httptest.NewRequest("POST", "/wingmans/referral/"+uuid.New().String()+"/accept", nil)
