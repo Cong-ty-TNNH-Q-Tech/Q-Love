@@ -21,9 +21,15 @@ func TestInitLogger(t *testing.T) {
 		t.Error("Expected Log to be initialized for production")
 	}
 
-	// Test with dummy Sentry DSN (it should fail to init sentry but not panic)
-	InitLogger("development", "http://public@localhost/1")
+	// test invalid sentry DSN url
+	InitLogger("development", "https://invalid@sentry.io/123")
 	if Log == nil {
-		t.Error("Expected Log to be initialized even if sentry fails or succeeds")
+		t.Error("Expected Log to not be nil")
+	}
+
+	// test invalid sentry DSN string
+	InitLogger("development", "invalid-dsn")
+	if Log == nil {
+		t.Error("Expected Log to not be nil")
 	}
 }
