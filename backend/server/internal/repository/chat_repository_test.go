@@ -49,7 +49,9 @@ func TestChatRepository_SaveMessage(t *testing.T) {
 	mock.ExpectCommit()
 
 	err = repo.Create(context.Background(), msg)
-	assert.NoError(t, err)
+	if err != nil {
+		t.Errorf("error was not expected while saving message: %s", err)
+	}
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
