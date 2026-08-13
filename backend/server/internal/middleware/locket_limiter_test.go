@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"net/http/httptest"
 	"testing"
 
@@ -9,26 +8,16 @@ import (
 	"github.com/google/uuid"
 )
 
-type mockUserPremiumRepo struct {
-	isPremium bool
-	err       error
-}
-
-func (m *mockUserPremiumRepo) IsUserPremium(ctx context.Context, userID uuid.UUID) (bool, error) {
-	return m.isPremium, m.err
-}
-
 func TestLocketRateLimiter_Bypass(t *testing.T) {
 	app := fiber.New()
 	
-	repo := &mockUserPremiumRepo{isPremium: true}
-	
 	app.Use(func(c *fiber.Ctx) error {
 		c.Locals("user_id", uuid.New().String())
+		c.Locals("is_premium", true) // Premium user
 		return c.Next()
 	})
 	
-	app.Post("/send", LocketRateLimiter(repo), func(c *fiber.Ctx) error {
+	app.Post("/send", LocketRateLimiter(), func(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusAccepted)
 	})
 
@@ -45,15 +34,15 @@ func TestLocketRateLimiter_Bypass(t *testing.T) {
 func TestLocketRateLimiter_Limit(t *testing.T) {
 	app := fiber.New()
 	
-	repo := &mockUserPremiumRepo{isPremium: false} // Not premium
 	userID := uuid.New().String()
 	
 	app.Use(func(c *fiber.Ctx) error {
 		c.Locals("user_id", userID)
+		c.Locals("is_premium", false) // Not premium
 		return c.Next()
 	})
 	
-	app.Post("/send", LocketRateLimiter(repo), func(c *fiber.Ctx) error {
+	app.Post("/send", LocketRateLimiter(), func(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusAccepted)
 	})
 

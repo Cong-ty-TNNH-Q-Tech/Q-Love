@@ -29,7 +29,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 	shameHandler := handlers.NewShameHandler(shameService)
 	clanHandler := handlers.NewClanHandler(clanService)
 
-	userPremiumRepo := repository.NewUserPremiumRepository(db)
+
 	matchRepo := repository.NewMatchRepository(db)
 	chatRepo := repository.NewChatMessageRepository(db)
 
