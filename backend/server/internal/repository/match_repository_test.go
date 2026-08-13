@@ -28,7 +28,7 @@ func TestMatchRepository_FindByID(t *testing.T) {
 	repo := NewMatchRepository(gormDB)
 	matchID := uuid.New()
 
-	mock.ExpectQuery(`SELECT \* FROM "matches" WHERE id = \$1 ORDER BY "matches"\."id" LIMIT \$2`).
+	mock.ExpectQuery(`SELECT \* FROM "matches" WHERE id = \$1 AND "matches"\."deleted_at" IS NULL ORDER BY "matches"\."id" LIMIT \$2`).
 		WithArgs(matchID, 1).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(matchID))
 
@@ -61,8 +61,8 @@ func TestMatchRepository_UpdateLastInteraction(t *testing.T) {
 	now := time.Now()
 
 	mock.ExpectBegin()
-	mock.ExpectExec(`UPDATE "matches" SET "last_interaction_at"=\$1 WHERE id = \$2`).
-		WithArgs(now, matchID).
+	mock.ExpectExec(`UPDATE "matches" SET "last_interaction_at"=\$1,"updated_at"=\$2 WHERE id = \$3 AND "matches"\."deleted_at" IS NULL`).
+		WithArgs(now, sqlmock.AnyArg(), matchID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
