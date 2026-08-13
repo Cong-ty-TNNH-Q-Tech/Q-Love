@@ -49,6 +49,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	iapService := services.NewIAPService(txManager, walletRepo, userPremRepo)
 	webhookHandler := handlers.NewWebhookHandler(cfg, iapService)
 
+	spotifyService := services.NewSpotifyService()
+	vibeHandler := handlers.NewVibeHandler(spotifyService)
+
 	// API v1 group
 	v1 := app.Group("/api/v1")
 
@@ -83,4 +86,10 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	// Webhooks
 	webhookGroup := v1.Group("/webhooks")
 	webhookGroup.Post("/revenuecat", webhookHandler.HandleRevenueCat)
+
+	// Vibe Check (Spotify)
+	vibeGroup := v1.Group("/vibe", middleware.JWTMiddleware(""))
+	vibeGroup.Get("/status", vibeHandler.Status)
+	vibeGroup.Get("/current-track", vibeHandler.CurrentTrack)
+	vibeGroup.Post("/match", vibeHandler.Match)
 }
