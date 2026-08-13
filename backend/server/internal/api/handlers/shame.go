@@ -50,12 +50,10 @@ func (h *ShameHandler) ThrowTomato(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid shame ID"})
 	}
 
-	// Simulated authenticated user
-	throwerID := uuid.New()
-	if authHeader := c.Get("X-User-ID"); authHeader != "" {
-		if parsed, err := uuid.Parse(authHeader); err == nil {
-			throwerID = parsed
-		}
+	// Authenticated user from JWT middleware
+	throwerID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
 	err = h.service.ThrowTomato(c.Context(), throwerID, shameID)

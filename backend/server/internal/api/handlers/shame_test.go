@@ -66,7 +66,10 @@ func TestShameHandler_ThrowTomato(t *testing.T) {
 		},
 	}
 	h := NewShameHandler(mockSvc)
-	app.Post("/shames/:id/tomato", h.ThrowTomato)
+	app.Post("/shames/:id/tomato", func(c *fiber.Ctx) error {
+		c.Locals("user_id", uuid.New())
+		return c.Next()
+	}, h.ThrowTomato)
 
 	shameID := uuid.New().String()
 	reqBody := map[string]string{"thrower_id": uuid.New().String()}
