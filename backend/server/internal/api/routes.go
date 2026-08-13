@@ -9,6 +9,7 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/api/handlers"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/ai"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
 	"gorm.io/gorm"
 )
@@ -29,4 +30,12 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 	uploadHandler := handlers.NewUploadHandler(r2Client)
 	uploadGroup := api.Group("/upload")
 	uploadGroup.Post("/presigned-url", uploadHandler.GenerateUploadURL)
+
+	// AI Wingman routes
+	chatRepo := repository.NewChatRepository(db)
+	llmClient := ai.NewOpenAIClient("") // Empty for now, wait for config
+	aiWingmanService := services.NewAIWingmanService(chatRepo, llmClient)
+	aiWingmanHandler := handlers.NewAIWingmanHandler(aiWingmanService)
+	matchesGroup := api.Group("/matches")
+	matchesGroup.Get("/:id/wingman-suggestions", aiWingmanHandler.GetSuggestions)
 }

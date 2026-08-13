@@ -27,7 +27,7 @@ func TestWalletRepository_AddCommission(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"user_id", "balance"}).AddRow(userID, 0))
 
 	mock.ExpectExec(`UPDATE "user_wallets"`).
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = repo.AddCommission(context.Background(), userID, 10.0)
