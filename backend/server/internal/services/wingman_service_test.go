@@ -58,6 +58,9 @@ func (m *mockWalletRepo) UpdateBalance(ctx context.Context, userID uuid.UUID, de
 	}
 	return nil
 }
+func (m *mockWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) {
+	return false, nil
+}
 
 type mockTxManager struct{}
 

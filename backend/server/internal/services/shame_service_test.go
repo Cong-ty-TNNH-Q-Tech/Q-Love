@@ -62,6 +62,9 @@ func (m *shameMockWalletRepo) CreateTransaction(ctx context.Context, txn *models
 func (m *shameMockWalletRepo) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error {
 	return nil
 }
+func (m *shameMockWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) {
+	return false, nil
+}
 
 // --- Tests ---
 

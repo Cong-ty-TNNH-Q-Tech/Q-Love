@@ -47,6 +47,10 @@ func (m *mockWalletRepoClan) AddCommission(ctx context.Context, userID uuid.UUID
 	return nil
 }
 
+func (m *mockWalletRepoClan) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) {
+	return false, nil
+}
+
 func (m *mockWalletRepoClan) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
 	return m.wallet, m.walletErr
 }
