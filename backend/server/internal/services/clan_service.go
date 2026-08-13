@@ -45,9 +45,9 @@ func (s *clanService) CreateClan(ctx context.Context, userID uuid.UUID, name, sl
 	var createdClan *models.Clan
 
 	// 2. Start Transaction
-	err = s.txManager.ExecuteInTx(ctx, func(tx *gorm.DB) error {
-		// 3. Deduct 500 Xu from user wallet
-		wallet, err := s.walletRepo.GetByUserID(ctx, tx, userID)
+	err = s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
+		// 3. Deduct 500 Xu from user wallet. Use GetWalletForUpdate to lock.
+		wallet, err := s.walletRepo.GetWalletForUpdate(txCtx, userID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return errors.New("wallet not found")
@@ -59,18 +59,18 @@ func (s *clanService) CreateClan(ctx context.Context, userID uuid.UUID, name, sl
 			return errors.New("insufficient balance")
 		}
 
-		err = s.walletRepo.UpdateBalance(ctx, tx, wallet.ID, -500)
+		err = s.walletRepo.UpdateBalance(txCtx, userID, -500)
 		if err != nil {
 			return err
 		}
 
 		// Create transaction record
 		txRecord := &models.WalletTransaction{
-			WalletID: wallet.ID,
-			Amount:   -500,
-			Type:     "clan_create",
+			UserID: userID,
+			Amount: -500,
+			Type:   "clan_create",
 		}
-		err = s.walletRepo.CreateTransaction(ctx, tx, txRecord)
+		err = s.walletRepo.CreateTransaction(txCtx, txRecord)
 		if err != nil {
 			return err
 		}
@@ -82,7 +82,7 @@ func (s *clanService) CreateClan(ctx context.Context, userID uuid.UUID, name, sl
 			LogoURL:  logoURL,
 			LeaderID: userID,
 		}
-		if err := s.clanRepo.CreateClan(ctx, tx, clan); err != nil {
+		if err := s.clanRepo.CreateClan(txCtx, clan); err != nil {
 			return err
 		}
 		createdClan = clan
@@ -93,7 +93,7 @@ func (s *clanService) CreateClan(ctx context.Context, userID uuid.UUID, name, sl
 			UserID: userID,
 			Role:   "leader",
 		}
-		if err := s.clanRepo.AddClanMember(ctx, tx, member); err != nil {
+		if err := s.clanRepo.AddClanMember(txCtx, member); err != nil {
 			return err
 		}
 

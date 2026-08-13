@@ -6,6 +6,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"testing"
 
@@ -26,38 +27,42 @@ func (m *mockClanRepo) FindByName(ctx context.Context, name string) (*models.Cla
 	return m.findByNameClan, m.findByNameErr
 }
 
-func (m *mockClanRepo) CreateClan(ctx context.Context, tx *gorm.DB, clan *models.Clan) error {
+func (m *mockClanRepo) CreateClan(ctx context.Context, clan *models.Clan) error {
 	clan.ID = uuid.New()
 	return m.createErr
 }
 
-func (m *mockClanRepo) AddClanMember(ctx context.Context, tx *gorm.DB, member *models.ClanMember) error {
+func (m *mockClanRepo) AddClanMember(ctx context.Context, member *models.ClanMember) error {
 	return m.addMemberErr
 }
 
 type mockWalletRepoClan struct {
-	wallet    *models.Wallet
+	wallet    *models.UserWallet
 	walletErr error
 	updateErr error
 	createTxErr error
 }
 
-func (m *mockWalletRepoClan) GetByUserID(ctx context.Context, tx *gorm.DB, userID uuid.UUID) (*models.Wallet, error) {
+func (m *mockWalletRepoClan) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error {
+	return nil
+}
+
+func (m *mockWalletRepoClan) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
 	return m.wallet, m.walletErr
 }
 
-func (m *mockWalletRepoClan) UpdateBalance(ctx context.Context, tx *gorm.DB, walletID uuid.UUID, amount int) error {
+func (m *mockWalletRepoClan) UpdateBalance(ctx context.Context, userID uuid.UUID, amount float64) error {
 	return m.updateErr
 }
 
-func (m *mockWalletRepoClan) CreateTransaction(ctx context.Context, tx *gorm.DB, transaction *models.WalletTransaction) error {
+func (m *mockWalletRepoClan) CreateTransaction(ctx context.Context, transaction *models.WalletTransaction) error {
 	return m.createTxErr
 }
 
 type mockTxManagerClan struct{}
 
-func (m *mockTxManagerClan) ExecuteInTx(ctx context.Context, fn func(tx *gorm.DB) error) error {
-	return fn(nil)
+func (m *mockTxManagerClan) WithTransaction(ctx context.Context, fn func(ctx context.Context) error, opts ...*sql.TxOptions) error {
+	return fn(ctx)
 }
 
 func TestCreateClan(t *testing.T) {
@@ -66,7 +71,7 @@ func TestCreateClan(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		mClan := &mockClanRepo{findByNameErr: gorm.ErrRecordNotFound}
-		mWallet := &mockWalletRepoClan{wallet: &models.Wallet{Balance: 1000}}
+		mWallet := &mockWalletRepoClan{wallet: &models.UserWallet{Balance: 1000}}
 		mTx := &mockTxManagerClan{}
 
 		svc := NewClanService(mClan, mWallet, mTx)
@@ -92,7 +97,7 @@ func TestCreateClan(t *testing.T) {
 
 	t.Run("Insufficient balance", func(t *testing.T) {
 		mClan := &mockClanRepo{findByNameErr: gorm.ErrRecordNotFound}
-		mWallet := &mockWalletRepoClan{wallet: &models.Wallet{Balance: 100}}
+		mWallet := &mockWalletRepoClan{wallet: &models.UserWallet{Balance: 100}}
 		mTx := &mockTxManagerClan{}
 
 		svc := NewClanService(mClan, mWallet, mTx)
@@ -118,7 +123,7 @@ func TestCreateClan(t *testing.T) {
 	
 	t.Run("DB error on create", func(t *testing.T) {
 		mClan := &mockClanRepo{findByNameErr: gorm.ErrRecordNotFound, createErr: errors.New("db err")}
-		mWallet := &mockWalletRepoClan{wallet: &models.Wallet{Balance: 1000}}
+		mWallet := &mockWalletRepoClan{wallet: &models.UserWallet{Balance: 1000}}
 		mTx := &mockTxManagerClan{}
 
 		svc := NewClanService(mClan, mWallet, mTx)
