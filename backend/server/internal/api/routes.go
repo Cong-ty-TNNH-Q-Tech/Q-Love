@@ -22,9 +22,12 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 
 	wingmanService := services.NewWingmanService(wingmanRepo, walletRepo, txManager)
 	shameService := services.NewShameService(shameRepo, walletRepo, txManager)
+	clanRepo := repository.NewClanRepository(db)
+	clanService := services.NewClanService(clanRepo, walletRepo, txManager)
 
 	wingmanHandler := handlers.NewWingmanHandler(wingmanService)
 	shameHandler := handlers.NewShameHandler(shameService)
+	clanHandler := handlers.NewClanHandler(clanService)
 
 	// API v1 group
 	v1 := app.Group("/api/v1")
@@ -43,5 +46,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 	uploadHandler := handlers.NewUploadHandler(r2Client)
 	uploadGroup := v1.Group("/upload", middleware.JWTMiddleware(""))
 	uploadGroup.Post("/presigned-url", uploadHandler.GenerateUploadURL)
+
+	// Clan routes
+	clanGroup := v1.Group("/clans", middleware.JWTMiddleware(""))
+	clanGroup.Post("/", clanHandler.CreateClan)
 
 }
