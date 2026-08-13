@@ -1191,3 +1191,37 @@ paths:
       responses:
         '200':
           description: PK Match created
+  # -----------------------------------------------------------
+  # 8. AI WINGMAN (M? H?N)
+  # -----------------------------------------------------------
+  /matches/{match_id}/wingman-suggestions:
+    get:
+      summary: G?i ý tin nh?n AI (M? H?n)
+      description: "D?a vào l?ch s? chat (t?i da 10 tin), AI s? sinh ra 3 câu tr? l?i theo 3 phong cách: Hài hu?c, Th? thính, Th?ng th?n."
+      tags: [AI Wingman]
+      parameters:
+        - in: path
+          name: match_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: G?i ý tin nh?n thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggestions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tone: { type: string, example: "Hài hu?c" }
+                        text: { type: string, example: "Nay b?n xinh th?" }
+        '400':
+          description: Match ID không h?p l?
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
