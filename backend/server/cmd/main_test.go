@@ -63,6 +63,7 @@ func TestMainServer(t *testing.T) {
 	// Also call main() directly in a goroutine to get coverage for it
 	// We set a unique port to avoid conflicts
 	t.Setenv("PORT", "3002")
+	t.Setenv("DATABASE_DSN", "skip")
 	go func() {
 		// This will block, but the test will exit and kill the goroutine
 		main()
