@@ -5,7 +5,6 @@
 package main
 
 import (
-	"log"
 	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"

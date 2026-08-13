@@ -8,17 +8,25 @@ import (
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
 )
 
 func TestMainServer(t *testing.T) {
-	// Start the main function in a goroutine
-	go main()
+	// Setup app locally instead of using global
+	cfg := config.LoadConfig()
+	app := setupApp(cfg)
+
+	// Start the server in a goroutine
+	go func() {
+		_ = app.Listen(":3001")
+	}()
 
 	// Give the server a moment to start
 	time.Sleep(500 * time.Millisecond)
 
 	// Test the health endpoint to ensure it's running
-	resp, err := http.Get("http://localhost:3000/health")
+	resp, err := http.Get("http://localhost:3001/health")
 	if err != nil {
 		t.Fatalf("Failed to make request to health endpoint: %v", err)
 	}
@@ -29,17 +37,19 @@ func TestMainServer(t *testing.T) {
 	}
 
 	// Test ping endpoint
-	resp2, _ := http.Get("http://localhost:3000/ping")
-	resp2.Body.Close()
+	resp2, _ := http.Get("http://localhost:3001/ping")
+	if resp2 != nil {
+		resp2.Body.Close()
+	}
 
 	// Test version endpoint
-	resp3, _ := http.Get("http://localhost:3000/version")
-	resp3.Body.Close()
+	resp3, _ := http.Get("http://localhost:3001/version")
+	if resp3 != nil {
+		resp3.Body.Close()
+	}
 
 	// Gracefully shutdown the server so the test can finish
-	if app != nil {
-		if err := app.Shutdown(); err != nil {
-			t.Errorf("Failed to shutdown server: %v", err)
-		}
+	if err := app.Shutdown(); err != nil {
+		t.Errorf("Failed to shutdown server: %v", err)
 	}
 }
