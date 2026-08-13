@@ -68,13 +68,13 @@ func (h *Hub) Run(ctx context.Context) {
 	}
 }
 
-// PublishToRedis takes a message, saves it via HTTP handler, and pushes to Redis Stream
-func (h *Hub) PublishToRedis(ctx context.Context, msg *models.ChatMessage) error {
+// PublishMessage takes a message, saves it via HTTP handler, and pushes to Redis Stream
+func (h *Hub) PublishMessage(ctx context.Context, targetUserID uuid.UUID, payload interface{}) error {
 	if h.redisClient == nil {
 		return nil
 	}
 	
-	msgBytes, err := json.Marshal(msg)
+	msgBytes, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (h *Hub) PublishToRedis(ctx context.Context, msg *models.ChatMessage) error
 	err = h.redisClient.XAdd(ctx, &redis.XAddArgs{
 		Stream: RedisChatStream,
 		Values: map[string]interface{}{
-			"target_id": msg.ReceiverID.String(),
+			"target_id": targetUserID.String(),
 			"payload":   string(msgBytes),
 		},
 	}).Err()

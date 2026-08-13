@@ -22,14 +22,13 @@ func TestHub_Run(t *testing.T) {
 	// Give it a moment to start
 	time.Sleep(100 * time.Millisecond)
 	
-	// Test PublishToRedis with nil client
+	// Test PublishMessage with nil client
 	msg := &models.ChatMessage{
 		ID:         uuid.New(),
 		SenderID:   uuid.New(),
-		ReceiverID: uuid.New(),
 		Content:    "Hello",
 	}
-	err := hub.PublishToRedis(ctx, msg)
+	err := hub.PublishMessage(ctx, uuid.New(), msg)
 	if err != nil {
 		t.Errorf("Expected nil error when redis client is nil, got %v", err)
 	}
