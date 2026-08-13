@@ -3,10 +3,8 @@ package middleware
 import (
 	"time"
 
-	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
-	"github.com/google/uuid"
 )
 
 // LocketRateLimiter creates a middleware to limit Locket sends to 10 per hour.
