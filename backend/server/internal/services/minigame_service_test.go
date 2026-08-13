@@ -48,6 +48,7 @@ func (m *mockMinigameWalletRepo) GetWalletForUpdate(ctx context.Context, userID 
 	return m.wallet, m.err
 }
 func (m *mockMinigameWalletRepo) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error { return nil }
+func (m *mockMinigameWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
 
 func TestMinigameService_InitSteal_InsufficientBalance(t *testing.T) {
 	walletRepo := &mockMinigameWalletRepo{wallet: &models.UserWallet{Balance: 500}} // Less than 1000
