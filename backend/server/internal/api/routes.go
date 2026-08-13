@@ -47,6 +47,6 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 	llmClient := ai.NewOpenAIClient("") // Empty for now, wait for config
 	aiWingmanService := services.NewAIWingmanService(chatRepo, llmClient)
 	aiWingmanHandler := handlers.NewAIWingmanHandler(aiWingmanService)
-	matchesGroup := api.Group("/matches")
+	matchesGroup := v1.Group("/matches")
 	matchesGroup.Get("/:id/wingman-suggestions", aiWingmanHandler.GetSuggestions)
 }
