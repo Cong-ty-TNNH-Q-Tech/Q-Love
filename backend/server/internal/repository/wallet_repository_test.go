@@ -27,7 +27,7 @@ func TestWalletRepository_AddCommission(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"user_id", "balance"}).AddRow(userID, 0))
 
 	mock.ExpectExec(`UPDATE "user_wallets"`).
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = repo.AddCommission(context.Background(), userID, 10.0)
@@ -128,7 +128,7 @@ func TestWalletRepository_UpdateBalance(t *testing.T) {
 	userID := uuid.New()
 
 	mock.ExpectExec(`UPDATE "user_wallets"`).
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = repo.UpdateBalance(context.Background(), userID, -10.0)
@@ -146,7 +146,7 @@ func TestWalletRepository_UpdateBalance_Error(t *testing.T) {
 	userID := uuid.New()
 
 	mock.ExpectExec(`UPDATE "user_wallets"`).
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnError(sqlmock.ErrCancelled)
 
 	err = repo.UpdateBalance(context.Background(), userID, -10.0)
