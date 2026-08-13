@@ -40,6 +40,10 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	go hub.Run(context.Background())
 	chatHandler := handlers.NewChatHandler(chatService, hub)
 
+	matchRepo := repository.NewMatchRepository(db)
+	locketService := services.NewLocketService(chatRepo, matchRepo, r2Client)
+	locketHandler := handlers.NewLocketHandler(locketService)
+
 	// API v1 group
 	v1 := app.Group("/api/v1")
 
@@ -67,4 +71,8 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	chatGroup.Get("/ws", chatHandler.Upgrade, websocket.New(chatHandler.WSHandler))
 	chatGroup.Post("/messages", middleware.JWTMiddleware(""), chatHandler.SendMessage)
 	chatGroup.Get("/messages/:match_id", middleware.JWTMiddleware(""), chatHandler.GetMessages)
+
+	// Locket routes
+	locketGroup := v1.Group("/locket", middleware.JWTMiddleware(""))
+	locketGroup.Post("/send", middleware.LocketRateLimiter(), locketHandler.SendLocket)
 }
