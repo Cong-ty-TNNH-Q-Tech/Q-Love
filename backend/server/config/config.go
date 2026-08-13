@@ -16,6 +16,8 @@ type Config struct {
 	R2SecretAccessKey string
 	R2BucketName      string
 	Port              string
+	SentryDSN         string
+	Environment       string
 }
 
 func LoadConfig() *Config {
@@ -27,6 +29,8 @@ func LoadConfig() *Config {
 		R2SecretAccessKey: getEnv("R2_SECRET_ACCESS_KEY", "default_secret_key"),
 		R2BucketName:      getEnv("R2_BUCKET_NAME", "qlove-bucket"),
 		Port:              getEnv("PORT", "3000"),
+		SentryDSN:         getEnv("SENTRY_DSN", ""),
+		Environment:       getEnv("APP_ENV", "development"),
 	}
 }
 
