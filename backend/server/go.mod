@@ -54,8 +54,7 @@ require (
 	github.com/getsentry/sentry-go v0.48.0
 	github.com/gofiber/contrib/fibersentry v1.0.8
 	github.com/gofiber/contrib/fiberzap/v2 v2.1.6
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/joho/godotenv v1.5.1
 	go.uber.org/zap v1.28.0
-	github.com/golang-jwt/jwt/v5 v5.2.1
 )
-
