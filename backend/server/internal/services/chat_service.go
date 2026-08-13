@@ -42,7 +42,7 @@ func (s *chatService) SaveMessage(ctx context.Context, senderID, matchID uuid.UU
 		Content:  content,
 	}
 
-	if err := s.chatRepo.SaveMessage(ctx, msg); err != nil {
+	if err := s.chatRepo.Create(ctx, msg); err != nil {
 		return nil, err
 	}
 

@@ -16,12 +16,12 @@ type LocketService interface {
 }
 
 type locketService struct {
-	chatRepo  repository.ChatMessageRepository
+	chatRepo  repository.ChatRepository
 	matchRepo repository.MatchRepository
 	r2Client  *storage.R2Client
 }
 
-func NewLocketService(chatRepo repository.ChatMessageRepository, matchRepo repository.MatchRepository, r2Client *storage.R2Client) LocketService {
+func NewLocketService(chatRepo repository.ChatRepository, matchRepo repository.MatchRepository, r2Client *storage.R2Client) LocketService {
 	return &locketService{
 		chatRepo:  chatRepo,
 		matchRepo: matchRepo,

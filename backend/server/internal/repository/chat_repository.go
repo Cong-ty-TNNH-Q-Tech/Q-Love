@@ -10,7 +10,7 @@ import (
 )
 
 type ChatRepository interface {
-	SaveMessage(ctx context.Context, msg *models.ChatMessage) error
+	Create(ctx context.Context, msg *models.ChatMessage) error
 	GetMessagesByMatchID(ctx context.Context, matchID uuid.UUID, limit int, before *time.Time) ([]models.ChatMessage, error)
 }
 
@@ -22,7 +22,7 @@ func NewChatMessageRepository(db *gorm.DB) ChatRepository {
 	return &chatRepository{db: db}
 }
 
-func (r *chatRepository) SaveMessage(ctx context.Context, msg *models.ChatMessage) error {
+func (r *chatRepository) Create(ctx context.Context, msg *models.ChatMessage) error {
 	return r.db.WithContext(ctx).Create(msg).Error
 }
 

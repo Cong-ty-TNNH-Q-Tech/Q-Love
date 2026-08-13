@@ -55,7 +55,7 @@ func (h *Hub) Run(ctx context.Context) {
 				delete(h.clients[client.UserID], client)
 				close(client.Send)
 				if len(h.clients[client.UserID]) == 0 {
-					delete(h.clients[client.UserID])
+					delete(h.clients, client.UserID)
 				}
 			}
 			h.mu.Unlock()
