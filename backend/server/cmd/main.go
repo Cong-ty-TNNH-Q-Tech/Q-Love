@@ -11,6 +11,7 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/api"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/database"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/redis"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
 	"github.com/getsentry/sentry-go"
 	"github.com/gofiber/contrib/fibersentry"
@@ -37,6 +38,13 @@ func setupApp(cfg *config.Config) (*fiber.App, error) {
 		return nil, err
 	}
 
+	// Init Redis Client
+	redisClient, err := redis.NewRedisClient(cfg)
+	if err != nil {
+		logger.Log.Error("Failed to initialize Redis Client", zap.Error(err))
+		return nil, err
+	}
+
 	app := fiber.New(fiber.Config{
 		AppName: "Q-Love Backend v1.0",
 	})
@@ -59,7 +67,7 @@ func setupApp(cfg *config.Config) (*fiber.App, error) {
 	})
 
 	// Register API Routes
-	api.RegisterRoutes(app, db, r2Client, cfg)
+	api.RegisterRoutes(app, db, r2Client, redisClient, cfg)
 
 	return app, nil
 }

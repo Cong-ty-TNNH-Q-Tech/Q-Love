@@ -33,6 +33,10 @@ func (m *mockChatRepo) Create(ctx context.Context, message *models.ChatMessage) 
 	return m.err
 }
 
+func (m *mockChatRepo) GetMessagesByMatchID(ctx context.Context, matchID uuid.UUID, limit int, before *time.Time) ([]models.ChatMessage, error) {
+	return nil, nil
+}
+
 func TestLocketService_SendLocket(t *testing.T) {
 	matchRepo := &mockMatchRepo{match: &models.Match{}}
 	chatRepo := &mockChatRepo{}
