@@ -6,8 +6,6 @@ package services
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"testing"
 	"time"
 
@@ -39,8 +37,20 @@ func (m *mockStealRepo) TransferCardOwnership(ctx context.Context, collectorID u
 	return m.err
 }
 
+type mockMinigameWalletRepo struct {
+	wallet *models.UserWallet
+	err    error
+}
+
+func (m *mockMinigameWalletRepo) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
+func (m *mockMinigameWalletRepo) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error { return nil }
+func (m *mockMinigameWalletRepo) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
+	return m.wallet, m.err
+}
+func (m *mockMinigameWalletRepo) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error { return nil }
+
 func TestMinigameService_InitSteal_InsufficientBalance(t *testing.T) {
-	walletRepo := &mockWalletRepo{wallet: &models.UserWallet{Balance: 500}} // Less than 1000
+	walletRepo := &mockMinigameWalletRepo{wallet: &models.UserWallet{Balance: 500}} // Less than 1000
 	stealRepo := &mockStealRepo{}
 	txManager := &mockTxManager{}
 
@@ -61,7 +71,7 @@ func TestMinigameService_SubmitStealResult_Win(t *testing.T) {
 		CreatedAt:  time.Now().Add(-12 * time.Second), // Valid time for anti-cheat
 	}
 
-	walletRepo := &mockWalletRepo{wallet: &models.UserWallet{Balance: 2000}}
+	walletRepo := &mockMinigameWalletRepo{wallet: &models.UserWallet{Balance: 2000}}
 	stealRepo := &mockStealRepo{steal: steal}
 	txManager := &mockTxManager{}
 
@@ -82,7 +92,7 @@ func TestMinigameService_SubmitStealResult_Lose(t *testing.T) {
 		CreatedAt:  time.Now().Add(-12 * time.Second),
 	}
 
-	walletRepo := &mockWalletRepo{wallet: &models.UserWallet{Balance: 2000}}
+	walletRepo := &mockMinigameWalletRepo{wallet: &models.UserWallet{Balance: 2000}}
 	stealRepo := &mockStealRepo{steal: steal}
 	txManager := &mockTxManager{}
 
