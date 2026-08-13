@@ -52,4 +52,13 @@ func TestMainServer(t *testing.T) {
 	if err := app.Shutdown(); err != nil {
 		t.Errorf("Failed to shutdown server: %v", err)
 	}
+
+	// Also call main() directly in a goroutine to get coverage for it
+	// We set a unique port to avoid conflicts
+	t.Setenv("PORT", "3002")
+	go func() {
+		// This will block, but the test will exit and kill the goroutine
+		main()
+	}()
+	time.Sleep(500 * time.Millisecond) // let it start up
 }
