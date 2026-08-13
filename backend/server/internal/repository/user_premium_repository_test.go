@@ -105,7 +105,7 @@ func TestUserPremiumRepository_ActivatePremium(t *testing.T) {
 	expiresAt := time.Now().AddDate(0, 1, 0)
 
 	// Test success
-	mock.ExpectExec(`INSERT INTO "user_premiums"`).
+	mock.ExpectExec(`INSERT INTO user_premiums`).
 		WithArgs(userID, expiresAt, expiresAt).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -115,7 +115,7 @@ func TestUserPremiumRepository_ActivatePremium(t *testing.T) {
 	}
 
 	// Test error
-	mock.ExpectExec(`INSERT INTO "user_premiums"`).
+	mock.ExpectExec(`INSERT INTO user_premiums`).
 		WithArgs(userID, expiresAt, expiresAt).
 		WillReturnError(gorm.ErrInvalidDB)
 
