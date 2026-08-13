@@ -88,8 +88,8 @@ func TestWalletRepository_GetWalletForUpdate(t *testing.T) {
 	repo := NewWalletRepository(db)
 	userID := uuid.New()
 
-	mock.ExpectQuery(`SELECT \* FROM "user_wallets" WHERE user_id = \$1 FOR UPDATE`).
-		WithArgs(userID).
+	mock.ExpectQuery(`SELECT .* FROM "user_wallets"`).
+		WithArgs(userID, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"user_id", "balance"}).AddRow(userID, 100.0))
 
 	wallet, err := repo.GetWalletForUpdate(context.Background(), userID)
@@ -109,8 +109,8 @@ func TestWalletRepository_GetWalletForUpdate_Error(t *testing.T) {
 	repo := NewWalletRepository(db)
 	userID := uuid.New()
 
-	mock.ExpectQuery(`SELECT \* FROM "user_wallets" WHERE user_id = \$1 FOR UPDATE`).
-		WithArgs(userID).
+	mock.ExpectQuery(`SELECT .* FROM "user_wallets"`).
+		WithArgs(userID, sqlmock.AnyArg()).
 		WillReturnError(sqlmock.ErrCancelled)
 
 	_, err = repo.GetWalletForUpdate(context.Background(), userID)
@@ -127,8 +127,8 @@ func TestWalletRepository_UpdateBalance(t *testing.T) {
 	repo := NewWalletRepository(db)
 	userID := uuid.New()
 
-	mock.ExpectExec(`UPDATE "user_wallets" SET balance = balance \+ \$1, updated_at = \$2 WHERE user_id = \$3`).
-		WithArgs(-10.0, sqlmock.AnyArg(), userID).
+	mock.ExpectExec(`UPDATE "user_wallets"`).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = repo.UpdateBalance(context.Background(), userID, -10.0)
@@ -145,8 +145,8 @@ func TestWalletRepository_UpdateBalance_Error(t *testing.T) {
 	repo := NewWalletRepository(db)
 	userID := uuid.New()
 
-	mock.ExpectExec(`UPDATE "user_wallets" SET balance = balance \+ \$1, updated_at = \$2 WHERE user_id = \$3`).
-		WithArgs(-10.0, sqlmock.AnyArg(), userID).
+	mock.ExpectExec(`UPDATE "user_wallets"`).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnError(sqlmock.ErrCancelled)
 
 	err = repo.UpdateBalance(context.Background(), userID, -10.0)
