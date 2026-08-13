@@ -1,4 +1,8 @@
-﻿import 'package:flutter/material.dart';
+// Copyright (c) 2026 Q-Tech. All rights reserved.
+// Licensed under the GNU AGPLv3 License.
+
+import 'package:flutter/material.dart';
+import 'core/theme/app_theme.dart';
 
 void main() {
   runApp(const QLoveApp());
@@ -11,11 +15,7 @@ class QLoveApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Q-Love',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.pink,
-        useMaterial3: true,
-      ),
+      theme: AppTheme.darkTheme,
       home: const Scaffold(
         body: Center(
           child: Text(
