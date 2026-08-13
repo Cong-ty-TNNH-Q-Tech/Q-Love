@@ -29,11 +29,14 @@ class QrDisplayWidget extends StatelessWidget {
         ],
       ),
       padding: const EdgeInsets.all(16),
-      child: QrImageView(
-        data: data,
-        version: QrVersions.auto,
-        size: size,
-        backgroundColor: Colors.white,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: QrImageView(
+          data: data,
+          version: QrVersions.auto,
+          size: size,
+          backgroundColor: Colors.white,
+        ),
       ),
     );
   }
