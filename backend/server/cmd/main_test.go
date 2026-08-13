@@ -18,6 +18,7 @@ func TestMainServer(t *testing.T) {
 	
 	// Skip real db connection for tests
 	cfg.DatabaseDSN = "skip"
+	cfg.RedisURL = "skip"
 
 	app, err := setupApp(cfg)
 	if err != nil {
@@ -64,6 +65,7 @@ func TestMainServer(t *testing.T) {
 	// We set a unique port to avoid conflicts
 	t.Setenv("PORT", "3002")
 	t.Setenv("DATABASE_DSN", "skip")
+	t.Setenv("REDIS_URL", "skip")
 	go func() {
 		// This will block, but the test will exit and kill the goroutine
 		main()

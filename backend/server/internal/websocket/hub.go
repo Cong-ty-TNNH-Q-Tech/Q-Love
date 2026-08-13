@@ -67,9 +67,13 @@ func (h *Hub) Run(ctx context.Context) {
 	}
 }
 
-// PublishMessage takes a message, saves it via HTTP handler, and pushes to Redis Stream
-func (h *Hub) PublishMessage(ctx context.Context, targetUserID uuid.UUID, payload interface{}) error {
-	data, err := json.Marshal(payload)
+// PublishToRedis takes a message, saves it via HTTP handler, and pushes to Redis Stream
+func (h *Hub) PublishToRedis(ctx context.Context, msg *models.ChatMessage) error {
+	if h.redisClient == nil {
+		return nil
+	}
+	
+	msgBytes, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
@@ -78,8 +82,8 @@ func (h *Hub) PublishMessage(ctx context.Context, targetUserID uuid.UUID, payloa
 	err = h.redisClient.XAdd(ctx, &redis.XAddArgs{
 		Stream: RedisChatStream,
 		Values: map[string]interface{}{
-			"target_id": targetUserID.String(),
-			"payload":   string(data),
+			"target_id": msg.ReceiverID.String(),
+			"payload":   string(msgBytes),
 		},
 	}).Err()
 
@@ -87,6 +91,10 @@ func (h *Hub) PublishMessage(ctx context.Context, targetUserID uuid.UUID, payloa
 }
 
 func (h *Hub) consumeRedisStream(ctx context.Context) {
+	if h.redisClient == nil {
+		return
+	}
+
 	lastID := "$" // Start listening for new messages only
 	
 	for {

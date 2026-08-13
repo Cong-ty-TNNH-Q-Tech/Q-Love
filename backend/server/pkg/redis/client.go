@@ -8,6 +8,10 @@ import (
 )
 
 func NewRedisClient(cfg *config.Config) (*redis.Client, error) {
+	if cfg.RedisURL == "skip" {
+		return nil, nil
+	}
+
 	opts, err := redis.ParseURL(cfg.RedisURL)
 	if err != nil {
 		return nil, err

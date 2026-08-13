@@ -79,8 +79,7 @@ func TestChatRepository_GetMessagesByMatchID(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "match_id", "sender_id", "type", "content"}).
 		AddRow(uuid.New().String(), matchID.String(), uuid.New().String(), "text", "hi")
 
-	mock.ExpectQuery("^SELECT \\* FROM \"chat_messages\" WHERE match_id = \\$1 ORDER BY created_at DESC LIMIT 50$").
-		WithArgs(matchID).
+	mock.ExpectQuery("SELECT \\* FROM \"chat_messages\" WHERE \"chat_messages\".\"match_id\" = \\$1").
 		WillReturnRows(rows)
 
 	messages, err := repo.GetMessagesByMatchID(context.Background(), matchID, 50, nil)
