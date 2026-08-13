@@ -259,7 +259,40 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   # -----------------------------------------------------------
-  # 2. USERS
+  # 2. UPLOAD & MEDIA
+  # -----------------------------------------------------------
+  /upload/presigned-url:
+    post:
+      summary: Lấy Presigned URL để upload file trực tiếp lên Cloudflare R2
+      description: "Tạo link tải lên an toàn có thời hạn 15 phút. Hỗ trợ upload avatar và ảnh."
+      tags: [Upload]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [filename, content_type, file_size]
+              properties:
+                filename: { type: string, example: "avatar.jpg" }
+                content_type: { type: string, example: "image/jpeg" }
+                file_size: { type: integer, example: 1048576 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  upload_url: { type: string }
+                  file_key: { type: string }
+                  expires_in: { type: integer }
+        '400': { $ref: '#/components/responses/UnprocessableEntity' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # -----------------------------------------------------------
+  # 3. USERS
   # -----------------------------------------------------------
   /users/me:
     get:

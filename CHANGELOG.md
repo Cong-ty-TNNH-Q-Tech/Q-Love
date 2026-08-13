@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
-- [backend/server/api] Thêm endpoint và API Nghề Cò Mối (Wingman Referral).
+- [backend/server/api] Thêm endpoint `/api/v1/upload/presigned-url` cho chức năng Upload Avatar (tích hợp Cloudflare R2).
+- [backend/server/api] Thêm endpoint Nghề Cò Mối (Wingman) với đầy đủ CRUD và xử lý hoa hồng Ví Ảo (Transaction SERIALIZABLE).
 - [backend/server/models] Thêm model `wingman_referrals` và `wallet_transactions`.
 - [backend/server/services] Thêm `WingmanService` với logic Referral và hoa hồng (Commission).
 
