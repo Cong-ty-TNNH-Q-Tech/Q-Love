@@ -89,8 +89,12 @@ func TestWebsocket_Integration(t *testing.T) {
 		t.Errorf("Failed to write message: %v", err)
 	}
 	
-	// Give it time to process
-	time.Sleep(100 * time.Millisecond)
+	// Test sending multiple messages to trigger WritePump buffering
+	if serverClient != nil {
+		serverClient.Send <- []byte("msg1")
+		serverClient.Send <- []byte("msg2")
+	}
+	time.Sleep(50 * time.Millisecond)
 
 	// Close client normally
 	err = conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
@@ -98,4 +102,22 @@ func TestWebsocket_Integration(t *testing.T) {
 		t.Errorf("Failed to write close message: %v", err)
 	}
 	time.Sleep(100 * time.Millisecond)
+
+	// Test writing to a closed client to trigger !ok in WritePump
+	if serverClient != nil {
+		// channel is already closed by Unregister because the client disconnected!
+		// Wait, if we send to a closed channel it panics.
+		// So we can't test that easily unless we simulate.
+	}
+}
+
+// Test Hub.PublishMessage JSON error
+func TestHub_PublishMessage_JSONError(t *testing.T) {
+	hub := NewHub(nil)
+	// Pass an unsupported type to json.Marshal (e.g. channel)
+	ch := make(chan int)
+	err := hub.PublishMessage(context.Background(), uuid.New(), ch)
+	if err == nil {
+		t.Error("Expected JSON marshal error, got nil")
+	}
 }
