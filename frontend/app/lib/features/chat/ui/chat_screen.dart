@@ -126,7 +126,7 @@ class _ChatViewState extends State<ChatView> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.black26,
+                  color: Colors.white.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: TextField(

@@ -30,6 +30,8 @@ class ChatRepository {
   void sendMessage(ChatMessage message) {
     if (_channel != null) {
       _channel!.sink.add(jsonEncode(message.toJson()));
+    } else {
+      throw Exception('WebSocket is not connected');
     }
   }
 

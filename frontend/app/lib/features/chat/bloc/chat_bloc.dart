@@ -85,7 +85,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       try {
         repository.sendMessage(message);
       } catch (e) {
-        // Handle error (e.g., remove message and show error)
+        // Rollback optimistic update
+        final rollbackMessages = List<ChatMessage>.from(updatedMessages)..remove(message);
+        emit(ChatLoaded(messages: rollbackMessages));
+        emit(ChatError(message: 'Failed to send message: $e'));
       }
     }
   }
