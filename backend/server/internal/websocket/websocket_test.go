@@ -12,6 +12,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	fiberWebsocket "github.com/gofiber/websocket/v2"
 	"github.com/google/uuid"
+	redis "github.com/redis/go-redis/v9"
 )
 
 func TestWebsocket_Integration(t *testing.T) {
@@ -113,7 +114,8 @@ func TestWebsocket_Integration(t *testing.T) {
 
 // Test Hub.PublishMessage JSON error
 func TestHub_PublishMessage_JSONError(t *testing.T) {
-	hub := NewHub(nil)
+	rdb := redis.NewClient(&redis.Options{Addr: "localhost:0"})
+	hub := NewHub(rdb)
 	// Pass an unsupported type to json.Marshal (e.g. channel)
 	ch := make(chan int)
 	err := hub.PublishMessage(context.Background(), uuid.New(), ch)
