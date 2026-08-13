@@ -47,7 +47,11 @@ func (r *userPremiumRepository) ActivatePremium(ctx context.Context, userID uuid
 		INSERT INTO user_premiums (user_id, expires_at) 
 		VALUES (?, ?) 
 		ON CONFLICT (user_id) 
-		DO UPDATE SET expires_at = EXCLUDED.expires_at`, 
+		DO UPDATE SET expires_at = CASE 
+            WHEN user_premiums.expires_at > CURRENT_TIMESTAMP THEN user_premiums.expires_at + (EXCLUDED.expires_at - CURRENT_TIMESTAMP)
+            ELSE EXCLUDED.expires_at
+        END`, 
+
 		userID, expiresAt).Error
 		
 	return err

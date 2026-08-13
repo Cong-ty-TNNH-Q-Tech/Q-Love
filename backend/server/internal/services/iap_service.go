@@ -123,16 +123,46 @@ func (s *iapService) ProcessRevenueCatWebhook(ctx context.Context, event Revenue
 		}
 
 		err = s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
+			// 1. Check idempotency: Ensure the transaction ID hasn't been processed
+			exists, err := s.walletRepo.CheckTransactionExists(txCtx, txID)
+			if err != nil {
+				return err
+			}
+			if exists {
+				return ErrTransactionExists
+			}
+
+			// 2. Activate Premium
 			var expiresAt time.Time
 			if event.ExpirationAtMs > 0 {
 				expiresAt = time.UnixMilli(event.ExpirationAtMs)
 			} else {
-				expiresAt = time.Now().AddDate(0, 1, 0) // Default 1 month
+				if event.ProductID == "qlove_premium_1year" {
+					expiresAt = time.Now().AddDate(1, 0, 0) // Default 1 year
+				} else {
+					expiresAt = time.Now().AddDate(0, 1, 0) // Default 1 month
+				}
 			}
-			return s.userPremRepo.ActivatePremium(txCtx, userID, expiresAt)
+			err = s.userPremRepo.ActivatePremium(txCtx, userID, expiresAt)
+			if err != nil {
+				return err
+			}
+
+			// 3. Record transaction
+			return s.walletRepo.CreateTransaction(txCtx, &models.WalletTransaction{
+				ID:        txID,
+				UserID:    userID,
+				Amount:    0,
+				Type:      "iap_premium",
+				CreatedAt: time.Now(),
+			})
 		}, &sql.TxOptions{Isolation: sql.LevelSerializable})
 
 		if err != nil {
+			if errors.Is(err, ErrTransactionExists) {
+				logger.Log.Info("IAP premium transaction already processed", zap.String("tx_id", event.TransactionID))
+				return nil
+			}
 			logger.Log.Error("Failed to activate premium", zap.Error(err))
 			return err
 		}
