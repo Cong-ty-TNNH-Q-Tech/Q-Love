@@ -59,7 +59,7 @@ func setupApp(cfg *config.Config) (*fiber.App, error) {
 	})
 
 	// Register API Routes
-	api.RegisterRoutes(app, db, r2Client)
+	api.RegisterRoutes(app, db, r2Client, cfg)
 
 	return app, nil
 }
