@@ -26,17 +26,17 @@ Sử dụng phương pháp phát triển đa nền tảng (Cross-platform) để
 - **Ngôn ngữ & Framework độc tôn:** **Golang (Go)** kết hợp framework **`Fiber`** *(đã chốt, lý do: Fiber nhanh hơn Gin ~20% trên benchmark, API syntax gần giống Express.js giúp dev onboard nhanh hơn, phù hợp cho workload Real-time cao)*.
   - *Lý do:* Golang là "vua" trong việc xử lý đồng thời (Concurrency) bằng Goroutines. Nó gánh vác cực tốt các kết nối Socket liên tục (Real-time Chat, Matchmaking), tốn ít RAM và chạy rất mượt trên môi trường Cloud.
 - **Cách Golang xử lý toàn bộ bài toán của Q-Love:**
-  - *Real-time & Core:* Xử lý giao dịch Sàn Chứng Khoán, Cọc Khế ước và Chat thông qua WebSockets.
+  - *Real-time & Core:* Xử lý giao dịch Chợ Thẻ Bài Profile, Cọc Khế ước và Chat thông qua WebSockets.
   - *Admin CMS:* Dùng Golang viết luôn các API CRUD quản trị (chạy rất nhanh và an toàn với tính định kiểu chặt chẽ).
   - *AI & Xử lý ảnh (Thay thế Python):* Thay vì đẻ thêm service Python, Golang sẽ gọi trực tiếp API của OpenAI/Claude cho tính năng Wingman. Với bài toán làm mờ ảnh (Blur) và NSFW, Golang dùng thư viện `bimg` (dựa trên libvips C++) để xử lý ảnh siêu tốc.
 - **Giao tiếp Real-time:** `WebSockets` tiêu chuẩn hoặc `gRPC`.
 
 ## 3. Cơ sở dữ liệu (Database Layer)
 - **Primary Database (Relational):** **PostgreSQL**
-  - *Nhiệm vụ:* Lưu trữ thông tin User, Lịch sử giao dịch Xu (ACID), Cổ phiếu Profile.
+  - *Nhiệm vụ:* Lưu trữ thông tin User, Lịch sử giao dịch Xu (ACID), Thẻ Bài Profile.
   - *Plugin bắt buộc:* **PostGIS** để tối ưu hóa truy vấn tọa độ GPS (Tìm người quanh đây, tính bán kính Check-in).
 - **In-memory Cache & Queue:** **Redis**
-  - *Nhiệm vụ:* Quản lý hàng đợi (Queue) cho Tòa Án Tình Yêu, lưu trữ trạng thái Online/Offline, đếm Streak, và Cache giá Cổ phiếu.
+  - *Nhiệm vụ:* Quản lý hàng đợi (Queue) cho Tòa Án Tình Yêu, lưu trữ trạng thái Online/Offline, đếm Streak, và Cache giá Thẻ Bài.
 
 ## 4. Hạ tầng & Triển khai (Cloud Infrastructure)
 - **Cloud Provider:** **Amazon Web Services (AWS)**.

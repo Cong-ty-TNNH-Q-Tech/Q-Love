@@ -27,7 +27,7 @@ Q-Love là một dự án "Super App" kết hợp giữa mô hình ứng dụng 
 - Trải nghiệm quẹt thẻ dần trở nên nhàm chán, thiếu sự tương tác sâu và thiếu động lực gắn kết lâu dài.
 
 **Giải pháp của Q-Love:**
-Tích hợp mạnh mẽ các cơ chế **Gamification** (Game hóa) và **Virtual Economy** (Nền kinh tế ảo) vào quá trình hẹn hò. Các tính năng nổi bật bao gồm "Tòa án tình yêu" trừng phạt kẻ bùng kèo, "Sàn chứng khoán Profile" giúp người dùng đầu tư vào sự nổi tiếng của người khác, và "Khế ước tài chính" để cọc tiền đảm bảo các cuộc hẹn O2O (Online to Offline).
+Tích hợp mạnh mẽ các cơ chế **Gamification** (Game hóa) và **Virtual Economy** (Nền kinh tế ảo) vào quá trình hẹn hò. Các tính năng nổi bật bao gồm "Tòa án tình yêu" trừng phạt kẻ bùng kèo, "Chợ Thẻ Bài Profile Profile" giúp người dùng đầu tư vào sự nổi tiếng của người khác, và "Khế ước tài chính" để cọc tiền đảm bảo các cuộc hẹn O2O (Online to Offline).
 
 ---
 
@@ -72,7 +72,7 @@ Các tính năng được quy hoạch theo 3 giai đoạn (Phases) tương ứng
 
 **Phase 3 (Kinh tế ảo & Thao túng):**
 - Đánh giá và Tra cứu CV Tình Trường.
-- Sàn Chứng Khoán Độc Thân (Mua bán cổ phần profile).
+- Chợ Thẻ Bài Profile Độc Thân (Mua bán Thẻ Bài profile).
 - Đêm săn mồi (The Purge).
 
 **Hệ thống chung (Phát triển xuyên suốt):**
@@ -96,7 +96,7 @@ Dựa trên tài liệu BA Use-case, các yêu cầu nghiệp vụ chính đư�
    - Kéo người dùng từ nhà ra đường thông qua "Đánh chiếm địa bàn Clan".
    - Khuyến khích gặp mặt thực tế an toàn bằng "Khế ước tài chính chống bùng kèo".
 3. **Vòng lặp Kinh tế ảo (Virtual Economy & Monetization):** 
-   - Sử dụng Sàn Chứng Khoán Profile để tạo tính thanh khoản và lý do để nạp tiền, giữ xu trong hệ thống thay vì tiêu xài hết.
+   - Sử dụng Chợ Thẻ Bài Profile Profile để tạo tính thanh khoản và lý do để nạp tiền, giữ xu trong hệ thống thay vì tiêu xài hết.
 
 ---
 
@@ -110,7 +110,7 @@ Q-Love sử dụng mô hình "Freemium + Micro-transactions" kết hợp kinh t�
   - *Bộ lọc ảnh Locket VIP:* Các hiệu ứng làm mờ đặc biệt hoặc khung ảnh đẹp.
 - **Thu phí giao dịch (Transaction Fee - "Thuế"):**
   - Thu 10% phí quản lý khi có người bị tịch thu cọc hẹn hò (chuyển 90% cho nạn nhân, 10% chảy vào quỹ hệ thống).
-  - Thu phí giao dịch 2% cho mỗi lệnh mua/bán thành công trên Sàn Chứng Khoán Profile.
+  - Thu phí giao dịch 2% cho mỗi lệnh mua/bán thành công trên Chợ Thẻ Bài Profile Profile.
 - **Doanh thu B2B (Tương lai):** Bán các gói "Cờ chủ quyền địa điểm" cho các quán Cafe, Trà sữa để kích cầu người dùng tới Check-in.
 
 ---
@@ -132,7 +132,7 @@ Q-Love sử dụng mô hình "Freemium + Micro-transactions" kết hợp kinh t�
 ## 8. Rủi ro & Biện pháp giảm thiểu (Risks & Mitigations)
 | Rủi ro | Mức độ | Biện pháp giảm thiểu |
 | :--- | :--- | :--- |
-| **Bị Apple/Google Store từ chối do tính năng Sàn Chứng Khoán** | Cao | Đóng gói tính năng này dưới dạng "Minigame sưu tầm thẻ bài Profile", không dùng các từ ngữ như Trading, Stock, Invest trong UI/UX public. |
+| **Bị Apple/Google Store từ chối do tính năng Chợ Thẻ Bài Profile** | Cao | Đóng gói tính năng này dưới dạng "Minigame sưu tầm thẻ bài Profile", không dùng các từ ngữ như Trading, Card, Invest trong UI/UX public. |
 | **Người dùng lạm dụng Tòa Án Tình Yêu để spam, bôi nhọ** | Trung bình | Yêu cầu phải có Streak tối thiểu 5 ngày mới được kiện. Áp dụng AI quét nội dung ngôn từ thù địch trước khi đưa vụ kiện ra công khai. |
 | **Gian lận khi quét QR Code Khế Ước (chụp gửi qua mạng)** | Thấp | Bắt buộc sử dụng Dynamic QR Code (đổi mã mỗi 30 giây) ngay trong app, vô hiệu hóa tính năng chụp màn hình (Screenshot) tại màn hình QR. |
 | **Rủi ro Pháp lý tại thị trường Việt Nam (Giấy phép)** | Cao | App có tính năng Mạng xã hội và giao dịch Xu ảo. Bắt buộc phải có cố vấn pháp lý ngay từ Phase 1 để xin cấp phép Giấy phép Mạng Xã Hội và Thương mại điện tử (nếu cần). |
