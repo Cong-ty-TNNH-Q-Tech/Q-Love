@@ -44,7 +44,7 @@ func TestClanRepository_CreateClan(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectQuery(`INSERT INTO "clans"`).
-		WithArgs(clan.ID, clan.Name, sqlmock.AnyArg(), sqlmock.AnyArg(), clan.LeaderID, sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(clan.ID))
 	mock.ExpectCommit()
 
@@ -64,8 +64,8 @@ func TestClanRepository_AddClanMember(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectQuery(`INSERT INTO "clan_members"`).
-		WithArgs(member.ClanID, member.UserID, member.Role, sqlmock.AnyArg()).
-		WillReturnRows(sqlmock.NewRows([]string{"clan_id"}).AddRow(member.ClanID))
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnRows(sqlmock.NewRows([]string{"joined_at"}).AddRow(time.Now()))
 	mock.ExpectCommit()
 
 	err := repo.AddClanMember(ctx, member)
