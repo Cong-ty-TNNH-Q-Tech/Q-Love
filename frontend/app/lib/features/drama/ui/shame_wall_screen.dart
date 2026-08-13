@@ -17,7 +17,7 @@ class ShameWallScreen extends StatelessWidget {
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          title: const Text('Tường Thành Phong Sát', style: TextStyle(fontWeight: FontWeight.w800)),
+          title: Text('Tường Thành Phong Sát', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
@@ -43,7 +43,7 @@ class ShameWallScreen extends StatelessWidget {
                   },
                 );
               } else if (state is ShameWallError) {
-                return Center(child: Text(state.message, style: const TextStyle(color: Colors.red)));
+                return Center(child: Text(state.message, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)));
               }
               return const SizedBox.shrink();
             },
@@ -94,8 +94,7 @@ class ShameWallScreen extends StatelessWidget {
                     children: [
                       Text(
                         shame.userName,
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -103,21 +102,19 @@ class ShameWallScreen extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         shame.reason,
-                        style: TextStyle(
-                          fontSize: 14,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.white.withOpacity(0.7),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Text('🍅 ', style: TextStyle(fontSize: 14)),
+                          Text('🍅 ', style: Theme.of(context).textTheme.bodyMedium),
                           Text(
                             '${shame.tomatoes} cà chua',
-                            style: const TextStyle(
-                              fontSize: 14,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFFFF2D55),
+                              color: const Color(0xFFFF2D55),
                             ),
                           ),
                         ],
@@ -155,8 +152,8 @@ class ShameWallScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: const Center(
-                      child: Text('🍅', style: TextStyle(fontSize: 24)),
+                    child: Center(
+                      child: Text('🍅', style: Theme.of(context).textTheme.headlineSmall),
                     ),
                   ),
                 ),
