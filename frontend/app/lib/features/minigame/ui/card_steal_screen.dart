@@ -69,9 +69,33 @@ class _CardStealScreenState extends State<CardStealScreen> with SingleTickerProv
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
+        buildWhen: (previous, current) => current is! CardStealWon && current is! CardStealLost,
         builder: (context, state) {
           if (state is CardStealLoading || state is CardStealInitial) {
             return const Center(child: CircularProgressIndicator(color: Colors.pinkAccent));
+          }
+
+          if (state is CardStealError) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.redAccent, size: 64),
+                  const SizedBox(height: 16),
+                  Text(
+                    state.message,
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.white24),
+                    child: const Text('Go Back', style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+            );
           }
 
           if (state is CardStealPlaying) {
