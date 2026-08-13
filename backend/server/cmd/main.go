@@ -17,7 +17,6 @@ import (
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 func setupApp(cfg *config.Config) (*fiber.App, error) {
