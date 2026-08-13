@@ -29,9 +29,10 @@ func (h *WingmanHandler) CreateReferral(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
 	}
 
-	// In a real app, WingmanID comes from the JWT Token of the authenticated user
-	// Here we simulate it with a dummy UUID for the sake of the endpoint
-	wingmanID := uuid.New()
+	wingmanID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
 
 	referral, err := h.service.CreateReferral(c.Context(), wingmanID, req.Target1ID, req.Target2ID)
 	if err != nil {
@@ -52,15 +53,9 @@ func (h *WingmanHandler) AcceptReferral(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid referral ID"})
 	}
 
-	// In a real app, AcceptingUserID comes from the JWT Token of the authenticated user
-	// Here we simulate it with a dummy UUID (it needs to match Target1 or Target2 in real tests, so we will pass it in a header or just skip auth for now in tests)
-	acceptingUserID := uuid.New() // Placeholder
-	
-	// Optional: read from header for easy testing
-	if authHeader := c.Get("X-User-ID"); authHeader != "" {
-		if parsed, err := uuid.Parse(authHeader); err == nil {
-			acceptingUserID = parsed
-		}
+	acceptingUserID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
 	referral, err := h.service.AcceptReferral(c.Context(), referralID, acceptingUserID)
