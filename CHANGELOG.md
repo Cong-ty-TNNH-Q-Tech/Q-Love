@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [backend/server] Thêm endpoint /shames và sửa transaction, join query, API docs (Issue #74).
 - [backend/server] Thêm endpoint `/shames` và sửa transaction, join query, API docs (Issue #74).
 - [frontend/app] Tích hợp package `google_fonts` và cấu hình `textTheme` chuẩn cho `AppTheme.darkTheme`.
 - [backend/server/pkg] Tích hợp thư viện logging chuẩn `Zap` và báo lỗi qua `Sentry`.
