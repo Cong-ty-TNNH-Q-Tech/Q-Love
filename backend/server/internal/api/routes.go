@@ -19,20 +19,14 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 	shameRepo := repository.NewShameRepository(db)
 	txManager := repository.NewTransactionManager(db)
 
-	walletService := services.NewWalletService(walletRepo, txManager)
 	wingmanService := services.NewWingmanService(wingmanRepo, walletRepo, txManager)
 	shameService := services.NewShameService(shameRepo, walletRepo, txManager)
 
-	walletHandler := handlers.NewWalletHandler(walletService)
 	wingmanHandler := handlers.NewWingmanHandler(wingmanService)
 	shameHandler := handlers.NewShameHandler(shameService)
 
 	// API v1 group
 	v1 := app.Group("/api/v1")
-
-	// Wallet routes
-	v1.Post("/wallets/deposit", walletHandler.Deposit)
-	v1.Get("/wallets/:user_id", walletHandler.GetBalance)
 
 	// Wingman routes
 	v1.Post("/wingman/referrals", wingmanHandler.CreateReferral)
