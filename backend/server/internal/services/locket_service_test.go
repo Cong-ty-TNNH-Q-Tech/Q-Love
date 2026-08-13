@@ -115,3 +115,28 @@ func TestLocketService_SendLocket_NSFWDetected(t *testing.T) {
 		t.Errorf("Expected error for NSFW content, got nil")
 	}
 }
+
+type mockViolationRepo3Strikes struct {
+	mockViolationRepo
+}
+
+func (m *mockViolationRepo3Strikes) CountActiveViolationsByType(ctx context.Context, userID uuid.UUID, vType string) (int64, error) {
+	return 3, nil
+}
+
+func TestLocketService_SendLocket_NSFWDetected_3Strikes(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{}}
+	chatRepo := &mockChatRepo{}
+	violationRepo := &mockViolationRepo3Strikes{}
+	nsfwService := &mockNSFWService{isNSFW: true}
+
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
+
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "nsfw.jpg"})
+	if err == nil {
+		t.Errorf("Expected error for NSFW content, got nil")
+	}
+	if err.Error() != "tài khoản của bạn đã bị khóa do vi phạm gửi ảnh nhạy cảm 3 lần" {
+		t.Errorf("Expected ban message, got %v", err.Error())
+	}
+}
