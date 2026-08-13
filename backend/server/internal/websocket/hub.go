@@ -135,19 +135,22 @@ func (h *Hub) consumeRedisStream(ctx context.Context) {
 					
 					// If the target user is connected to THIS node, send it
 					h.mu.RLock()
+					var deadClients []*Client
 					if userConns, exists := h.clients[targetID]; exists {
 						for client := range userConns {
 							select {
 							case client.Send <- []byte(payloadStr):
 							default:
 								// Cannot send (buffer full), close it
-								h.mu.RUnlock()
-								h.Unregister <- client
-								h.mu.RLock()
+								deadClients = append(deadClients, client)
 							}
 						}
 					}
 					h.mu.RUnlock()
+					
+					for _, client := range deadClients {
+						h.Unregister <- client
+					}
 				}
 			}
 		}
