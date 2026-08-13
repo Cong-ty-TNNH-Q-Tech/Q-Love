@@ -8,8 +8,13 @@ import (
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"github.com/google/uuid"
 )
+
+func init() {
+	logger.InitLogger("test", "")
+}
 
 // MockTxManager
 type MockTxManager struct{}
