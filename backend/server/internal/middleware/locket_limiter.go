@@ -11,7 +11,7 @@ import (
 
 // LocketRateLimiter creates a middleware to limit Locket sends to 10 per hour.
 // It bypasses the limit if the user has an active Premium subscription.
-func LocketRateLimiter(userPremiumRepo repository.UserPremiumRepository) fiber.Handler {
+func LocketRateLimiter() fiber.Handler {
 	return limiter.New(limiter.Config{
 		Max:        10,
 		Expiration: 1 * time.Hour,
@@ -32,21 +32,7 @@ func LocketRateLimiter(userPremiumRepo repository.UserPremiumRepository) fiber.H
 			})
 		},
 		Next: func(c *fiber.Ctx) bool {
-			userIDStr, ok := c.Locals("user_id").(string)
-			if !ok {
-				return false
-			}
-			userID, err := uuid.Parse(userIDStr)
-			if err != nil {
-				return false
-			}
-
-			// Check if user is premium to bypass the limit
-			isPremium, err := userPremiumRepo.IsUserPremium(c.Context(), userID)
-			if err != nil {
-				// On error, we don't bypass to be safe, but ideally log it
-				return false
-			}
+			isPremium, _ := c.Locals("is_premium").(bool)
 			return isPremium
 		},
 	})

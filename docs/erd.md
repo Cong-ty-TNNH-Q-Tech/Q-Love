@@ -42,6 +42,12 @@ erDiagram
         uuid user_id FK
         numeric balance "Xu"
     }
+    USER_PREMIUMS {
+        uuid user_id PK, FK
+        timestamp expires_at
+        timestamp created_at
+        timestamp updated_at
+    }
     MATCHES {
         uuid id PK
         uuid user1_id FK

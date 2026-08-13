@@ -60,6 +60,6 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 
 	// Locket routes
 	locketGroup := v1.Group("/locket", middleware.JWTMiddleware(""))
-	locketGroup.Post("/send", middleware.LocketRateLimiter(userPremiumRepo), locketHandler.SendLocket)
+	locketGroup.Post("/send", middleware.LocketRateLimiter(), locketHandler.SendLocket)
 
 }
