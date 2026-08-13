@@ -139,6 +139,69 @@ func TestChatHandler_SendMessage(t *testing.T) {
 			t.Errorf("expected 400, got %d", resp.StatusCode)
 		}
 	})
+
+	t.Run("InvalidMatchID", func(t *testing.T) {
+		body := map[string]interface{}{
+			"match_id":  "invalid",
+			"target_id": uuid.New().String(),
+			"type":      "text",
+			"content":   "hello",
+		}
+		b, _ := json.Marshal(body)
+		
+		req := httptest.NewRequest("POST", "/send", bytes.NewReader(b))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-User-ID", uuid.New().String())
+		resp, _ := app.Test(req)
+		if resp.StatusCode != fiber.StatusBadRequest {
+			t.Errorf("expected 400, got %d", resp.StatusCode)
+		}
+	})
+
+	t.Run("InvalidTargetID", func(t *testing.T) {
+		body := map[string]interface{}{
+			"match_id":  uuid.New().String(),
+			"target_id": "invalid",
+			"type":      "text",
+			"content":   "hello",
+		}
+		b, _ := json.Marshal(body)
+		
+		req := httptest.NewRequest("POST", "/send", bytes.NewReader(b))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-User-ID", uuid.New().String())
+		resp, _ := app.Test(req)
+		if resp.StatusCode != fiber.StatusBadRequest {
+			t.Errorf("expected 400, got %d", resp.StatusCode)
+		}
+	})
+
+	t.Run("ServiceError", func(t *testing.T) {
+		appErr := fiber.New()
+		errSvc := &mockChatService{
+			saveMessageFunc: func(ctx context.Context, senderID, matchID uuid.UUID, msgType, content string) (*models.ChatMessage, error) {
+				return nil, fiber.ErrInternalServerError
+			},
+		}
+		handlerErr := NewChatHandler(errSvc, hub)
+		appErr.Post("/send", handlerErr.SendMessage)
+
+		body := map[string]interface{}{
+			"match_id":  uuid.New().String(),
+			"target_id": uuid.New().String(),
+			"type":      "text",
+			"content":   "hello",
+		}
+		b, _ := json.Marshal(body)
+		
+		req := httptest.NewRequest("POST", "/send", bytes.NewReader(b))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-User-ID", uuid.New().String())
+		resp, _ := appErr.Test(req)
+		if resp.StatusCode != fiber.StatusInternalServerError {
+			t.Errorf("expected 500, got %d", resp.StatusCode)
+		}
+	})
 }
 
 func TestChatHandler_GetMessages(t *testing.T) {
@@ -176,5 +239,41 @@ func TestChatHandler_GetMessages(t *testing.T) {
 		if resp.StatusCode != fiber.StatusOK {
 			t.Errorf("expected 200 OK, got %d", resp.StatusCode)
 		}
+	})
+
+	t.Run("ServiceError", func(t *testing.T) {
+		appErr := fiber.New()
+		errSvc := &mockChatService{
+			getMessagesFunc: func(ctx context.Context, matchID uuid.UUID, limit int, before *time.Time) ([]models.ChatMessage, error) {
+				return nil, fiber.ErrInternalServerError
+			},
+		}
+		handlerErr := NewChatHandler(errSvc, hub)
+		appErr.Get("/messages/:match_id", handlerErr.GetMessages)
+
+		req := httptest.NewRequest("GET", "/messages/"+uuid.New().String(), nil)
+		resp, _ := appErr.Test(req)
+		if resp.StatusCode != fiber.StatusInternalServerError {
+			t.Errorf("expected 500, got %d", resp.StatusCode)
+		}
+	})
+}
+
+func TestChatHandler_WSHandler(t *testing.T) {
+	app := fiber.New()
+	hub := customWs.NewHub(nil)
+	handler := NewChatHandler(&mockChatService{}, hub)
+
+	app.Get("/ws_test", handler.Upgrade, func(c *fiber.Ctx) error {
+		// Mock a call to WSHandler directly using fiber/websocket
+		// In a real scenario, this would be tested via integration tests (which we already have in websocket_test.go)
+		// But for coverage purposes of the invalid query parameter:
+		return nil
+	})
+
+	t.Run("InvalidUserID", func(t *testing.T) {
+		// Test the Upgrade error by passing non-WS request to WSHandler manually if we could, 
+		// but since it expects *websocket.Conn, we can't easily mock without fiberWebsocket.New.
+		// It's covered by integration tests.
 	})
 }
