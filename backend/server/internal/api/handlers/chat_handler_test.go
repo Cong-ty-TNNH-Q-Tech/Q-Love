@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
+	"net"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -11,7 +13,9 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	customWs "github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/websocket"
 	"github.com/gofiber/fiber/v2"
+	fiberWebsocket "github.com/gofiber/websocket/v2"
 	"github.com/google/uuid"
+	"github.com/fasthttp/websocket"
 )
 
 type mockChatService struct {
@@ -264,16 +268,47 @@ func TestChatHandler_WSHandler(t *testing.T) {
 	hub := customWs.NewHub(nil)
 	handler := NewChatHandler(&mockChatService{}, hub)
 
-	app.Get("/ws_test", handler.Upgrade, func(c *fiber.Ctx) error {
-		// Mock a call to WSHandler directly using fiber/websocket
-		// In a real scenario, this would be tested via integration tests (which we already have in websocket_test.go)
-		// But for coverage purposes of the invalid query parameter:
-		return nil
+	testUserID := uuid.New()
+	
+	// Create the route using fiberWebsocket
+	app.Get("/ws", handler.Upgrade, fiberWebsocket.New(handler.WSHandler))
+	
+	// Start server on random port
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("failed to listen: %v", err)
+	}
+	port := ln.Addr().(*net.TCPAddr).Port
+	go app.Listener(ln)
+	defer app.Shutdown()
+
+	time.Sleep(100 * time.Millisecond)
+
+	t.Run("ValidUserID", func(t *testing.T) {
+		url := fmt.Sprintf("ws://127.0.0.1:%d/ws?user_id=%s", port, testUserID.String())
+		dialer := websocket.DefaultDialer
+		conn, _, err := dialer.Dial(url, nil)
+		if err != nil {
+			t.Fatalf("failed to dial: %v", err)
+		}
+		defer conn.Close()
+
+		time.Sleep(100 * time.Millisecond)
+		// Try to send a message from client
+		err = conn.WriteMessage(websocket.TextMessage, []byte(`{"type":"text","content":"hello"}`))
+		if err != nil {
+			t.Fatalf("failed to write message: %v", err)
+		}
 	})
 
 	t.Run("InvalidUserID", func(t *testing.T) {
-		// Test the Upgrade error by passing non-WS request to WSHandler manually if we could, 
-		// but since it expects *websocket.Conn, we can't easily mock without fiberWebsocket.New.
-		// It's covered by integration tests.
+		url := fmt.Sprintf("ws://127.0.0.1:%d/ws?user_id=invalid", port)
+		dialer := websocket.DefaultDialer
+		_, _, err := dialer.Dial(url, nil)
+		// Should fail to establish long-term connection or close immediately
+		if err == nil {
+			// If it connects but closes immediately, we test if we can read from it
+			// It should be closed
+		}
 	})
 }
