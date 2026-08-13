@@ -6,6 +6,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"github.com/google/uuid"
@@ -80,5 +81,5 @@ func (s *shameService) ThrowTomato(ctx context.Context, throwerID uuid.UUID, sha
 		}
 
 		return nil
-	})
+	}, &sql.TxOptions{Isolation: sql.LevelSerializable})
 }
