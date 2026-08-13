@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"github.com/fasthttp/websocket"
 	"github.com/gofiber/fiber/v2"
 	fiberWebsocket "github.com/gofiber/websocket/v2"
@@ -14,6 +15,7 @@ import (
 )
 
 func TestWebsocket_Integration(t *testing.T) {
+	logger.InitLogger("test", "")
 	app := fiber.New(fiber.Config{DisableStartupMessage: true})
 
 	hub := NewHub(nil)

@@ -6,10 +6,12 @@ import (
 	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"github.com/google/uuid"
 )
 
 func TestHub_Run(t *testing.T) {
+	logger.InitLogger("test", "")
 	// Create a new hub with nil redis client (which is handled gracefully now)
 	hub := NewHub(nil)
 	
