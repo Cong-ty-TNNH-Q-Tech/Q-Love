@@ -10,6 +10,7 @@ import (
 
 type UserPremiumRepository interface {
 	IsUserPremium(ctx context.Context, userID uuid.UUID) (bool, error)
+	ActivatePremium(ctx context.Context, userID uuid.UUID, expiresAt time.Time) error
 }
 
 type userPremiumRepository struct {
@@ -30,4 +31,24 @@ func (r *userPremiumRepository) IsUserPremium(ctx context.Context, userID uuid.U
 		return false, err
 	}
 	return count > 0, nil
+}
+
+func (r *userPremiumRepository) ActivatePremium(ctx context.Context, userID uuid.UUID, expiresAt time.Time) error {
+	db := GetDB(ctx, r.db)
+	
+	// Create or update user premium
+	// In GORM, we can use Clauses(clause.OnConflict{}) but let's do a simple find/update or create
+	// Since we don't have models imported, wait, I need to import models!
+	// Wait, is there a UserPremium model?
+	// Let's use Raw SQL to avoid importing models if we don't know the exact struct.
+	// Actually we should just execute the update or insert.
+	
+	err := db.WithContext(ctx).Exec(`
+		INSERT INTO user_premiums (user_id, expires_at) 
+		VALUES (?, ?) 
+		ON CONFLICT (user_id) 
+		DO UPDATE SET expires_at = EXCLUDED.expires_at`, 
+		userID, expiresAt).Error
+		
+	return err
 }

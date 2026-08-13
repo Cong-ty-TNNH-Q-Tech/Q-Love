@@ -6,11 +6,12 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/api/handlers"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/middleware"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
-	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/websocket"
+	chatws "github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/websocket"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
 	"github.com/gofiber/websocket/v2"
 	"github.com/redis/go-redis/v9"
@@ -18,7 +19,7 @@ import (
 	"context"
 )
 
-func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, redisClient *redis.Client) {
+func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, redisClient *redis.Client, cfg *config.Config) {
 	wingmanRepo := repository.NewWingmanRepository(db)
 	walletRepo := repository.NewWalletRepository(db)
 	shameRepo := repository.NewShameRepository(db)
@@ -36,13 +37,17 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	// Chat & Websocket
 	chatRepo := repository.NewChatMessageRepository(db)
 	chatService := services.NewChatService(chatRepo)
-	hub := websocket.NewHub(redisClient)
+	hub := chatws.NewHub(redisClient)
 	go hub.Run(context.Background())
 	chatHandler := handlers.NewChatHandler(chatService, hub)
 
 	matchRepo := repository.NewMatchRepository(db)
+	userPremRepo := repository.NewUserPremiumRepository(db)
 	locketService := services.NewLocketService(chatRepo, matchRepo, r2Client)
 	locketHandler := handlers.NewLocketHandler(locketService)
+
+	iapService := services.NewIAPService(txManager, walletRepo, userPremRepo)
+	webhookHandler := handlers.NewWebhookHandler(cfg, iapService)
 
 	// API v1 group
 	v1 := app.Group("/api/v1")
@@ -75,4 +80,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	// Locket routes
 	locketGroup := v1.Group("/locket", middleware.JWTMiddleware(""))
 	locketGroup.Post("/send", middleware.LocketRateLimiter(), locketHandler.SendLocket)
+	// Webhooks
+	webhookGroup := v1.Group("/webhooks")
+	webhookGroup.Post("/revenuecat", webhookHandler.HandleRevenueCat)
 }
