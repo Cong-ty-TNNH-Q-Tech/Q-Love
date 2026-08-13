@@ -29,6 +29,13 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 	shameHandler := handlers.NewShameHandler(shameService)
 	clanHandler := handlers.NewClanHandler(clanService)
 
+	userPremiumRepo := repository.NewUserPremiumRepository(db)
+	matchRepo := repository.NewMatchRepository(db)
+	chatRepo := repository.NewChatMessageRepository(db)
+
+	locketService := services.NewLocketService(chatRepo, matchRepo, r2Client)
+	locketHandler := handlers.NewLocketHandler(locketService)
+
 	// API v1 group
 	v1 := app.Group("/api/v1")
 
@@ -50,5 +57,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 	// Clan routes
 	clanGroup := v1.Group("/clans", middleware.JWTMiddleware(""))
 	clanGroup.Post("/", clanHandler.CreateClan)
+
+	// Locket routes
+	locketGroup := v1.Group("/locket", middleware.JWTMiddleware(""))
+	locketGroup.Post("/send", middleware.LocketRateLimiter(userPremiumRepo), locketHandler.SendLocket)
 
 }
