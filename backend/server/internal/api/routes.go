@@ -14,19 +14,36 @@ import (
 )
 
 func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
-	api := app.Group("/api/v1")
-
-	// Wingman routes
 	wingmanRepo := repository.NewWingmanRepository(db)
 	walletRepo := repository.NewWalletRepository(db)
+	shameRepo := repository.NewShameRepository(db)
 	txManager := repository.NewTransactionManager(db)
+
+	walletService := services.NewWalletService(walletRepo, txManager)
 	wingmanService := services.NewWingmanService(wingmanRepo, walletRepo, txManager)
+	shameService := services.NewShameService(shameRepo, walletRepo, txManager)
+
+	walletHandler := handlers.NewWalletHandler(walletService)
 	wingmanHandler := handlers.NewWingmanHandler(wingmanService)
-	wingmanGroup := api.Group("/wingmans")
-	wingmanGroup.Post("/referral", wingmanHandler.CreateReferral)
-	wingmanGroup.Post("/referral/:id/accept", wingmanHandler.AcceptReferral)
+	shameHandler := handlers.NewShameHandler(shameService)
+
+	// API v1 group
+	v1 := app.Group("/api/v1")
+
+	// Wallet routes
+	v1.Post("/wallets/deposit", walletHandler.Deposit)
+	v1.Get("/wallets/:user_id", walletHandler.GetBalance)
+
+	// Wingman routes
+	v1.Post("/wingman/referrals", wingmanHandler.CreateReferral)
+	v1.Post("/wingman/referrals/:id/accept", wingmanHandler.AcceptReferral)
+
+	// Shame (Wall of Shame) routes
+	v1.Get("/shames", shameHandler.GetActiveShames)
+	v1.Post("/shames/:id/tomato", shameHandler.ThrowTomato)
+
 	// Upload routes
 	uploadHandler := handlers.NewUploadHandler(r2Client)
-	uploadGroup := api.Group("/upload")
+	uploadGroup := v1.Group("/upload")
 	uploadGroup.Post("/presigned-url", uploadHandler.GenerateUploadURL)
 }
