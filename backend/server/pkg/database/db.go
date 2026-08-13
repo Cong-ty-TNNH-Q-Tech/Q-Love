@@ -15,6 +15,11 @@ import (
 	"gorm.io/gorm"
 )
 
+var (
+	GormOpen     = gorm.Open
+	PostgresOpen = postgres.Open
+)
+
 func NewPostgresDB(cfg *config.Config) (*gorm.DB, error) {
 	if cfg.DatabaseDSN == "" {
 		return nil, fmt.Errorf("DatabaseDSN is required in configuration")
@@ -24,7 +29,7 @@ func NewPostgresDB(cfg *config.Config) (*gorm.DB, error) {
 		return nil, nil
 	}
 
-	db, err := gorm.Open(postgres.Open(cfg.DatabaseDSN), &gorm.Config{})
+	db, err := GormOpen(PostgresOpen(cfg.DatabaseDSN), &gorm.Config{})
 	if err != nil {
 		logger.Log.Error("Failed to connect to database", zap.Error(err))
 		return nil, err
