@@ -60,3 +60,15 @@ func TestLocketService_SendLocket_MatchNotFound(t *testing.T) {
 		t.Errorf("Expected error, got nil")
 	}
 }
+
+func TestLocketService_SendLocket_CreateError(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{}}
+	chatRepo := &mockChatRepo{err: errors.New("db error")}
+	
+	service := NewLocketService(chatRepo, matchRepo, nil)
+	
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "test.jpg"})
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+}
