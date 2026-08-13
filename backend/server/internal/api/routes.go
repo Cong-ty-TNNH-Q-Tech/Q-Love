@@ -6,6 +6,7 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/api/handlers"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/middleware"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
@@ -14,7 +15,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
+func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, cfg *config.Config) {
 	wingmanRepo := repository.NewWingmanRepository(db)
 	walletRepo := repository.NewWalletRepository(db)
 	shameRepo := repository.NewShameRepository(db)
@@ -32,9 +33,13 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 
 	matchRepo := repository.NewMatchRepository(db)
 	chatRepo := repository.NewChatMessageRepository(db)
+	userPremRepo := repository.NewUserPremiumRepository(db)
 
 	locketService := services.NewLocketService(chatRepo, matchRepo, r2Client)
 	locketHandler := handlers.NewLocketHandler(locketService)
+
+	iapService := services.NewIAPService(txManager, walletRepo, userPremRepo)
+	webhookHandler := handlers.NewWebhookHandler(cfg, iapService)
 
 	// API v1 group
 	v1 := app.Group("/api/v1")
@@ -62,4 +67,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client) {
 	locketGroup := v1.Group("/locket", middleware.JWTMiddleware(""))
 	locketGroup.Post("/send", middleware.LocketRateLimiter(), locketHandler.SendLocket)
 
+	// Webhooks
+	webhookGroup := v1.Group("/webhooks")
+	webhookGroup.Post("/revenuecat", webhookHandler.HandleRevenueCat)
 }
