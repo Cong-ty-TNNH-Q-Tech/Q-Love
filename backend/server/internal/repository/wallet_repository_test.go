@@ -11,6 +11,8 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func TestWalletRepository_AddCommission(t *testing.T) {
