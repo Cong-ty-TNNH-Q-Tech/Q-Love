@@ -126,6 +126,91 @@ func TestIAPService_ProcessRevenueCatWebhook_Premium(t *testing.T) {
 	}
 }
 
+func TestIAPService_ProcessRevenueCatWebhook_Premium_WithExpiration(t *testing.T) {
+	walletRepo := &MockWalletRepoIAP{}
+	userPremRepo := &MockUserPremiumRepoIAP{
+		ActivateFunc: func(ctx context.Context, userID uuid.UUID, expiresAt time.Time) error {
+			return nil
+		},
+	}
+	svc := NewIAPService(&MockTxManager{}, walletRepo, userPremRepo)
+
+	event := RevenueCatEvent{
+		Type:           "INITIAL_PURCHASE",
+		AppUserID:      uuid.New().String(),
+		ProductID:      "qlove_premium_1month",
+		TransactionID:  "tx_99999",
+		ExpirationAtMs: time.Now().UnixMilli() + 1000000,
+	}
+
+	err := svc.ProcessRevenueCatWebhook(context.Background(), event)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+}
+
+func TestIAPService_ProcessRevenueCatWebhook_Premium_TxExists(t *testing.T) {
+	walletRepo := &MockWalletRepoIAP{
+		CheckTxFunc: func(ctx context.Context, txID uuid.UUID) (bool, error) {
+			return true, nil
+		},
+	}
+	svc := NewIAPService(&MockTxManager{}, walletRepo, &MockUserPremiumRepoIAP{})
+
+	event := RevenueCatEvent{
+		Type:          "INITIAL_PURCHASE",
+		AppUserID:     uuid.New().String(),
+		ProductID:     "qlove_premium_1month",
+		TransactionID: "tx_99999",
+	}
+
+	err := svc.ProcessRevenueCatWebhook(context.Background(), event)
+	if err != nil {
+		t.Fatalf("Expected nil due to handled ErrTransactionExists, got %v", err)
+	}
+}
+
+func TestIAPService_ProcessRevenueCatWebhook_Premium_1Year(t *testing.T) {
+	walletRepo := &MockWalletRepoIAP{}
+	userPremRepo := &MockUserPremiumRepoIAP{
+		ActivateFunc: func(ctx context.Context, userID uuid.UUID, expiresAt time.Time) error {
+			return nil
+		},
+	}
+	svc := NewIAPService(&MockTxManager{}, walletRepo, userPremRepo)
+
+	event := RevenueCatEvent{
+		Type:          "INITIAL_PURCHASE",
+		AppUserID:     uuid.New().String(),
+		ProductID:     "qlove_premium_1year",
+		TransactionID: "tx_1year",
+	}
+
+	err := svc.ProcessRevenueCatWebhook(context.Background(), event)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+}
+
+func TestIAPService_ProcessRevenueCatWebhook_Premium_CheckTxError(t *testing.T) {
+	walletRepo := &MockWalletRepoIAP{
+		CheckTxFunc: func(ctx context.Context, txID uuid.UUID) (bool, error) {
+			return false, errors.New("db error")
+		},
+	}
+	svc := NewIAPService(&MockTxManager{}, walletRepo, &MockUserPremiumRepoIAP{})
+	event := RevenueCatEvent{
+		Type:          "INITIAL_PURCHASE",
+		AppUserID:     uuid.New().String(),
+		ProductID:     "qlove_premium_1month",
+		TransactionID: "tx_99999",
+	}
+	err := svc.ProcessRevenueCatWebhook(context.Background(), event)
+	if err == nil {
+		t.Fatalf("Expected error, got nil")
+	}
+}
+
 func TestIAPService_ProcessRevenueCatWebhook_InvalidUser(t *testing.T) {
 	svc := NewIAPService(&MockTxManager{}, &MockWalletRepoIAP{}, &MockUserPremiumRepoIAP{})
 
