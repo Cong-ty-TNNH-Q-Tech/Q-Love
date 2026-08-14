@@ -17,7 +17,7 @@ class ShameWallScreen extends StatelessWidget {
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          title: Text('Tường Thành Phong Sát', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+          title: Text('Tường Thành Phong Sát', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
@@ -43,7 +43,7 @@ class ShameWallScreen extends StatelessWidget {
                   },
                 );
               } else if (state is ShameWallError) {
-                return Center(child: Text(state.message, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.red)));
+                return Center(child: Text(state.message, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)));
               }
               return const SizedBox.shrink();
             },
