@@ -208,3 +208,69 @@ func TestAuctionService_PlaceBid_GetWalletError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, assert.AnError, err)
 }
+
+func TestAuctionService_FinalizeAuctions_GetActiveError(t *testing.T) {
+	auctionRepo := &mockAuctionRepo{err: assert.AnError}
+	service := NewAuctionService(auctionRepo, nil, nil, nil)
+	err := service.FinalizeAuctions(context.Background())
+	assert.Error(t, err)
+}
+
+func TestAuctionService_FinalizeAuctions_AuctionNotEnded(t *testing.T) {
+	auctionRepo := &mockAuctionRepo{
+		auction: &models.BlindAuction{EndTime: time.Now().Add(1 * time.Hour)},
+	}
+	service := NewAuctionService(auctionRepo, nil, nil, nil)
+	err := service.FinalizeAuctions(context.Background())
+	assert.NoError(t, err) 
+}
+
+func TestAuctionService_FinalizeAuctions_NoBids(t *testing.T) {
+	auctionRepo := &mockAuctionRepo{
+		auction: &models.BlindAuction{
+			ID:      uuid.New(),
+			Status:  "active",
+			EndTime: time.Now().Add(-1 * time.Hour),
+		},
+		highest: nil,
+	}
+	txManager := &mockTxManager{}
+	service := NewAuctionService(auctionRepo, nil, txManager, nil)
+	err := service.FinalizeAuctions(context.Background())
+	assert.NoError(t, err) 
+}
+
+func TestAuctionService_FinalizeAuctions_WithBidsAndRefunds(t *testing.T) {
+	winnerID := uuid.New()
+	loserID := uuid.New()
+	targetID := uuid.New()
+	auctionID := uuid.New()
+
+	highestBid := &models.AuctionBid{BidderID: winnerID, Amount: 1000}
+	loserBid := models.AuctionBid{BidderID: loserID, Amount: 500}
+
+	auctionRepo := &mockAuctionRepo{
+		auction: &models.BlindAuction{
+			ID:           auctionID,
+			TargetUserID: targetID,
+			Status:       "active",
+			EndTime:      time.Now().Add(-1 * time.Hour),
+		},
+		bids:    []models.AuctionBid{*highestBid, loserBid},
+		highest: highestBid,
+	}
+
+	walletRepo := &mockAuctionWalletRepo{}
+	txManager := &mockTxManager{}
+
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
+	err := service.FinalizeAuctions(context.Background())
+	assert.NoError(t, err)
+}
+
+func TestAuctionService_StartDailyAuctions_CreateError(t *testing.T) {
+	auctionRepo := &mockAuctionRepo{err: assert.AnError}
+	service := NewAuctionService(auctionRepo, nil, nil, nil)
+	err := service.StartDailyAuctions(context.Background())
+	assert.Error(t, err)
+}
