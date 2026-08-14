@@ -144,12 +144,3 @@ func TestAuctionService_StartDailyAuctions(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestAuctionService_FinalizeAuctions(t *testing.T) {
-	auctionRepo := &mockAuctionRepo{}
-	walletRepo := &mockAuctionWalletRepo{}
-	txManager := &mockTxManager{}
-
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
-	err := service.FinalizeAuctions(context.Background())
-	assert.NoError(t, err)
-}

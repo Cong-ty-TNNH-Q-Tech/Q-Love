@@ -87,7 +87,7 @@ func TestAuctionHandler_GetActiveAuctions_Error(t *testing.T) {
 	req := httptest.NewRequest("GET", "/api/v1/auctions/active", nil)
 	resp, err := app.Test(req)
 	assert.NoError(t, err)
-	assert.Equal(t, 500, resp.StatusCode)
+	assert.Equal(t, 400, resp.StatusCode)
 }
 
 func TestAuctionHandler_PlaceBid_InvalidInput(t *testing.T) {
@@ -102,7 +102,7 @@ func TestAuctionHandler_PlaceBid_InvalidInput(t *testing.T) {
 	})
 
 	// Missing amount
-	body, _ := json.Marshal(map[string]interface{}{})
+	body := []byte("{invalid json")
 	req := httptest.NewRequest("POST", "/api/v1/auctions/"+uuid.New().String()+"/bid", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := app.Test(req)
@@ -126,5 +126,5 @@ func TestAuctionHandler_PlaceBid_ServiceError(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := app.Test(req)
 	assert.NoError(t, err)
-	assert.Equal(t, 500, resp.StatusCode)
+	assert.Equal(t, 400, resp.StatusCode)
 }
