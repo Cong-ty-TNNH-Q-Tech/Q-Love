@@ -209,3 +209,53 @@ func TestMinigameService_SubmitStealResult_NotFound(t *testing.T) {
 		t.Errorf("Expected not found error, got %v", err)
 	}
 }
+
+func TestMinigameService_SubmitStealResult_UpdateResultError(t *testing.T) {
+	attackerID := uuid.New()
+	steal := &models.CardSteal{
+		ID:         uuid.New(),
+		AttackerID: attackerID,
+		Result:     "pending",
+		CreatedAt:  time.Now().Add(-15 * time.Second),
+	}
+
+	walletRepo := &mockMinigameWalletRepo{wallet: &models.UserWallet{Balance: 2000}}
+	stealRepo := &mockStealRepo{steal: steal, err: errors.New("update error")}
+	txManager := &mockTxManager{}
+
+	service := NewMinigameService(stealRepo, walletRepo, txManager)
+
+	err := service.SubmitStealResult(context.Background(), steal.ID, attackerID, true)
+	if err == nil || err.Error() != "update error" {
+		t.Errorf("Expected update error, got %v", err)
+	}
+}
+
+type updateBalanceErrorMockWallet struct {
+	mockMinigameWalletRepo
+}
+
+func (m *updateBalanceErrorMockWallet) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error {
+	return errors.New("update balance error")
+}
+
+func TestMinigameService_SubmitStealResult_Lose_UpdateBalanceError(t *testing.T) {
+	attackerID := uuid.New()
+	steal := &models.CardSteal{
+		ID:         uuid.New(),
+		AttackerID: attackerID,
+		Result:     "pending",
+		CreatedAt:  time.Now().Add(-15 * time.Second),
+	}
+
+	walletRepo := &updateBalanceErrorMockWallet{mockMinigameWalletRepo{wallet: &models.UserWallet{Balance: 2000}}}
+	stealRepo := &mockStealRepo{steal: steal}
+	txManager := &mockTxManager{}
+
+	service := NewMinigameService(stealRepo, walletRepo, txManager)
+
+	err := service.SubmitStealResult(context.Background(), steal.ID, attackerID, false)
+	if err == nil || err.Error() != "update balance error" {
+		t.Errorf("Expected update balance error, got %v", err)
+	}
+}
