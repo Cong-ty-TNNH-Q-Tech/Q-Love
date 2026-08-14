@@ -211,6 +211,14 @@ func TestMinigameService_SubmitStealResult_NotFound(t *testing.T) {
 	}
 }
 
+type updateResultErrorMockRepo struct {
+	mockStealRepo
+}
+
+func (m *updateResultErrorMockRepo) UpdateResult(ctx context.Context, id uuid.UUID, result string) error {
+	return errors.New("update error")
+}
+
 func TestMinigameService_SubmitStealResult_UpdateResultError(t *testing.T) {
 	attackerID := uuid.New()
 	steal := &models.CardSteal{
@@ -221,7 +229,7 @@ func TestMinigameService_SubmitStealResult_UpdateResultError(t *testing.T) {
 	}
 
 	walletRepo := &mockMinigameWalletRepo{wallet: &models.UserWallet{Balance: 2000}}
-	stealRepo := &mockStealRepo{steal: steal, err: errors.New("update error")}
+	stealRepo := &updateResultErrorMockRepo{mockStealRepo{steal: steal}}
 	txManager := &mockTxManager{}
 
 	service := NewMinigameService(stealRepo, walletRepo, txManager)
