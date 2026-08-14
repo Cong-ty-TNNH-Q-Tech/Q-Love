@@ -4,6 +4,10 @@
 package services
 
 import (
+	"github.com/DATA-DOG/go-sqlmock"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+
 	"context"
 	"testing"
 	"time"
@@ -273,4 +277,105 @@ func TestAuctionService_StartDailyAuctions_CreateError(t *testing.T) {
 	service := NewAuctionService(auctionRepo, nil, nil, nil)
 	err := service.StartDailyAuctions(context.Background())
 	assert.Error(t, err)
+}
+
+func TestAuctionService_FinalizeAuctions_Refund_UpdateBalance_Error(t *testing.T) {
+	winnerID := uuid.New()
+	loserID := uuid.New()
+	targetID := uuid.New()
+	auctionID := uuid.New()
+
+	highestBid := &models.AuctionBid{BidderID: winnerID, Amount: 1000}
+	loserBid := models.AuctionBid{BidderID: loserID, Amount: 500}
+
+	auctionRepo := &mockAuctionRepo{
+		auction: &models.BlindAuction{
+			ID:           auctionID,
+			TargetUserID: targetID,
+			Status:       "active",
+			EndTime:      time.Now().Add(-1 * time.Hour),
+		},
+		bids:    []models.AuctionBid{*highestBid, loserBid},
+		highest: highestBid,
+	}
+
+	walletRepo := &mockAuctionWalletRepo{
+		updateBalanceFn: func(ctx context.Context, userID uuid.UUID, delta float64) error {
+			if userID == loserID {
+				return assert.AnError
+			}
+			return nil
+		},
+	}
+	txManager := &mockTxManager{}
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
+	err := service.FinalizeAuctions(context.Background())
+	assert.NoError(t, err) // It continues on inner loop error
+}
+
+func TestAuctionService_FinalizeAuctions_Winner_UpdateBalance_Error(t *testing.T) {
+	winnerID := uuid.New()
+	loserID := uuid.New()
+	targetID := uuid.New()
+	auctionID := uuid.New()
+
+	highestBid := &models.AuctionBid{BidderID: winnerID, Amount: 1000}
+	loserBid := models.AuctionBid{BidderID: loserID, Amount: 500}
+
+	auctionRepo := &mockAuctionRepo{
+		auction: &models.BlindAuction{
+			ID:           auctionID,
+			TargetUserID: targetID,
+			Status:       "active",
+			EndTime:      time.Now().Add(-1 * time.Hour),
+		},
+		bids:    []models.AuctionBid{*highestBid, loserBid},
+		highest: highestBid,
+	}
+
+	walletRepo := &mockAuctionWalletRepo{
+		updateBalanceFn: func(ctx context.Context, userID uuid.UUID, delta float64) error {
+			if userID == targetID { // The winner receiving 50-50 split
+				return assert.AnError
+			}
+			return nil
+		},
+	}
+	txManager := &mockTxManager{}
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
+	err := service.FinalizeAuctions(context.Background())
+	assert.NoError(t, err)
+}
+
+func TestAuctionService_FinalizeAuctions_ChatLock_DB_Error(t *testing.T) {
+	winnerID := uuid.New()
+	loserID := uuid.New()
+	targetID := uuid.New()
+	auctionID := uuid.New()
+
+	highestBid := &models.AuctionBid{BidderID: winnerID, Amount: 1000}
+	loserBid := models.AuctionBid{BidderID: loserID, Amount: 500}
+
+	auctionRepo := &mockAuctionRepo{
+		auction: &models.BlindAuction{
+			ID:           auctionID,
+			TargetUserID: targetID,
+			Status:       "active",
+			EndTime:      time.Now().Add(-1 * time.Hour),
+		},
+		bids:    []models.AuctionBid{*highestBid, loserBid},
+		highest: highestBid,
+	}
+
+	walletRepo := &mockAuctionWalletRepo{}
+	txManager := &mockTxManager{}
+	
+	// mock DB to return error on Create
+	db, mock, _ := sqlmock.New()
+	gormDB, _ := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{})
+	mock.ExpectQuery("INSERT INTO .*chat_locks.*").WillReturnError(assert.AnError)
+
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, gormDB)
+	err := service.FinalizeAuctions(context.Background())
+	assert.NoError(t, err)
 }
