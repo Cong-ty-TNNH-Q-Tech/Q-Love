@@ -74,3 +74,57 @@ func TestAuctionHandler_PlaceBid(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 201, resp.StatusCode)
 }
+
+func TestAuctionHandler_GetActiveAuctions_Error(t *testing.T) {
+	app := fiber.New()
+	svc := &mockAuctionService{}
+	repo := &mockAuctionRepo{
+		err: assert.AnError,
+	}
+	h := NewAuctionHandler(svc, repo)
+	app.Get("/api/v1/auctions/active", h.GetActiveAuctions)
+
+	req := httptest.NewRequest("GET", "/api/v1/auctions/active", nil)
+	resp, err := app.Test(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 500, resp.StatusCode)
+}
+
+func TestAuctionHandler_PlaceBid_InvalidInput(t *testing.T) {
+	app := fiber.New()
+	svc := &mockAuctionService{}
+	repo := &mockAuctionRepo{}
+	h := NewAuctionHandler(svc, repo)
+
+	app.Post("/api/v1/auctions/:id/bid", func(c *fiber.Ctx) error {
+		c.Locals("userID", uuid.New())
+		return h.PlaceBid(c)
+	})
+
+	// Missing amount
+	body, _ := json.Marshal(map[string]interface{}{})
+	req := httptest.NewRequest("POST", "/api/v1/auctions/"+uuid.New().String()+"/bid", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := app.Test(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 400, resp.StatusCode)
+}
+
+func TestAuctionHandler_PlaceBid_ServiceError(t *testing.T) {
+	app := fiber.New()
+	svc := &mockAuctionService{err: assert.AnError}
+	repo := &mockAuctionRepo{}
+	h := NewAuctionHandler(svc, repo)
+
+	app.Post("/api/v1/auctions/:id/bid", func(c *fiber.Ctx) error {
+		c.Locals("userID", uuid.New())
+		return h.PlaceBid(c)
+	})
+
+	body, _ := json.Marshal(map[string]interface{}{"amount": 1000})
+	req := httptest.NewRequest("POST", "/api/v1/auctions/"+uuid.New().String()+"/bid", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := app.Test(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 500, resp.StatusCode)
+}

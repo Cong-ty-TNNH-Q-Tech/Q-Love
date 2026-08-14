@@ -143,3 +143,13 @@ func TestAuctionService_StartDailyAuctions(t *testing.T) {
 	// Usually this returns nil if successful or no db is provided in mock
 	assert.NoError(t, err)
 }
+
+func TestAuctionService_FinalizeAuctions(t *testing.T) {
+	auctionRepo := &mockAuctionRepo{}
+	walletRepo := &mockAuctionWalletRepo{}
+	txManager := &mockTxManager{}
+
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
+	err := service.FinalizeAuctions(context.Background())
+	assert.NoError(t, err)
+}
