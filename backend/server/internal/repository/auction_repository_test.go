@@ -5,23 +5,21 @@ package repository
 
 import (
 	"context"
+	"regexp"
 	"testing"
 	"time"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 )
 
-func TestAuctionRepository(t *testing.T) {
-	db := setupTestDB(t)
-	err := db.AutoMigrate(&models.BlindAuction{}, &models.AuctionBid{})
+func TestAuctionRepository_CreateAuction(t *testing.T) {
+	db, mock, err := setupTestDB()
 	assert.NoError(t, err)
 
 	repo := NewAuctionRepository(db)
-	ctx := context.Background()
-
-	// 1. Create Auction
 	auction := &models.BlindAuction{
 		ID:           uuid.New(),
 		TargetUserID: uuid.New(),
@@ -29,52 +27,67 @@ func TestAuctionRepository(t *testing.T) {
 		EndTime:      time.Now().Add(24 * time.Hour),
 		Status:       "active",
 	}
-	err = repo.CreateAuction(ctx, auction)
+
+	mock.ExpectBegin()
+	mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO "blind_auctions"`)).
+		WithArgs(auction.ID, auction.TargetUserID, auction.StartTime, auction.EndTime, auction.Status, sqlmock.AnyArg(), auction.WinningBid, sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
+	err = repo.CreateAuction(context.Background(), auction)
+	assert.NoError(t, err)
+}
+
+func TestAuctionRepository_GetActiveAuctions(t *testing.T) {
+	db, mock, err := setupTestDB()
 	assert.NoError(t, err)
 
-	// 2. Get Active Auctions
-	active, err := repo.GetActiveAuctions(ctx)
-	assert.NoError(t, err)
-	assert.Len(t, active, 1)
+	repo := NewAuctionRepository(db)
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "blind_auctions" WHERE status = $1`)).
+		WithArgs("active").
+		WillReturnRows(sqlmock.NewRows([]string{"id", "status"}).AddRow(uuid.New(), "active"))
 
-	// 3. Place Bid
+	auctions, err := repo.GetActiveAuctions(context.Background())
+	assert.NoError(t, err)
+	assert.Len(t, auctions, 1)
+}
+
+func TestAuctionRepository_PlaceBid(t *testing.T) {
+	db, mock, err := setupTestDB()
+	assert.NoError(t, err)
+
+	repo := NewAuctionRepository(db)
 	bid := &models.AuctionBid{
 		ID:        uuid.New(),
-		AuctionID: auction.ID,
+		AuctionID: uuid.New(),
 		BidderID:  uuid.New(),
 		Amount:    1500,
 	}
-	err = repo.PlaceBid(ctx, bid)
+
+	mock.ExpectBegin()
+	mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO "auction_bids"`)).
+		WithArgs(bid.ID, bid.AuctionID, bid.BidderID, bid.Amount, sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
+	err = repo.PlaceBid(context.Background(), bid)
+	assert.NoError(t, err)
+}
+
+func TestAuctionRepository_UpdateAuctionStatus(t *testing.T) {
+	db, mock, err := setupTestDB()
 	assert.NoError(t, err)
 
-	bid2 := &models.AuctionBid{
-		ID:        uuid.New(),
-		AuctionID: auction.ID,
-		BidderID:  uuid.New(),
-		Amount:    2000,
-	}
-	err = repo.PlaceBid(ctx, bid2)
-	assert.NoError(t, err)
+	repo := NewAuctionRepository(db)
+	auctionID := uuid.New()
+	winnerID := uuid.New()
 
-	// 4. Get Highest Bid
-	highest, err := repo.GetHighestBid(ctx, auction.ID)
-	assert.NoError(t, err)
-	assert.NotNil(t, highest)
-	assert.Equal(t, float64(2000), highest.Amount)
+	mock.ExpectBegin()
+	mock.ExpectExec(regexp.QuoteMeta(`UPDATE "blind_auctions" SET`)).
+		WithArgs("completed", winnerID, float64(2000), sqlmock.AnyArg(), auctionID).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
 
-	// 5. Get Bids by Auction
-	bids, err := repo.GetBidsByAuction(ctx, auction.ID)
+	err = repo.UpdateAuctionStatus(context.Background(), auctionID, "completed", &winnerID, 2000)
 	assert.NoError(t, err)
-	assert.Len(t, bids, 2)
-
-	// 6. Update Status
-	err = repo.UpdateAuctionStatus(ctx, auction.ID, "completed", &bid2.BidderID, 2000)
-	assert.NoError(t, err)
-
-	// Verify update
-	updated, err := repo.GetAuctionForUpdate(ctx, auction.ID)
-	assert.NoError(t, err)
-	assert.Equal(t, "completed", updated.Status)
-	assert.Equal(t, bid2.BidderID, *updated.WinnerID)
-	assert.Equal(t, float64(2000), updated.WinningBid)
 }

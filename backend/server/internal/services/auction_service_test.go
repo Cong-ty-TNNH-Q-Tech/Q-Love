@@ -45,6 +45,26 @@ func (m *mockAuctionRepo) UpdateAuctionStatus(ctx context.Context, auctionID uui
 	return m.err
 }
 
+type mockAuctionWalletRepo struct {
+	getWalletForUpdateFn func(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error)
+	updateBalanceFn      func(ctx context.Context, userID uuid.UUID, delta float64) error
+	createTransactionFn  func(ctx context.Context, txn *models.WalletTransaction) error
+}
+func (m *mockAuctionWalletRepo) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
+func (m *mockAuctionWalletRepo) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error {
+	if m.createTransactionFn != nil { return m.createTransactionFn(ctx, txn) }
+	return nil
+}
+func (m *mockAuctionWalletRepo) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
+	if m.getWalletForUpdateFn != nil { return m.getWalletForUpdateFn(ctx, userID) }
+	return nil, nil
+}
+func (m *mockAuctionWalletRepo) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error {
+	if m.updateBalanceFn != nil { return m.updateBalanceFn(ctx, userID, delta) }
+	return nil
+}
+func (m *mockAuctionWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
+
 func TestAuctionService_PlaceBid_Success(t *testing.T) {
 	auctionID := uuid.New()
 	bidderID := uuid.New()
@@ -58,8 +78,12 @@ func TestAuctionService_PlaceBid_Success(t *testing.T) {
 		Status:       "active",
 	}
 
-	walletRepo := &mockMinigameWalletRepo{
-		wallet: &models.UserWallet{UserID: bidderID, Balance: 1000},
+	walletRepo := &mockAuctionWalletRepo{
+		getWalletForUpdateFn: func(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
+			return &models.UserWallet{UserID: bidderID, Balance: 1000}, nil
+		},
+		updateBalanceFn: func(ctx context.Context, userID uuid.UUID, delta float64) error { return nil },
+		createTransactionFn: func(ctx context.Context, txn *models.WalletTransaction) error { return nil },
 	}
 	auctionRepo := &mockAuctionRepo{auction: auction}
 	txManager := &mockTxManager{}
@@ -89,8 +113,12 @@ func TestAuctionService_FinalizeAuctions(t *testing.T) {
 		Amount:    1000,
 	}
 
-	walletRepo := &mockMinigameWalletRepo{
-		wallet: &models.UserWallet{UserID: bidderID, Balance: 0},
+	walletRepo := &mockAuctionWalletRepo{
+		getWalletForUpdateFn: func(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
+			return &models.UserWallet{UserID: bidderID, Balance: 0}, nil
+		},
+		updateBalanceFn: func(ctx context.Context, userID uuid.UUID, delta float64) error { return nil },
+		createTransactionFn: func(ctx context.Context, txn *models.WalletTransaction) error { return nil },
 	}
 	auctionRepo := &mockAuctionRepo{
 		auction: auction,
