@@ -70,7 +70,7 @@ func TestCardStealRepository(t *testing.T) {
 
 	// 4. Test TransferCardOwnership
 	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "card_transactions"`)).
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(uuid.New()))
 
 	err = repo.TransferCardOwnership(ctx, attackerID, cardID)
