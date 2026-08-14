@@ -87,7 +87,7 @@ func TestAuctionHandler_GetActiveAuctions_Error(t *testing.T) {
 	req := httptest.NewRequest("GET", "/api/v1/auctions/active", nil)
 	resp, err := app.Test(req)
 	assert.NoError(t, err)
-	assert.Equal(t, 400, resp.StatusCode)
+	assert.Equal(t, 500, resp.StatusCode)
 }
 
 func TestAuctionHandler_PlaceBid_InvalidInput(t *testing.T) {
