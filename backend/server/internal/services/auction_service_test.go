@@ -144,3 +144,67 @@ func TestAuctionService_StartDailyAuctions(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+
+func TestAuctionService_PlaceBid_AmountZeroOrLess(t *testing.T) {
+	service := NewAuctionService(nil, nil, nil, nil)
+	err := service.PlaceBid(context.Background(), uuid.New(), uuid.New(), 0)
+	assert.Error(t, err)
+	assert.Equal(t, "bid amount must be greater than zero", err.Error())
+}
+
+func TestAuctionService_PlaceBid_AuctionNotActive(t *testing.T) {
+	auctionRepo := &mockAuctionRepo{
+		auction: &models.BlindAuction{Status: "completed"},
+	}
+	txManager := &mockTxManager{}
+	service := NewAuctionService(auctionRepo, nil, txManager, nil)
+	err := service.PlaceBid(context.Background(), uuid.New(), uuid.New(), 100)
+	assert.Error(t, err)
+	assert.Equal(t, "auction is not active", err.Error())
+}
+
+func TestAuctionService_PlaceBid_BidOnSelf(t *testing.T) {
+	uid := uuid.New()
+	auctionRepo := &mockAuctionRepo{
+		auction: &models.BlindAuction{Status: "active", EndTime: time.Now().Add(1*time.Hour), TargetUserID: uid},
+	}
+	txManager := &mockTxManager{}
+	service := NewAuctionService(auctionRepo, nil, txManager, nil)
+	err := service.PlaceBid(context.Background(), uuid.New(), uid, 100)
+	assert.Error(t, err)
+	assert.Equal(t, "cannot bid on yourself", err.Error())
+}
+
+func TestAuctionService_PlaceBid_InsufficientBalance(t *testing.T) {
+	uid := uuid.New()
+	auctionRepo := &mockAuctionRepo{
+		auction: &models.BlindAuction{Status: "active", EndTime: time.Now().Add(1*time.Hour), TargetUserID: uuid.New()},
+	}
+	walletRepo := &mockAuctionWalletRepo{
+		getWalletForUpdateFn: func(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
+			return &models.UserWallet{UserID: uid, Balance: 50}, nil
+		},
+	}
+	txManager := &mockTxManager{}
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
+	err := service.PlaceBid(context.Background(), uuid.New(), uid, 100)
+	assert.Error(t, err)
+	assert.Equal(t, "insufficient balance for this bid", err.Error())
+}
+
+func TestAuctionService_PlaceBid_GetWalletError(t *testing.T) {
+	uid := uuid.New()
+	auctionRepo := &mockAuctionRepo{
+		auction: &models.BlindAuction{Status: "active", EndTime: time.Now().Add(1*time.Hour), TargetUserID: uuid.New()},
+	}
+	walletRepo := &mockAuctionWalletRepo{
+		getWalletForUpdateFn: func(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
+			return nil, assert.AnError
+		},
+	}
+	txManager := &mockTxManager{}
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
+	err := service.PlaceBid(context.Background(), uuid.New(), uid, 100)
+	assert.Error(t, err)
+	assert.Equal(t, assert.AnError, err)
+}
