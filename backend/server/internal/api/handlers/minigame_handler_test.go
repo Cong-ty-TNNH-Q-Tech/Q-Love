@@ -73,3 +73,55 @@ func TestMinigameHandler_SubmitStealResult(t *testing.T) {
 		t.Errorf("Expected 200 OK, got %v", resp.StatusCode)
 	}
 }
+
+func TestMinigameHandler_InitSteal_InvalidJSON(t *testing.T) {
+	app := fiber.New()
+	handler := NewMinigameHandler(&mockMinigameService{})
+
+	app.Post("/init", func(c *fiber.Ctx) error {
+		c.Locals("user_id", uuid.New().String())
+		return handler.InitSteal(c)
+	})
+
+	req := httptest.NewRequest("POST", "/init", bytes.NewReader([]byte("invalid json")))
+	req.Header.Set("Content-Type", "application/json")
+	resp, _ := app.Test(req)
+
+	if resp.StatusCode != fiber.StatusBadRequest {
+		t.Errorf("Expected 400 Bad Request, got %v", resp.StatusCode)
+	}
+}
+
+type errorMockMinigameService struct{}
+
+func (m *errorMockMinigameService) InitSteal(ctx context.Context, attackerID uuid.UUID, defenderID uuid.UUID, targetCardID uuid.UUID) (*models.CardSteal, error) {
+	return nil, context.DeadlineExceeded
+}
+
+func (m *errorMockMinigameService) SubmitStealResult(ctx context.Context, stealID uuid.UUID, attackerID uuid.UUID, isWin bool) error {
+	return context.DeadlineExceeded
+}
+
+func TestMinigameHandler_SubmitStealResult_Error(t *testing.T) {
+	app := fiber.New()
+	handler := NewMinigameHandler(&errorMockMinigameService{})
+
+	app.Post("/submit", func(c *fiber.Ctx) error {
+		c.Locals("user_id", uuid.New().String())
+		return handler.SubmitStealResult(c)
+	})
+
+	reqBody := map[string]interface{}{
+		"steal_id": uuid.New().String(),
+		"is_win":   true,
+	}
+	body, _ := json.Marshal(reqBody)
+
+	req := httptest.NewRequest("POST", "/submit", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	resp, _ := app.Test(req)
+
+	if resp.StatusCode != fiber.StatusInternalServerError {
+		t.Errorf("Expected 500 Internal Server Error, got %v", resp.StatusCode)
+	}
+}
