@@ -48,8 +48,8 @@ func TestCardStealRepository(t *testing.T) {
 	}
 
 	// 2. Test FindByID
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "card_steals" WHERE id = $1`)).
-		WithArgs(testID).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "card_steals" WHERE id = $1 ORDER BY "card_steals"."id" LIMIT $2`)).
+		WithArgs(testID, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "attacker_id", "defender_id", "target_card_id", "result"}).
 			AddRow(testID, attackerID, defenderID, cardID, "pending"))
 
