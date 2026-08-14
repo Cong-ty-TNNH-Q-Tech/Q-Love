@@ -53,6 +53,9 @@ class _SpotifyCardWidgetState extends State<SpotifyCardWidget> {
   }
 
   void _togglePlay() {
+    if (widget.previewUrl.isEmpty) {
+      return; // Do nothing if there's no audio
+    }
     setState(() {
       _isPlaying = !_isPlaying;
     });
@@ -124,19 +127,30 @@ class _SpotifyCardWidgetState extends State<SpotifyCardWidget> {
             Row(
               children: [
                 IconButton(
-                  onPressed: _togglePlay,
+                  onPressed: widget.previewUrl.isEmpty ? null : _togglePlay,
                   icon: Icon(
                     _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
                     size: 48,
-                    color: Colors.greenAccent,
+                    color: widget.previewUrl.isEmpty ? Colors.grey : Colors.greenAccent,
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Expanded(
-                  child: LinearProgressIndicator(
-                    value: 0.3, // Mock progress
-                    color: Colors.greenAccent,
-                    backgroundColor: Colors.white24,
+                Expanded(
+                  child: StreamBuilder<Duration>(
+                    stream: _player.positionStream,
+                    builder: (context, snapshot) {
+                      final position = snapshot.data ?? Duration.zero;
+                      final duration = _player.duration ?? const Duration(seconds: 30);
+                      double value = 0;
+                      if (duration.inMilliseconds > 0) {
+                        value = position.inMilliseconds / duration.inMilliseconds;
+                      }
+                      return LinearProgressIndicator(
+                        value: value.clamp(0.0, 1.0),
+                        color: Colors.greenAccent,
+                        backgroundColor: Colors.white24,
+                      );
+                    },
                   ),
                 ),
               ],

@@ -2,6 +2,9 @@
 // Licensed under the GNU AGPLv3 License.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/vibe_check_cubit.dart';
+import '../bloc/vibe_check_state.dart';
 import 'widgets/spotify_card_widget.dart';
 
 class VibeCheckScreen extends StatefulWidget {
@@ -12,22 +15,6 @@ class VibeCheckScreen extends StatefulWidget {
 }
 
 class _VibeCheckScreenState extends State<VibeCheckScreen> {
-  // Mock data representing Spotify Tracks fetched from backend API
-  final List<Map<String, String>> tracks = [
-    {
-      "title": "Shape of You",
-      "artist": "Ed Sheeran",
-      "coverUrl": "https://upload.wikimedia.org/wikipedia/en/b/b4/Shape_Of_You_%28Official_Single_Cover%29_by_Ed_Sheeran.png",
-      "previewUrl": "",
-    },
-    {
-      "title": "Blinding Lights",
-      "artist": "The Weeknd",
-      "coverUrl": "https://upload.wikimedia.org/wikipedia/en/e/e6/The_Weeknd_-_Blinding_Lights.png",
-      "previewUrl": "",
-    }
-  ];
-
   @override
   Widget build(BuildContext context) {
     // Vibe Check UI enforces a deep dark mode
@@ -54,39 +41,57 @@ class _VibeCheckScreenState extends State<VibeCheckScreen> {
           ),
           centerTitle: true,
         ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "Discover who's listening with you...",
-                  style: TextStyle(color: Colors.white70, fontSize: 16),
-                ),
-                const SizedBox(height: 32),
-                if (tracks.isNotEmpty)
-                  Dismissible(
-                    key: Key(tracks[0]['title']!),
-                    onDismissed: (direction) {
-                      setState(() {
-                        tracks.removeAt(0);
-                      });
-                    },
-                    child: SpotifyCardWidget(
-                      title: tracks[0]['title']!,
-                      artist: tracks[0]['artist']!,
-                      coverUrl: tracks[0]['coverUrl']!,
-                      previewUrl: tracks[0]['previewUrl']!,
-                    ),
-                  )
-                else
+        body: BlocProvider(
+          create: (context) => VibeCheckCubit()..fetchVibeTracks(),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                   const Text(
-                    "No more vibes tonight. Check back tomorrow!",
-                    style: TextStyle(color: Colors.white54, fontSize: 18),
-                    textAlign: TextAlign.center,
+                    "Discover who's listening with you...",
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
-              ],
+                  const SizedBox(height: 32),
+                  BlocBuilder<VibeCheckCubit, VibeCheckState>(
+                    builder: (context, state) {
+                      if (state is VibeCheckLoading || state is VibeCheckInitial) {
+                        return const Center(child: CircularProgressIndicator(color: Colors.purpleAccent));
+                      } else if (state is VibeCheckError) {
+                        return Text(
+                          state.message,
+                          style: const TextStyle(color: Colors.redAccent, fontSize: 16),
+                          textAlign: TextAlign.center,
+                        );
+                      } else if (state is VibeCheckLoaded) {
+                        final tracks = state.tracks;
+                        if (tracks.isNotEmpty) {
+                          return Dismissible(
+                            key: Key(tracks[0]['title']!),
+                            onDismissed: (direction) {
+                              context.read<VibeCheckCubit>().removeTrack(0);
+                            },
+                            child: SpotifyCardWidget(
+                              title: tracks[0]['title']!,
+                              artist: tracks[0]['artist']!,
+                              coverUrl: tracks[0]['coverUrl']!,
+                              previewUrl: tracks[0]['previewUrl']!,
+                            ),
+                          );
+                        } else {
+                          return const Text(
+                            "No more vibes tonight. Check back tomorrow!",
+                            style: TextStyle(color: Colors.white54, fontSize: 18),
+                            textAlign: TextAlign.center,
+                          );
+                        }
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
