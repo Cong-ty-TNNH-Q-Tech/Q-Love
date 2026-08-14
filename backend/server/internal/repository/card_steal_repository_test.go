@@ -15,14 +15,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func setupTestDB() *gorm.DB {
+func setupCardStealTestDB() *gorm.DB {
 	db, _ := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	db.AutoMigrate(&models.CardSteal{}, &models.CardTransaction{})
 	return db
 }
 
 func TestCardStealRepository(t *testing.T) {
-	db := setupTestDB()
+	db := setupCardStealTestDB()
 	repo := NewCardStealRepository(db)
 
 	steal := &models.CardSteal{
