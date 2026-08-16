@@ -1,2015 +1,1404 @@
 openapi: 3.0.3
-
 info:
-
   title: Q-Love API Documentation
-
-  description: "RESTful API Specification for Q-Love - Super App Hẹn Hò & Mạng Xã Hội Giải Trí. Tất cả các endpoint (trừ Auth) yêu cầu JWT Bearer Token."
-
+  description: RESTful API Specification for Q-Love - Super App Hẹn Hò & Mạng Xã Hội
+    Giải Trí. Tất cả các endpoint (trừ Auth) yêu cầu JWT Bearer Token.
   version: 1.1.0
-
   contact:
-
     name: Q-Love Engineering Team
-
 servers:
-
   - url: https://api.q-love.com/v1
-
     description: Production Server
-
   - url: http://localhost:8080/v1
-
     description: Local Development Server
-
-# =============================================================
-
-# COMPONENTS (Schemas, Security, Error Responses)
-
-# =============================================================
-
 components:
-
   securitySchemes:
-
     bearerAuth:
-
       type: http
-
       scheme: bearer
-
       bearerFormat: JWT
-
   responses:
-
     Unauthorized:
-
-      description: "401 — Token không hợp lệ hoặc đã hết hạn."
-
+      description: 401 — Token không hợp lệ hoặc đã hết hạn.
       content:
-
         application/json:
-
-          schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-          example: { code: 401, message: "ERR_UNAUTHORIZED" }
-
-    Forbidden:
-
-      description: "403 — Không có quyền thực hiện hành động này."
-
-      content:
-
-        application/json:
-
-          schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-          example: { code: 403, message: "ERR_FORBIDDEN" }
-
-    NotFound:
-
-      description: "404 — Không tìm thấy tài nguyên."
-
-      content:
-
-        application/json:
-
-          schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-          example: { code: 404, message: "ERR_NOT_FOUND" }
-
-    UnprocessableEntity:
-
-      description: "422 — Dữ liệu đầu vào không hợp lệ."
-
-      content:
-
-        application/json:
-
-          schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-          example: { code: 422, message: "ERR_VALIDATION", details: "phone: invalid format" }
-
-    TooManyRequests:
-
-      description: "429 — Vượt quá giới hạn tần suất request (Rate Limit)."
-
-      content:
-
-        application/json:
-
-          schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-          example: { code: 429, message: "ERR_RATE_LIMIT", retry_after_seconds: 3600 }
-
-  schemas:
-
-    ErrorResponse:
-
-      type: object
-
-      properties:
-
-        code:
-
-          type: integer
-
-          example: 400
-
-        message:
-
-          type: string
-
-          example: "ERR_CONDITION_NOT_MET"
-
-        details:
-
-          type: string
-
-          description: "Thông tin lỗi bổ sung (optional)"
-
-    User:
-
-      type: object
-
-      properties:
-
-        id: { type: string, format: uuid }
-
-        phone: { type: string, example: "0901234567" }
-
-        name: { type: string, example: "Nguyễn Văn A" }
-
-        dob: { type: string, format: date }
-
-        gender: { type: string, enum: [male, female, other] }
-
-        level: { type: integer, example: 3 }
-
-        is_shadowbanned: { type: boolean, default: false }
-
-        created_at: { type: string, format: date-time }
-
-    WalletInfo:
-
-      type: object
-
-      properties:
-
-        balance:
-
-          type: number
-
-          example: 350.00
-
-          description: "Số dư Xu khả dụng"
-
-        hold_balance:
-
-          type: number
-
-          example: 100.00
-
-          description: "Số dư Xu đang bị đóng băng (cọc Date)"
-
-    Match:
-
-      type: object
-
-      properties:
-
-        id: { type: string, format: uuid }
-
-        partner:
-
-          $ref: '#/components/schemas/User'
-
-        streak_score: { type: integer, example: 7 }
-
-        island_level: { type: integer, example: 2 }
-
-        last_interaction_at: { type: string, format: date-time }
-
-    DatingContract:
-
-      type: object
-
-      properties:
-
-        id: { type: string, format: uuid }
-
-        user_a_id: { type: string, format: uuid }
-
-        user_b_id: { type: string, format: uuid }
-
-        deposit_amount: { type: number, example: 100 }
-
-        status:
-
-          type: string
-
-          enum: [pending, active, completed, cancelled]
-
-        appointment_time: { type: string, format: date-time }
-
-        qr_token: { type: string, description: "Chỉ hiển thị cho chủ hẹn (rotate mỗi 30s)" }
-
-    CourtCase:
-
-      type: object
-
-      properties:
-
-        id: { type: string, format: uuid }
-
-        defendant_name_masked: { type: string, example: "Nguyễn ***" }
-
-        reason: { type: string }
-
-        status: { type: string, enum: [voting, guilty, not_guilty, settled] }
-
-        vote_count: { type: integer }
-
-        created_at: { type: string, format: date-time }
-
-    CardProfile:
-
-      type: object
-
-      properties:
-
-        user_id: { type: string, format: uuid }
-
-        ticker: { type: string, example: "#NVA" }
-
-        current_price: { type: number, example: 147.5 }
-
-        total_cards: { type: integer, example: 1000 }
-
-        available_cards: { type: integer, example: 820 }
-
-        is_halted: { type: boolean, description: "Circuit Breaker đang kích hoạt" }
-
-    WalletTransaction:
-
-      type: object
-
-      properties:
-
-        id: { type: string, format: uuid }
-
-        amount: { type: number, example: -50, description: "Âm = chi, Dương = thu" }
-
-        type:
-
-          type: string
-
-          enum: [deposit, contract_hold, contract_release, penalty, card_buy, card_sell, cv_lookup, clan_create, island_revive]
-
-        reference_id: { type: string, format: uuid, nullable: true }
-
-        created_at: { type: string, format: date-time }
-
-    Clan:
-
-      type: object
-
-      properties:
-
-        id: { type: string, format: uuid }
-
-        name: { type: string }
-
-        leader_id: { type: string, format: uuid }
-
-        member_count: { type: integer }
-
-        weekly_score: { type: integer }
-
-security:
-
-  - bearerAuth: []
-
-# =============================================================
-
-# PATHS
-
-# =============================================================
-
-paths:
-
-  # -----------------------------------------------------------
-
-  # 1. AUTHENTICATION
-
-  # -----------------------------------------------------------
-
-  /auth/send-otp:
-
-    post:
-
-      summary: Gửi mã OTP về số điện thoại
-
-      description: "Gọi API ESMS.vn để gửi SMS OTP. OTP có TTL 120 giây, tối đa 5 lần/ngày/SĐT."
-
-      tags: [Auth]
-
-      security: []
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              required: [phone]
-
-              properties:
-
-                phone:
-
-                  type: string
-
-                  example: "0901234567"
-
-      responses:
-
-        '200':
-
-          description: OTP đã được gửi thành công
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  message: { type: string, example: "OTP sent" }
-
-                  retry_after_seconds: { type: integer, example: 60 }
-
-        '422': { $ref: '#/components/responses/UnprocessableEntity' }
-
-        '429': { $ref: '#/components/responses/TooManyRequests' }
-
-  /auth/verify-otp:
-
-    post:
-
-      summary: Xác thực OTP và đăng nhập / tạo tài khoản
-
-      description: "Nếu SĐT chưa tồn tại → tạo tài khoản mới. Nếu đã có → đăng nhập. Trả về JWT Access Token (15 phút) và Refresh Token (30 ngày)."
-
-      tags: [Auth]
-
-      security: []
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              required: [phone, otp]
-
-              properties:
-
-                phone: { type: string, example: "0901234567" }
-
-                otp: { type: string, example: "123456" }
-
-      responses:
-
-        '200':
-
-          description: Xác thực thành công
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  access_token: { type: string }
-
-                  refresh_token: { type: string }
-
-                  is_new_user: { type: boolean }
-
-                  user: { $ref: '#/components/schemas/User' }
-
-        '400':
-
-          description: OTP sai hoặc đã hết hạn
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-              example: { code: 400, message: "ERR_INVALID_OTP" }
-
-        '422': { $ref: '#/components/responses/UnprocessableEntity' }
-
-  /auth/refresh:
-
-    post:
-
-      summary: Làm mới Access Token
-
-      tags: [Auth]
-
-      security: []
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              required: [refresh_token]
-
-              properties:
-
-                refresh_token: { type: string }
-
-      responses:
-
-        '200':
-
-          description: Cặp token mới (token cũ đã bị vô hiệu hóa)
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  access_token: { type: string }
-
-                  refresh_token: { type: string }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-  # -----------------------------------------------------------
-
-  # 2. UPLOAD & MEDIA
-
-  # -----------------------------------------------------------
-
-  /upload/presigned-url:
-
-    post:
-
-      summary: Lấy Presigned URL để upload file trực tiếp lên Cloudflare R2
-
-      description: "Tạo link tải lên an toàn có thời hạn 15 phút. Hỗ trợ upload avatar và ảnh."
-
-      tags: [Upload]
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              required: [filename, content_type, file_size]
-
-              properties:
-
-                filename: { type: string, example: "avatar.jpg" }
-
-                content_type: { type: string, example: "image/jpeg" }
-
-                file_size: { type: integer, example: 1048576 }
-
-      responses:
-
-        '200':
-
-          description: OK
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  upload_url: { type: string }
-
-                  file_key: { type: string }
-
-                  expires_in: { type: integer }
-
-        '400': { $ref: '#/components/responses/UnprocessableEntity' }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-  # -----------------------------------------------------------
-
-  # 3. USERS
-
-  # -----------------------------------------------------------
-
-  /users/me:
-
-    get:
-
-      summary: Lấy thông tin profile của bản thân
-
-      tags: [Users]
-
-      responses:
-
-        '200':
-
-          description: OK
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/User' }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-    put:
-
-      summary: Cập nhật thông tin profile
-
-      tags: [Users]
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              properties:
-
-                name: { type: string }
-
-                gender: { type: string }
-
-                latitude: { type: number }
-
-                longitude: { type: number }
-
-      responses:
-
-        '200':
-
-          description: Cập nhật thành công
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/User' }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-        '422': { $ref: '#/components/responses/UnprocessableEntity' }
-
-  /users/me/wallet:
-
-    get:
-
-      summary: Xem số dư ví Xu
-
-      tags: [Users]
-
-      responses:
-
-        '200':
-
-          description: OK
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/WalletInfo' }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-  /users/me/wallet/transactions:
-
-    get:
-
-      summary: Lịch sử giao dịch Xu
-
-      tags: [Users]
-
-      parameters:
-
-        - in: query
-
-          name: limit
-
-          schema: { type: integer, default: 20 }
-
-        - in: query
-
-          name: offset
-
-          schema: { type: integer, default: 0 }
-
-        - in: query
-
-          name: type
-
-          schema: { type: string, description: "Lọc theo loại giao dịch (VD: card_buy)" }
-
-      responses:
-
-        '200':
-
-          description: Danh sách giao dịch
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  total: { type: integer }
-
-                  data:
-
-                    type: array
-
-                    items: { $ref: '#/components/schemas/WalletTransaction' }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-  /users/{user_id}/profile:
-
-    get:
-
-      summary: Xem profile công khai của một user khác
-
-      tags: [Users]
-
-      parameters:
-
-        - in: path
-
-          name: user_id
-
-          required: true
-
-          schema: { type: string, format: uuid }
-
-      responses:
-
-        '200':
-
-          description: OK
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/User' }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-        '404': { $ref: '#/components/responses/NotFound' }
-
-  # -----------------------------------------------------------
-
-  # 3. MATCHMAKING
-
-  # -----------------------------------------------------------
-
-  /users/feed:
-
-    get:
-
-      summary: Lấy danh sách profiles để quẹt thẻ
-
-      description: "Thuật toán trả về danh sách profiles đã lọc theo GPS bán kính 50km và Hệ Tâm Linh (nếu được chọn)."
-
-      tags: [Matches]
-
-      parameters:
-
-        - in: query
-
-          name: filter
-
           schema:
-
-            type: string
-
-            enum: [default, spiritual]
-
-          description: "spiritual = Lọc theo Hệ Tâm Linh"
-
-        - in: query
-
-          name: limit
-
-          schema: { type: integer, default: 10, maximum: 50 }
-
-      responses:
-
-        '200':
-
-          description: Danh sách profile để quẹt
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: array
-
-                items: { $ref: '#/components/schemas/User' }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-  /matches/swipe:
-
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 401
+            message: ERR_UNAUTHORIZED
+    Forbidden:
+      description: 403 — Không có quyền thực hiện hành động này.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 403
+            message: ERR_FORBIDDEN
+    NotFound:
+      description: 404 — Không tìm thấy tài nguyên.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 404
+            message: ERR_NOT_FOUND
+    UnprocessableEntity:
+      description: 422 — Dữ liệu đầu vào không hợp lệ.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 422
+            message: ERR_VALIDATION
+            details: 'phone: invalid format'
+    TooManyRequests:
+      description: 429 — Vượt quá giới hạn tần suất request (Rate Limit).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 429
+            message: ERR_RATE_LIMIT
+            retry_after_seconds: 3600
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: ERR_CONDITION_NOT_MET
+        details:
+          type: string
+          description: Thông tin lỗi bổ sung (optional)
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phone:
+          type: string
+          example: 0901234567
+        name:
+          type: string
+          example: Nguyễn Văn A
+        dob:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum:
+            - male
+            - female
+            - other
+        level:
+          type: integer
+          example: 3
+        is_shadowbanned:
+          type: boolean
+          default: false
+        created_at:
+          type: string
+          format: date-time
+    WalletInfo:
+      type: object
+      properties:
+        balance:
+          type: number
+          example: 350.0
+          description: Số dư Xu khả dụng
+        hold_balance:
+          type: number
+          example: 100.0
+          description: Số dư Xu đang bị đóng băng (cọc Date)
+    Match:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        partner:
+          $ref: '#/components/schemas/User'
+        streak_score:
+          type: integer
+          example: 7
+        island_level:
+          type: integer
+          example: 2
+        last_interaction_at:
+          type: string
+          format: date-time
+    DatingContract:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_a_id:
+          type: string
+          format: uuid
+        user_b_id:
+          type: string
+          format: uuid
+        deposit_amount:
+          type: number
+          example: 100
+        status:
+          type: string
+          enum:
+            - pending
+            - active
+            - completed
+            - cancelled
+        appointment_time:
+          type: string
+          format: date-time
+        qr_token:
+          type: string
+          description: Chỉ hiển thị cho chủ hẹn (rotate mỗi 30s)
+    CourtCase:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        defendant_name_masked:
+          type: string
+          example: Nguyễn ***
+        reason:
+          type: string
+        status:
+          type: string
+          enum:
+            - voting
+            - guilty
+            - not_guilty
+            - settled
+        vote_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+    CardProfile:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        ticker:
+          type: string
+          example: '#NVA'
+        current_price:
+          type: number
+          example: 147.5
+        total_cards:
+          type: integer
+          example: 1000
+        available_cards:
+          type: integer
+          example: 820
+        is_halted:
+          type: boolean
+          description: Circuit Breaker đang kích hoạt
+    WalletTransaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          example: -50
+          description: Âm = chi, Dương = thu
+        type:
+          type: string
+          enum:
+            - deposit
+            - contract_hold
+            - contract_release
+            - penalty
+            - card_buy
+            - card_sell
+            - cv_lookup
+            - clan_create
+            - island_revive
+        reference_id:
+          type: string
+          format: uuid
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+    Clan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        leader_id:
+          type: string
+          format: uuid
+        member_count:
+          type: integer
+        weekly_score:
+          type: integer
+security:
+  - bearerAuth: []
+paths:
+  /auth/send-otp:
     post:
-
-      summary: Quẹt thẻ (Like/Pass)
-
-      tags: [Matches]
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              required: [target_id, action]
-
-              properties:
-
-                target_id: { type: string, format: uuid }
-
-                action: { type: string, enum: [like, pass] }
-
-      responses:
-
-        '200':
-
-          description: Kết quả quẹt thẻ
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  is_match: { type: boolean }
-
-                  match:
-
-                    nullable: true
-
-                    $ref: '#/components/schemas/Match'
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-        '404':
-
-          description: "Target user không tồn tại"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-  /matches:
-
-    get:
-
-      summary: Lấy danh sách các Match hiện tại
-
-      tags: [Matches]
-
-      parameters:
-
-        - in: query
-
-          name: limit
-
-          schema: { type: integer, default: 20 }
-
-        - in: query
-
-          name: offset
-
-          schema: { type: integer, default: 0 }
-
-      responses:
-
-        '200':
-
-          description: Danh sách Match
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  total: { type: integer }
-
-                  data:
-
-                    type: array
-
-                    items: { $ref: '#/components/schemas/Match' }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-  # -----------------------------------------------------------
-
-  # 4. LOCKET
-
-  # -----------------------------------------------------------
-
-  /locket/send:
-
-    post:
-
-      summary: Gửi ảnh Blind Locket đến Widget của đối phương
-
-      description: "Upload ảnh và trigger silent push tới Widget của người nhận. Worker xử lý blur ngầm. Rate limit: 10 ảnh/giờ/cặp đôi (miễn rate limit nếu có Premium)."
-
-      tags: [Locket]
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          multipart/form-data:
-
-            schema:
-
-              type: object
-
-              required: [image, match_id]
-
-              properties:
-
-                image:
-
-                  type: string
-
-                  format: binary
-
-                  description: "File ảnh (JPG/PNG, tối đa 10MB)"
-
-                match_id:
-
-                  type: string
-
-                  format: uuid
-
-      responses:
-
-        '202':
-
-          description: "Accepted — Ảnh đã nhận, Worker đang xử lý blur và gửi Push"
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  message: { type: string, example: "Processing" }
-
-                  estimated_delivery_ms: { type: integer, example: 2500 }
-
-        '400':
-
-          description: "Ảnh NSFW bị từ chối (tỷ lệ khỏa thân > 30%)"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-              example: { code: 400, message: "ERR_NSFW_CONTENT" }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-        '404': { $ref: '#/components/responses/NotFound' }
-
-        '429': { $ref: '#/components/responses/TooManyRequests' }
-
-  # -----------------------------------------------------------
-
-  # 5. TÒA ÁN TÌNH YÊU (COURT)
-
-  # -----------------------------------------------------------
-
-  /court/cases:
-
-    post:
-
-      summary: Đâm đơn kiện (Ghosting, Trap...)
-
-      description: "Điều kiện: Bị đơn im lặng > 48h và Streak cũ > 5 ngày. Vi phạm điều kiện trả về ERR_CONDITION_NOT_MET."
-
-      tags: [Court]
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              required: [defendant_id, reason]
-
-              properties:
-
-                defendant_id: { type: string, format: uuid }
-
-                reason:
-
-                  type: string
-
-                  description: "Lý do kiện: 'Ghosting', 'Trapboy/Trapgirl', 'Bùng kèo'..."
-
-                  example: "Ghosting sau 2 tuần hẹn hò"
-
-      responses:
-
-        '201':
-
-          description: Khởi kiện thành công
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/CourtCase' }
-
-        '400':
-
-          description: "Không đủ điều kiện kiện"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-              example: { code: 400, message: "ERR_CONDITION_NOT_MET", details: "Streak < 5 days" }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-    get:
-
-      summary: Lấy danh sách vụ án đang chờ biểu quyết (cho Bồi thẩm đoàn)
-
-      tags: [Court]
-
-      parameters:
-
-        - in: query
-
-          name: limit
-
-          schema: { type: integer, default: 10 }
-
-        - in: query
-
-          name: offset
-
-          schema: { type: integer, default: 0 }
-
-      responses:
-
-        '200':
-
-          description: Danh sách các vụ kiện đang public (đã ẩn danh thông tin PII)
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  total: { type: integer }
-
-                  data:
-
-                    type: array
-
-                    items: { $ref: '#/components/schemas/CourtCase' }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-  /court/cases/{case_id}/vote:
-
-    post:
-
-      summary: Bỏ phiếu biểu quyết (Jury Vote)
-
-      tags: [Court]
-
-      parameters:
-
-        - in: path
-
-          name: case_id
-
-          required: true
-
-          schema: { type: string, format: uuid }
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              required: [vote]
-
-              properties:
-
-                vote: { type: string, enum: [guilty, not_guilty] }
-
-      responses:
-
-        '200':
-
-          description: Ghi nhận phiếu bầu thành công
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  message: { type: string, example: "Vote recorded" }
-
-                  current_vote_count: { type: integer }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-        '403':
-
-          description: "Không được phép vote vụ kiện mà mình là đương sự"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-        '404': { $ref: '#/components/responses/NotFound' }
-
-  /court/cases/{case_id}/withdraw:
-
-    post:
-
-      summary: Rút đơn kiện (Chỉ nguyên đơn, chỉ trước khi đủ 50 vote)
-
-      tags: [Court]
-
-      parameters:
-
-        - in: path
-
-          name: case_id
-
-          required: true
-
-          schema: { type: string, format: uuid }
-
-      responses:
-
-        '200':
-
-          description: Đơn kiện đã được rút thành công
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  message: { type: string, example: "Case withdrawn successfully" }
-
-        '400':
-
-          description: "Vụ án đã có phán quyết, không thể rút"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-              example: { code: 400, message: "ERR_VERDICT_ALREADY_ISSUED" }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-        '403': { $ref: '#/components/responses/Forbidden' }
-
-        '404': { $ref: '#/components/responses/NotFound' }
-
-  # -----------------------------------------------------------
-
-  # 6. BẢN ĐỒ & CLAN
-
-  # -----------------------------------------------------------
-
-  /clans:
-
-    post:
-
-      summary: Tạo Bang hội mới
-
-      description: "Điều kiện: Level ≥ 3 và số dư ≥ 500 Xu. Tốn 500 Xu khi tạo thành công."
-
-      tags: [Clans]
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              required: [name]
-
-              properties:
-
-                name: { type: string, example: "Độc Cô Cầu Bại" }
-
-                slogan: { type: string }
-
-      responses:
-
-        '201':
-
-          description: Bang hội đã được tạo thành công
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/Clan' }
-
-        '400':
-
-          description: "Không đủ điều kiện hoặc tên Clan đã tồn tại"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-              example: { code: 400, message: "ERR_CLAN_NAME_TAKEN" }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-        '403':
-
-          description: "Chưa đạt Level 3 hoặc không đủ Xu"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-  /clans/leaderboard:
-
-    get:
-
-      summary: Bảng xếp hạng Clan theo điểm tuần
-
-      tags: [Clans]
-
-      parameters:
-
-        - in: query
-
-          name: limit
-
-          schema: { type: integer, default: 20 }
-
-      responses:
-
-        '200':
-
-          description: Top Clan xếp theo weekly_score
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: array
-
-                items:
-
-                  allOf:
-
-                    - $ref: '#/components/schemas/Clan'
-
-                    - type: object
-
-                      properties:
-
-                        rank: { type: integer, example: 1 }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-  /landmarks/{landmark_id}/checkin:
-
-    post:
-
-      summary: Check-in GPS tại Landmark để cộng điểm Clan
-
-      description: "Hệ thống dùng PostGIS ST_DWithin với radius_meters của Landmark để xác nhận. Phát hiện Mock Location → ban 7 ngày."
-
-      tags: [Clans]
-
-      parameters:
-
-        - in: path
-
-          name: landmark_id
-
-          required: true
-
-          schema: { type: string, format: uuid }
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              required: [latitude, longitude]
-
-              properties:
-
-                latitude: { type: number, example: 10.7769 }
-
-                longitude: { type: number, example: 106.7009 }
-
-      responses:
-
-        '200':
-
-          description: Check-in hợp lệ — cộng 10 điểm cho Clan
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  message: { type: string, example: "Check-in successful. +10 points" }
-
-                  clan_weekly_score: { type: integer }
-
-        '400':
-
-          description: "Vị trí GPS nằm ngoài bán kính hợp lệ của Landmark"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-              example: { code: 400, message: "ERR_OUT_OF_RANGE" }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-        '403':
-
-          description: "Phát hiện Fake GPS hoặc đang trong thời gian bị cấm check-in"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-              example: { code: 403, message: "ERR_FAKE_GPS_DETECTED", ban_until: "2026-08-18T00:00:00Z" }
-
-  # -----------------------------------------------------------
-
-  # 7. KHẾ ƯỚC TÀI CHÍNH (DATING CONTRACTS)
-
-  # -----------------------------------------------------------
-
-  /contracts:
-
-    post:
-
-      summary: Gửi yêu cầu Khế Ước đi Date
-
-      description: "Điều kiện: Cả 2 đã chat ≥ 20 tin và số dư ≥ deposit_amount. Đóng băng Xu ngay khi tạo."
-
-      tags: [Contracts]
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              required: [target_user_id, deposit_amount, appointment_time]
-
-              properties:
-
-                target_user_id: { type: string, format: uuid }
-
-                deposit_amount:
-
-                  type: number
-
-                  example: 100
-
-                  description: "Số Xu mỗi bên cọc (phải bằng nhau)"
-
-                appointment_time:
-
-                  type: string
-
-                  format: date-time
-
-                  description: "Giờ hẹn dự kiến"
-
-                location_note: { type: string, example: "Café The Coffee House, Q1" }
-
-      responses:
-
-        '201':
-
-          description: Tạo khế ước thành công, Xu bị đóng băng
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/DatingContract' }
-
-        '400':
-
-          description: "Không đủ Xu hoặc chưa đủ điều kiện chat"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-  /contracts/{contract_id}/accept:
-
-    post:
-
-      summary: Người nhận lời đồng ý Khế Ước
-
-      tags: [Contracts]
-
-      parameters:
-
-        - in: path
-
-          name: contract_id
-
-          required: true
-
-          schema: { type: string, format: uuid }
-
-      responses:
-
-        '200':
-
-          description: Khế ước được chấp nhận, Xu của User B bị đóng băng
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/DatingContract' }
-
-        '400':
-
-          description: "User B không đủ Xu"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-        '403': { $ref: '#/components/responses/Forbidden' }
-
-        '404': { $ref: '#/components/responses/NotFound' }
-
-  /contracts/{contract_id}/cancel:
-
-    post:
-
-      summary: Hủy Khế Ước (ghi nhận người hủy để xử lý phạt)
-
-      description: "Nếu Cron Job phát hiện quá giờ hẹn 30 phút cũng tự gọi endpoint logic này."
-
-      tags: [Contracts]
-
-      parameters:
-
-        - in: path
-
-          name: contract_id
-
-          required: true
-
-          schema: { type: string, format: uuid }
-
-      requestBody:
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              properties:
-
-                reason: { type: string, example: "Bận đột xuất" }
-
-      responses:
-
-        '200':
-
-          description: "Xử lý hủy thành công. Xu đã bị phân phối theo quy tắc."
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  cancelled_by: { type: string, format: uuid }
-
-                  penalty_applied: { type: boolean }
-
-                  message: { type: string, example: "100 Xu transferred to partner" }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-        '403': { $ref: '#/components/responses/Forbidden' }
-
-        '404': { $ref: '#/components/responses/NotFound' }
-
-  /contracts/{contract_id}/scan:
-
-    post:
-
-      summary: Quét Dynamic QR code để xác nhận gặp mặt
-
-      description: "QR Token rotate mỗi 30 giây. Quét thành công → Hoàn trả toàn bộ Xu đóng băng cho cả 2."
-
-      tags: [Contracts]
-
-      parameters:
-
-        - in: path
-
-          name: contract_id
-
-          required: true
-
-          schema: { type: string, format: uuid }
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              required: [qr_token]
-
-              properties:
-
-                qr_token: { type: string }
-
-      responses:
-
-        '200':
-
-          description: Khớp mã QR — Hoàn tiền cọc cho cả 2 thành công
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  status: { type: string, example: "completed" }
-
-                  message: { type: string, example: "100 Xu returned to both users" }
-
-        '400':
-
-          description: "QR Token sai hoặc đã hết hạn (> 30 giây)"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-              example: { code: 400, message: "ERR_QR_EXPIRED" }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-        '404': { $ref: '#/components/responses/NotFound' }
-
-  # -----------------------------------------------------------
-
-  # 8. Chợ Thẻ Bài Profile (CARDS)
-
-  # -----------------------------------------------------------
-
-  /cards/{user_id}:
-
-    get:
-
-      summary: Xem thông tin Thẻ Bài của một Profile
-
-      tags: [Cards]
-
-      parameters:
-
-        - in: path
-
-          name: user_id
-
-          required: true
-
-          schema: { type: string, format: uuid }
-
-      responses:
-
-        '200':
-
-          description: Thông tin Thẻ Bài
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/CardProfile' }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-        '403':
-
-          description: "Chưa đạt Level 5 để mở tính năng Sàn giao dịch"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-        '404': { $ref: '#/components/responses/NotFound' }
-
-  /cards/trade:
-
-    post:
-
-      summary: Đặt lệnh mua/bán Thẻ Bài Profile
-
-      description: "Áp dụng phí giao dịch 2%. Nếu Circuit Breaker đang kích hoạt → trả về 503."
-
-      tags: [Cards]
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              required: [target_user_id, type, quantity]
-
-              properties:
-
-                target_user_id: { type: string, format: uuid }
-
-                type: { type: string, enum: [buy, sell] }
-
-                quantity: { type: integer, minimum: 1 }
-
-      responses:
-
-        '200':
-
-          description: Khớp lệnh thành công
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  trade_id: { type: string, format: uuid }
-
-                  quantity: { type: integer }
-
-                  price_per_unit: { type: number }
-
-                  total_cost: { type: number }
-
-                  fee: { type: number, description: "Phí giao dịch 2%" }
-
-                  new_wallet_balance: { type: number }
-
-        '400':
-
-          description: "Không đủ Xu hoặc không đủ Thẻ Bài để bán"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-        '503':
-
-          description: "Circuit Breaker đang kích hoạt — Giao dịch tạm dừng"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-              example: { code: 503, message: "ERR_CIRCUIT_BREAKER_ACTIVE", resume_at: "2026-08-11T12:45:00Z" }
-
-  # -----------------------------------------------------------
-
-  # 9. EX-RATING (CV TÌNH TRƯỜNG)
-
-  # -----------------------------------------------------------
-
-  /ex-ratings:
-
-    post:
-
-      summary: Đánh giá đối phương sau khi Unmatch
-
-      description: "Chỉ thực hiện được sau khi gọi API unmatch. Reviewer được ẩn danh hoàn toàn."
-
-      tags: [Ex-Rating]
-
-      requestBody:
-
-        required: true
-
-        content:
-
-          application/json:
-
-            schema:
-
-              type: object
-
-              required: [target_user_id, rating_score, match_id]
-
-              properties:
-
-                target_user_id: { type: string, format: uuid }
-
-                match_id: { type: string, format: uuid }
-
-                rating_score:
-
-                  type: integer
-
-                  minimum: 1
-
-                  maximum: 5
-
-                tags:
-
-                  type: array
-
-                  items: { type: string }
-
-                  example: ["#Lịch_sự", "#Đúng_giờ"]
-
-      responses:
-
-        '201':
-
-          description: Đánh giá đã được ghi nhận (ẩn danh)
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  message: { type: string, example: "Rating submitted anonymously" }
-
-        '400':
-
-          description: "Chưa đủ điều kiện (< 50 tin nhắn)"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-  /users/{user_id}/ex-rating:
-
-    get:
-
-      summary: Tra cứu CV Tình Trường (Mất phí 50 Xu)
-
-      description: "Tự động trừ 50 Xu khi gọi API thành công. Trả về điểm tổng hợp và tag cloud (ẩn danh reviewer)."
-
-      tags: [Ex-Rating]
-
-      parameters:
-
-        - in: path
-
-          name: user_id
-
-          required: true
-
-          schema: { type: string, format: uuid }
-
-      responses:
-
-        '200':
-
-          description: CV Tình Trường (đã trừ 50 Xu)
-
-          content:
-
-            application/json:
-
-              schema:
-
-                type: object
-
-                properties:
-
-                  target_user_id: { type: string, format: uuid }
-
-                  average_rating: { type: number, example: 3.8 }
-
-                  total_ratings: { type: integer, example: 5 }
-
-                  tag_summary:
-
-                    type: array
-
-                    items:
-
-                      type: object
-
-                      properties:
-
-                        tag: { type: string, example: "#Lịch_sự" }
-
-                        count: { type: integer, example: 4 }
-
-        '400':
-
-          description: "Không đủ 50 Xu để tra cứu"
-
-          content:
-
-            application/json:
-
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
-
-              example: { code: 400, message: "ERR_INSUFFICIENT_BALANCE" }
-
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-        '404': { $ref: '#/components/responses/NotFound' }
-
-  # -----------------------------------------------------------
-
-  # 10. HEALTH CHECK
-
-  # -----------------------------------------------------------
-
-  /health:
-
-    get:
-
-      summary: Health check endpoint (dùng cho Uptime Monitor và K8s probes)
-
-      tags: [System]
-
+      summary: Gửi mã OTP về số điện thoại
+      description: Gọi API ESMS.vn để gửi SMS OTP. OTP có TTL 120 giây, tối đa 5 lần/ngày/SĐT.
+      tags:
+        - Auth
       security: []
-
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone
+              properties:
+                phone:
+                  type: string
+                  example: 0901234567
       responses:
-
         '200':
-
-          description: Service is healthy
-
+          description: OTP đã được gửi thành công
           content:
-
             application/json:
-
               schema:
-
                 type: object
-
                 properties:
-
-                  status: { type: string, example: "ok" }
-
-                  version: { type: string, example: "1.1.0" }
-
-                  uptime_seconds: { type: integer }
-
-  # =============================================================
-
-  # 10. BOUNTY HUNTER
-  # =============================================================
+                  message:
+                    type: string
+                    example: OTP sent
+                  retry_after_seconds:
+                    type: integer
+                    example: 60
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /auth/verify-otp:
+    post:
+      summary: Xác thực OTP và đăng nhập / tạo tài khoản
+      description: Nếu SĐT chưa tồn tại → tạo tài khoản mới. Nếu đã có → đăng nhập.
+        Trả về JWT Access Token (15 phút) và Refresh Token (30 ngày).
+      tags:
+        - Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone
+                - otp
+              properties:
+                phone:
+                  type: string
+                  example: 0901234567
+                otp:
+                  type: string
+                  example: '123456'
+      responses:
+        '200':
+          description: Xác thực thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  is_new_user:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: OTP sai hoặc đã hết hạn
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: ERR_INVALID_OTP
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+  /auth/refresh:
+    post:
+      summary: Làm mới Access Token
+      tags:
+        - Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Cặp token mới (token cũ đã bị vô hiệu hóa)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /upload/presigned-url:
+    post:
+      summary: Lấy Presigned URL để upload file trực tiếp lên Cloudflare R2
+      description: Tạo link tải lên an toàn có thời hạn 15 phút. Hỗ trợ upload avatar
+        và ảnh.
+      tags:
+        - Upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - filename
+                - content_type
+                - file_size
+              properties:
+                filename:
+                  type: string
+                  example: avatar.jpg
+                content_type:
+                  type: string
+                  example: image/jpeg
+                file_size:
+                  type: integer
+                  example: 1048576
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  upload_url:
+                    type: string
+                  file_key:
+                    type: string
+                  expires_in:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /users/me:
+    get:
+      summary: Lấy thông tin profile của bản thân
+      tags:
+        - Users
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      summary: Cập nhật thông tin profile
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                gender:
+                  type: string
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+  /users/me/wallet:
+    get:
+      summary: Xem số dư ví Xu
+      tags:
+        - Users
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletInfo'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /users/me/wallet/transactions:
+    get:
+      summary: Lịch sử giao dịch Xu
+      tags:
+        - Users
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: type
+          schema:
+            type: string
+            description: 'Lọc theo loại giao dịch (VD: card_buy)'
+      responses:
+        '200':
+          description: Danh sách giao dịch
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WalletTransaction'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /users/{user_id}/profile:
+    get:
+      summary: Xem profile công khai của một user khác
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /users/feed:
+    get:
+      summary: Lấy danh sách profiles để quẹt thẻ
+      description: Thuật toán trả về danh sách profiles đã lọc theo GPS bán kính 50km
+        và Hệ Tâm Linh (nếu được chọn).
+      tags:
+        - Matches
+      parameters:
+        - in: query
+          name: filter
+          schema:
+            type: string
+            enum:
+              - default
+              - spiritual
+          description: spiritual = Lọc theo Hệ Tâm Linh
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+            maximum: 50
+      responses:
+        '200':
+          description: Danh sách profile để quẹt
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /matches/swipe:
+    post:
+      summary: Quẹt thẻ (Like/Pass)
+      tags:
+        - Matches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - target_id
+                - action
+              properties:
+                target_id:
+                  type: string
+                  format: uuid
+                action:
+                  type: string
+                  enum:
+                    - like
+                    - pass
+      responses:
+        '200':
+          description: Kết quả quẹt thẻ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_match:
+                    type: boolean
+                  match:
+                    nullable: true
+                    $ref: '#/components/schemas/Match'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Target user không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /matches:
+    get:
+      summary: Lấy danh sách các Match hiện tại
+      tags:
+        - Matches
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Danh sách Match
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Match'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /locket/send:
+    post:
+      summary: Gửi ảnh Blind Locket đến Widget của đối phương
+      description: 'Upload ảnh và trigger silent push tới Widget của người nhận. Worker
+        xử lý blur ngầm. Rate limit: 10 ảnh/giờ/cặp đôi (miễn rate limit nếu có Premium).'
+      tags:
+        - Locket
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+                - match_id
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: File ảnh (JPG/PNG, tối đa 10MB)
+                match_id:
+                  type: string
+                  format: uuid
+      responses:
+        '202':
+          description: Accepted — Ảnh đã nhận, Worker đang xử lý blur và gửi Push
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Processing
+                  estimated_delivery_ms:
+                    type: integer
+                    example: 2500
+        '400':
+          description: Ảnh NSFW bị từ chối (tỷ lệ khỏa thân > 30%)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: ERR_NSFW_CONTENT
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /court/cases:
+    post:
+      summary: Đâm đơn kiện (Ghosting, Trap...)
+      description: 'Điều kiện: Bị đơn im lặng > 48h và Streak cũ > 5 ngày. Vi phạm
+        điều kiện trả về ERR_CONDITION_NOT_MET.'
+      tags:
+        - Court
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - defendant_id
+                - reason
+              properties:
+                defendant_id:
+                  type: string
+                  format: uuid
+                reason:
+                  type: string
+                  description: 'Lý do kiện: ''Ghosting'', ''Trapboy/Trapgirl'', ''Bùng
+                    kèo''...'
+                  example: Ghosting sau 2 tuần hẹn hò
+      responses:
+        '201':
+          description: Khởi kiện thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourtCase'
+        '400':
+          description: Không đủ điều kiện kiện
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: ERR_CONDITION_NOT_MET
+                details: Streak < 5 days
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    get:
+      summary: Lấy danh sách vụ án đang chờ biểu quyết (cho Bồi thẩm đoàn)
+      tags:
+        - Court
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Danh sách các vụ kiện đang public (đã ẩn danh thông tin PII)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CourtCase'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /court/cases/{case_id}/vote:
+    post:
+      summary: Bỏ phiếu biểu quyết (Jury Vote)
+      tags:
+        - Court
+      parameters:
+        - in: path
+          name: case_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - vote
+              properties:
+                vote:
+                  type: string
+                  enum:
+                    - guilty
+                    - not_guilty
+      responses:
+        '200':
+          description: Ghi nhận phiếu bầu thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Vote recorded
+                  current_vote_count:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Không được phép vote vụ kiện mà mình là đương sự
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /court/cases/{case_id}/withdraw:
+    post:
+      summary: Rút đơn kiện (Chỉ nguyên đơn, chỉ trước khi đủ 50 vote)
+      tags:
+        - Court
+      parameters:
+        - in: path
+          name: case_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Đơn kiện đã được rút thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Case withdrawn successfully
+        '400':
+          description: Vụ án đã có phán quyết, không thể rút
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: ERR_VERDICT_ALREADY_ISSUED
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /clans:
+    post:
+      summary: Tạo Bang hội (Tốn phí Xu)
+      tags:
+        - Clans
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: Q-Tech Lovers
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+                  leader_id:
+                    type: string
+                    format: uuid
+        '400':
+          description: Lỗi tên Bang hội đã tồn tại hoặc không hợp lệ
+        '402':
+          description: Không đủ Xu để tạo Bang hội
+  /clans/leaderboard:
+    get:
+      summary: Bảng xếp hạng Clan theo điểm tuần
+      tags:
+        - Clans
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Top Clan xếp theo weekly_score
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/Clan'
+                    - type: object
+                      properties:
+                        rank:
+                          type: integer
+                          example: 1
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /landmarks/{landmark_id}/checkin:
+    post:
+      summary: Check-in GPS tại Landmark để cộng điểm Clan
+      description: Hệ thống dùng PostGIS ST_DWithin với radius_meters của Landmark
+        để xác nhận. Phát hiện Mock Location → ban 7 ngày.
+      tags:
+        - Clans
+      parameters:
+        - in: path
+          name: landmark_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - latitude
+                - longitude
+              properties:
+                latitude:
+                  type: number
+                  example: 10.7769
+                longitude:
+                  type: number
+                  example: 106.7009
+      responses:
+        '200':
+          description: Check-in hợp lệ — cộng 10 điểm cho Clan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Check-in successful. +10 points
+                  clan_weekly_score:
+                    type: integer
+        '400':
+          description: Vị trí GPS nằm ngoài bán kính hợp lệ của Landmark
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: ERR_OUT_OF_RANGE
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Phát hiện Fake GPS hoặc đang trong thời gian bị cấm check-in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 403
+                message: ERR_FAKE_GPS_DETECTED
+                ban_until: '2026-08-18T00:00:00Z'
+  /contracts:
+    post:
+      summary: Gửi yêu cầu Khế Ước đi Date
+      description: 'Điều kiện: Cả 2 đã chat ≥ 20 tin và số dư ≥ deposit_amount. Đóng
+        băng Xu ngay khi tạo.'
+      tags:
+        - Contracts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - target_user_id
+                - deposit_amount
+                - appointment_time
+              properties:
+                target_user_id:
+                  type: string
+                  format: uuid
+                deposit_amount:
+                  type: number
+                  example: 100
+                  description: Số Xu mỗi bên cọc (phải bằng nhau)
+                appointment_time:
+                  type: string
+                  format: date-time
+                  description: Giờ hẹn dự kiến
+                location_note:
+                  type: string
+                  example: Café The Coffee House, Q1
+      responses:
+        '201':
+          description: Tạo khế ước thành công, Xu bị đóng băng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatingContract'
+        '400':
+          description: Không đủ Xu hoặc chưa đủ điều kiện chat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /contracts/{contract_id}/accept:
+    post:
+      summary: Người nhận lời đồng ý Khế Ước
+      tags:
+        - Contracts
+      parameters:
+        - in: path
+          name: contract_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Khế ước được chấp nhận, Xu của User B bị đóng băng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatingContract'
+        '400':
+          description: User B không đủ Xu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /contracts/{contract_id}/cancel:
+    post:
+      summary: Hủy Khế Ước (ghi nhận người hủy để xử lý phạt)
+      description: Nếu Cron Job phát hiện quá giờ hẹn 30 phút cũng tự gọi endpoint
+        logic này.
+      tags:
+        - Contracts
+      parameters:
+        - in: path
+          name: contract_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  example: Bận đột xuất
+      responses:
+        '200':
+          description: Xử lý hủy thành công. Xu đã bị phân phối theo quy tắc.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cancelled_by:
+                    type: string
+                    format: uuid
+                  penalty_applied:
+                    type: boolean
+                  message:
+                    type: string
+                    example: 100 Xu transferred to partner
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /contracts/{contract_id}/scan:
+    post:
+      summary: Quét Dynamic QR code để xác nhận gặp mặt
+      description: QR Token rotate mỗi 30 giây. Quét thành công → Hoàn trả toàn bộ
+        Xu đóng băng cho cả 2.
+      tags:
+        - Contracts
+      parameters:
+        - in: path
+          name: contract_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - qr_token
+              properties:
+                qr_token:
+                  type: string
+      responses:
+        '200':
+          description: Khớp mã QR — Hoàn tiền cọc cho cả 2 thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: completed
+                  message:
+                    type: string
+                    example: 100 Xu returned to both users
+        '400':
+          description: QR Token sai hoặc đã hết hạn (> 30 giây)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: ERR_QR_EXPIRED
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /cards/{user_id}:
+    get:
+      summary: Xem thông tin Thẻ Bài của một Profile
+      tags:
+        - Cards
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Thông tin Thẻ Bài
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Chưa đạt Level 5 để mở tính năng Sàn giao dịch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /cards/trade:
+    post:
+      summary: Đặt lệnh mua/bán Thẻ Bài Profile
+      description: Áp dụng phí giao dịch 2%. Nếu Circuit Breaker đang kích hoạt →
+        trả về 503.
+      tags:
+        - Cards
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - target_user_id
+                - type
+                - quantity
+              properties:
+                target_user_id:
+                  type: string
+                  format: uuid
+                type:
+                  type: string
+                  enum:
+                    - buy
+                    - sell
+                quantity:
+                  type: integer
+                  minimum: 1
+      responses:
+        '200':
+          description: Khớp lệnh thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trade_id:
+                    type: string
+                    format: uuid
+                  quantity:
+                    type: integer
+                  price_per_unit:
+                    type: number
+                  total_cost:
+                    type: number
+                  fee:
+                    type: number
+                    description: Phí giao dịch 2%
+                  new_wallet_balance:
+                    type: number
+        '400':
+          description: Không đủ Xu hoặc không đủ Thẻ Bài để bán
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          description: Circuit Breaker đang kích hoạt — Giao dịch tạm dừng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 503
+                message: ERR_CIRCUIT_BREAKER_ACTIVE
+                resume_at: '2026-08-11T12:45:00Z'
+  /ex-ratings:
+    post:
+      summary: Đánh giá đối phương sau khi Unmatch
+      description: Chỉ thực hiện được sau khi gọi API unmatch. Reviewer được ẩn danh
+        hoàn toàn.
+      tags:
+        - Ex-Rating
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - target_user_id
+                - rating_score
+                - match_id
+              properties:
+                target_user_id:
+                  type: string
+                  format: uuid
+                match_id:
+                  type: string
+                  format: uuid
+                rating_score:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - '#Lịch_sự'
+                    - '#Đúng_giờ'
+      responses:
+        '201':
+          description: Đánh giá đã được ghi nhận (ẩn danh)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Rating submitted anonymously
+        '400':
+          description: Chưa đủ điều kiện (< 50 tin nhắn)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /users/{user_id}/ex-rating:
+    get:
+      summary: Tra cứu CV Tình Trường (Mất phí 50 Xu)
+      description: Tự động trừ 50 Xu khi gọi API thành công. Trả về điểm tổng hợp
+        và tag cloud (ẩn danh reviewer).
+      tags:
+        - Ex-Rating
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: CV Tình Trường (đã trừ 50 Xu)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  target_user_id:
+                    type: string
+                    format: uuid
+                  average_rating:
+                    type: number
+                    example: 3.8
+                  total_ratings:
+                    type: integer
+                    example: 5
+                  tag_summary:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tag:
+                          type: string
+                          example: '#Lịch_sự'
+                        count:
+                          type: integer
+                          example: 4
+        '400':
+          description: Không đủ 50 Xu để tra cứu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 400
+                message: ERR_INSUFFICIENT_BALANCE
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /health:
+    get:
+      summary: Health check endpoint (dùng cho Uptime Monitor và K8s probes)
+      tags:
+        - System
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  version:
+                    type: string
+                    example: 1.1.0
+                  uptime_seconds:
+                    type: integer
   /bounties:
     post:
       summary: Đăng lệnh truy nã hẹn hò
-      tags: [Bounties]
+      tags:
+        - Bounties
       requestBody:
         required: true
         content:
@@ -2017,36 +1406,38 @@ paths:
             schema:
               type: object
               properties:
-                description: { type: string }
-                reward_amount: { type: integer }
+                description:
+                  type: string
+                reward_amount:
+                  type: integer
       responses:
         '201':
           description: Created
   /bounties/{id}/apply:
     post:
       summary: Nộp đơn ứng tuyển lệnh truy nã
-      tags: [Bounties]
+      tags:
+        - Bounties
       parameters:
         - name: id
           in: path
           required: true
-          schema: { type: string }
+          schema:
+            type: string
       responses:
         '200':
           description: Applied
-
-  # =============================================================
-  # 11. BLIND AUCTION
-  # =============================================================
   /auctions/{id}/bid:
     post:
       summary: Trả giá cho phiên đấu giá mù
-      tags: [Auctions]
+      tags:
+        - Auctions
       parameters:
         - name: id
           in: path
           required: true
-          schema: { type: string }
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -2054,30 +1445,30 @@ paths:
             schema:
               type: object
               properties:
-                bid_amount: { type: integer }
+                bid_amount:
+                  type: integer
       responses:
         '200':
           description: Bid placed
-
-  # =============================================================
-  # 12. VIRAL GAMIFICATION
-  # =============================================================
   /wall-of-shames/{user_id}/throw-tomato:
     post:
       summary: Ném cà chua vào đối tượng bị phong sát
-      tags: [Drama]
+      tags:
+        - Drama
       parameters:
         - name: user_id
           in: path
           required: true
-          schema: { type: string }
+          schema:
+            type: string
       responses:
         '200':
           description: Thrown successfully
   /vibe-checks/match:
     post:
       summary: Match qua Spotify Track
-      tags: [Vibe]
+      tags:
+        - Vibe
       requestBody:
         required: true
         content:
@@ -2085,24 +1476,32 @@ paths:
             schema:
               type: object
               properties:
-                track_id: { type: string }
+                track_id:
+                  type: string
       responses:
         '200':
           description: Matched
   /wingmans/referral:
     post:
       summary: Tạo link ghép đôi cho bạn bè
-      tags: [Wingman]
+      tags:
+        - Wingman
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [target1_id, target2_id]
+              required:
+                - target1_id
+                - target2_id
               properties:
-                target1_id: { type: string, format: uuid }
-                target2_id: { type: string, format: uuid }
+                target1_id:
+                  type: string
+                  format: uuid
+                target2_id:
+                  type: string
+                  format: uuid
       responses:
         '201':
           description: Link created
@@ -2111,13 +1510,19 @@ paths:
               schema:
                 type: object
                 properties:
-                  id: { type: string, format: uuid }
-                  deep_link: { type: string }
-                  expires_at: { type: string, format: date-time }
+                  id:
+                    type: string
+                    format: uuid
+                  deep_link:
+                    type: string
+                  expires_at:
+                    type: string
+                    format: date-time
   /wingmans/referral/{id}/accept:
     post:
       summary: Chấp nhận ghép đôi từ Cò Mối
-      tags: [Wingman]
+      tags:
+        - Wingman
       parameters:
         - name: id
           in: path
@@ -2133,12 +1538,17 @@ paths:
               schema:
                 type: object
                 properties:
-                  match_id: { type: string, format: uuid }
-                  status: { type: string }
+                  match_id:
+                    type: string
+                    format: uuid
+                  status:
+                    type: string
   /cards/steal:
     post:
       summary: Kích hoạt PK cướp Thẻ Bài
-      tags: [Cards, Minigame]
+      tags:
+        - Cards
+        - Minigame
       requestBody:
         required: true
         content:
@@ -2146,84 +1556,141 @@ paths:
             schema:
               type: object
               properties:
-                target_user_id: { type: string }
+                target_user_id:
+                  type: string
       responses:
         '200':
           description: PK Match created
-  # =============================================================
-  # 13. CLANS
-  # =============================================================
-  /clans:
+  /chat/ws:
+    get:
+      summary: Kết nối WebSocket nhận tin nhắn Real-time
+      tags:
+        - Chat
+      responses:
+        '101':
+          description: Switching Protocols (WebSocket Connected)
+  /chat/messages:
     post:
-      summary: Tạo Bang hội (Tốn phí Xu)
-      tags: [Clans]
+      summary: Gửi tin nhắn chat
+      tags:
+        - Chat
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [name]
+              required:
+                - match_id
+                - target_id
+                - type
+                - content
               properties:
-                name: { type: string, example: "Q-Tech Lovers" }
+                match_id:
+                  type: string
+                  format: uuid
+                target_id:
+                  type: string
+                  format: uuid
+                type:
+                  type: string
+                  example: text
+                content:
+                  type: string
+                  example: Hello
       responses:
         '201':
-          description: Created
+          description: Đã gửi
+  /chat/messages/{match_id}:
+    get:
+      summary: Lấy lịch sử chat
+      tags:
+        - Chat
+      parameters:
+        - name: match_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: before
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Lịch sử tin nhắn
+  /shames:
+    get:
+      summary: Lấy danh sách Wall of Shame
+      tags:
+        - Shames
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: OK
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  id: { type: string, format: uuid }
-                  name: { type: string }
-                  leader_id: { type: string, format: uuid }
-        '400':
-          description: "Lỗi tên Bang hội đã tồn tại hoặc không hợp lệ"
-        '402':
-          description: "Không đủ Xu để tạo Bang hội"
-
-  # =============================================================
-  # 14. CHAT (WebSocket & Real-time)
-  # =============================================================
-  /chat/ws:
-    get:
-      summary: Kết nối WebSocket nhận tin nhắn Real-time
-      tags: [Chat]
-      responses:
-        '101':
-          description: "Switching Protocols (WebSocket Connected)"
-  /chat/messages:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        user_id:
+                          type: string
+                          format: uuid
+                        user_name:
+                          type: string
+                        avatar_url:
+                          type: string
+                        reason:
+                          type: string
+                        tomatoes_thrown:
+                          type: integer
+                        expires_at:
+                          type: string
+                          format: date-time
+                        created_at:
+                          type: string
+                          format: date-time
+  /shames/{id}/tomato:
     post:
-      summary: Gửi tin nhắn chat
-      tags: [Chat]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [match_id, target_id, type, content]
-              properties:
-                match_id: { type: string, format: uuid }
-                target_id: { type: string, format: uuid }
-                type: { type: string, example: "text" }
-                content: { type: string, example: "Hello" }
-      responses:
-        '201':
-          description: "Đã gửi"
-  /chat/messages/{match_id}:
-    get:
-      summary: Lấy lịch sử chat
-      tags: [Chat]
+      summary: Ném cà chua vào Wall of Shame
+      tags:
+        - Shames
+      security:
+        - BearerAuth: []
       parameters:
-        - name: match_id
+        - name: id
           in: path
           required: true
-          schema: { type: string, format: uuid }
-        - name: before
-          in: query
-          required: false
-          schema: { type: string, format: date-time }
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
-          description: "Lịch sử tin nhắn"
+          description: Ném cà chua thành công
+        '400':
+          description: Request không hợp lệ

@@ -16,11 +16,11 @@ import (
 )
 
 type mockShameService struct {
-	getActiveShamesFn func(ctx context.Context, limit, offset int) ([]models.WallOfShame, error)
+	getActiveShamesFn func(ctx context.Context, limit, offset int) ([]models.WallOfShameResponse, error)
 	throwTomatoFn     func(ctx context.Context, throwerID uuid.UUID, shameID uuid.UUID) error
 }
 
-func (m *mockShameService) GetActiveShames(ctx context.Context, limit, offset int) ([]models.WallOfShame, error) {
+func (m *mockShameService) GetActiveShames(ctx context.Context, limit, offset int) ([]models.WallOfShameResponse, error) {
 	return m.getActiveShamesFn(ctx, limit, offset)
 }
 
@@ -32,9 +32,9 @@ func TestShameHandler_GetActiveShames(t *testing.T) {
 	app := fiber.New()
 
 	mockSvc := &mockShameService{
-		getActiveShamesFn: func(ctx context.Context, limit, offset int) ([]models.WallOfShame, error) {
-			return []models.WallOfShame{
-				{ID: uuid.New(), UserID: uuid.New(), Reason: "Test", TomatoesThrown: 10, ExpiresAt: time.Now()},
+		getActiveShamesFn: func(ctx context.Context, limit, offset int) ([]models.WallOfShameResponse, error) {
+			return []models.WallOfShameResponse{
+				{WallOfShame: models.WallOfShame{ID: uuid.New(), UserID: uuid.New(), Reason: "Test", TomatoesThrown: 10, ExpiresAt: time.Now().Add(1 * time.Hour)}, UserName: "TestUser", AvatarURL: "test.jpg"},
 			}, nil
 		},
 	}
@@ -49,7 +49,7 @@ func TestShameHandler_GetActiveShames(t *testing.T) {
 	}
 
 	// Test error case
-	mockSvc.getActiveShamesFn = func(ctx context.Context, limit, offset int) ([]models.WallOfShame, error) {
+	mockSvc.getActiveShamesFn = func(ctx context.Context, limit, offset int) ([]models.WallOfShameResponse, error) {
 		return nil, errors.New("db error")
 	}
 	respErr, _ := app.Test(req)
