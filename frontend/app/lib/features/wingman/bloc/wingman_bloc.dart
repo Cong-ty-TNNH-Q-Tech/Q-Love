@@ -4,6 +4,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import '../repository/wingman_repository.dart';
 
 // --- Events ---
 abstract class WingmanEvent extends Equatable {
@@ -67,7 +68,9 @@ class MatchmakerSuccess extends WingmanState {}
 
 // --- Bloc ---
 class WingmanBloc extends Bloc<WingmanEvent, WingmanState> {
-  WingmanBloc() : super(WingmanInitial()) {
+  final WingmanRepository repository;
+
+  WingmanBloc({required this.repository}) : super(WingmanInitial()) {
     on<LoadWingmanDashboard>(_onLoadDashboard);
     on<MatchFriendEvent>(_onMatchFriend);
   }
@@ -75,14 +78,12 @@ class WingmanBloc extends Bloc<WingmanEvent, WingmanState> {
   Future<void> _onLoadDashboard(LoadWingmanDashboard event, Emitter<WingmanState> emit) async {
     emit(WingmanLoading());
     try {
-      // TODO: Replace with real API call
-      await Future.delayed(const Duration(seconds: 1));
-      
-      emit(const WingmanDashboardLoaded(
-        totalMatches: 42,
-        successRate: 0.85,
-        totalCommission: 12500, // Xu
-        chartData: [1000, 1500, 2000, 800, 3000, 2500, 1700], // Last 7 days
+      final data = await repository.getDashboard();
+      emit(WingmanDashboardLoaded(
+        totalMatches: data['total_matches'] ?? 0,
+        successRate: (data['success_rate'] ?? 0).toDouble(),
+        totalCommission: (data['total_commission'] ?? 0).toDouble(),
+        chartData: List<double>.from(data['chart_data'] ?? []),
       ));
     } catch (e) {
       emit(WingmanError(e.toString()));
@@ -92,8 +93,7 @@ class WingmanBloc extends Bloc<WingmanEvent, WingmanState> {
   Future<void> _onMatchFriend(MatchFriendEvent event, Emitter<WingmanState> emit) async {
     emit(WingmanLoading());
     try {
-      // TODO: Replace with real API call
-      await Future.delayed(const Duration(seconds: 1));
+      await repository.matchFriend(event.targetId, event.friendId);
       emit(MatchmakerSuccess());
     } catch (e) {
       emit(WingmanError(e.toString()));

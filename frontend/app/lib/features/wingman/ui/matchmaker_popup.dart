@@ -4,7 +4,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dio/dio.dart';
 import '../bloc/wingman_bloc.dart';
+import '../repository/wingman_repository.dart';
 
 class MatchmakerPopup extends StatelessWidget {
   final String targetId;
@@ -17,7 +19,7 @@ class MatchmakerPopup extends StatelessWidget {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) => BlocProvider(
-        create: (context) => WingmanBloc(),
+        create: (context) => WingmanBloc(repository: WingmanRepository(Dio())),
         child: MatchmakerPopup(targetId: targetId),
       ),
     );

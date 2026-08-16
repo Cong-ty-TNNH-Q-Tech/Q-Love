@@ -5,7 +5,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:dio/dio.dart';
 import '../bloc/wingman_bloc.dart';
+import '../repository/wingman_repository.dart';
 
 class WingmanDashboardScreen extends StatelessWidget {
   const WingmanDashboardScreen({super.key});
@@ -13,7 +15,7 @@ class WingmanDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => WingmanBloc()..add(LoadWingmanDashboard()),
+      create: (context) => WingmanBloc(repository: WingmanRepository(Dio()))..add(LoadWingmanDashboard()),
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
