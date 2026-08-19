@@ -25,7 +25,7 @@ func setupVibeApp() (*fiber.App, *VibeHandler) {
 	handler := NewVibeHandler(service)
 
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("userID", "test-user-id")
+		c.Locals("userID", "123e4567-e89b-12d3-a456-426614174000")
 		return c.Next()
 	})
 
