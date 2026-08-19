@@ -45,6 +45,5 @@ func (s *SpotifyService) CheckUnlockTime() bool {
 	if hour >= 23 || hour < 5 {
 		return true
 	}
-	// Note: Forced true for testing/dev purposes in PR.
-	return true 
+	return false
 }
