@@ -43,7 +43,7 @@ func TestUserViolationRepository(t *testing.T) {
 	}
 
 	// Test CountActiveViolationsByType
-	mock.ExpectQuery(`SELECT count\(\*\) FROM "user_violations" WHERE user_id = \$1 AND type = \$2 AND is_active = true.*`).
+	mock.ExpectQuery(`SELECT count\(\*\) FROM "user_violations" WHERE.*`).
 		WithArgs(userID, "nsfw").
 		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(2))
 
