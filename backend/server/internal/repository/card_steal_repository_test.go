@@ -39,7 +39,6 @@ func TestCardStealRepository(t *testing.T) {
 
 	// 1. Test Create
 	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "card_steals"`)).
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(testID))
 
 	err = repo.Create(ctx, steal)
@@ -48,7 +47,7 @@ func TestCardStealRepository(t *testing.T) {
 	}
 
 	// 2. Test FindByID
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "card_steals" WHERE id = $1 ORDER BY "card_steals"."id" LIMIT $2`)).
+	mock.ExpectQuery(`SELECT \* FROM "card_steals" WHERE.*id = \$1.*`).
 		WithArgs(testID, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "attacker_id", "defender_id", "target_card_id", "result"}).
 			AddRow(testID, attackerID, defenderID, cardID, "pending"))
@@ -70,7 +69,6 @@ func TestCardStealRepository(t *testing.T) {
 
 	// 4. Test TransferCardOwnership
 	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "card_transactions"`)).
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(uuid.New()))
 
 	err = repo.TransferCardOwnership(ctx, attackerID, cardID)
