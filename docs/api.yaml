@@ -1751,3 +1751,34 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+  /auctions/active:
+    get:
+      summary: Lấy danh sách đấu giá đang diễn ra
+      tags: [Auction]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: "Thành công"
+  /auctions/{id}/bid:
+    post:
+      summary: Đặt giá thầu
+      tags: [Auction]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount: { type: number }
+      responses:
+        '201':
+          description: "Thành công"
