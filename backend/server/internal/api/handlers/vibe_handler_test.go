@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
@@ -44,7 +45,12 @@ func TestVibeHandler_CurrentTrack(t *testing.T) {
 	req := httptest.NewRequest("GET", "/vibe/current-track", nil)
 	resp, _ := app.Test(req)
 
-	assert.Equal(t, 200, resp.StatusCode)
+	hour := time.Now().Hour()
+	expected := 403
+	if hour >= 23 || hour < 5 {
+		expected = 200
+	}
+	assert.Equal(t, expected, resp.StatusCode)
 }
 
 func TestVibeHandler_Match(t *testing.T) {
@@ -55,7 +61,12 @@ func TestVibeHandler_Match(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	resp, _ := app.Test(req)
 
-	assert.Equal(t, 201, resp.StatusCode)
+	hour := time.Now().Hour()
+	expected := 403
+	if hour >= 23 || hour < 5 {
+		expected = 201
+	}
+	assert.Equal(t, expected, resp.StatusCode)
 }
 
 func TestVibeHandler_Match_InvalidBody(t *testing.T) {
@@ -66,5 +77,10 @@ func TestVibeHandler_Match_InvalidBody(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	resp, _ := app.Test(req)
 
-	assert.Equal(t, 400, resp.StatusCode)
+	hour := time.Now().Hour()
+	expected := 403
+	if hour >= 23 || hour < 5 {
+		expected = 400
+	}
+	assert.Equal(t, expected, resp.StatusCode)
 }
