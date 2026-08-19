@@ -52,6 +52,10 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	iapService := services.NewIAPService(txManager, walletRepo, userPremRepo)
 	webhookHandler := handlers.NewWebhookHandler(cfg, iapService)
 
+	stealRepo := repository.NewCardStealRepository(db)
+	minigameService := services.NewMinigameService(stealRepo, walletRepo, txManager)
+	minigameHandler := handlers.NewMinigameHandler(minigameService)
+
 	// API v1 group
 	v1 := app.Group("/api/v1")
 
@@ -95,4 +99,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	// Webhooks
 	webhookGroup := v1.Group("/webhooks")
 	webhookGroup.Post("/revenuecat", webhookHandler.HandleRevenueCat)
+
+	// Minigame Steal routes
+	stealGroup := v1.Group("/minigame/steal", middleware.JWTMiddleware(""))
+	stealGroup.Post("/init", minigameHandler.InitSteal)
+	stealGroup.Post("/submit", minigameHandler.SubmitStealResult)
 }
