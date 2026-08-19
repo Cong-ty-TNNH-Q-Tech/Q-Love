@@ -1730,6 +1730,62 @@ paths:
         '400':
           description: Request không hợp lệ
 
+  /vibe/status:
+    get:
+      summary: Lấy trạng thái Vibe Check
+      tags:
+        - Vibe
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Trạng thái Vibe Check
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  unlocked:
+                    type: boolean
+                  message:
+                    type: string
+  /vibe/current-track:
+    get:
+      summary: Lấy bài hát đang nghe (Mock Spotify)
+      tags:
+        - Vibe
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Thông tin bài hát
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /vibe/match:
+    post:
+      summary: Ghép đôi Vibe Check
+      tags:
+        - Vibe
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                track_id:
+                  type: string
+      responses:
+        '201':
+          description: Ghép đôi thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /auctions/active:
     get:
       summary: Lấy danh sách đấu giá đang diễn ra
