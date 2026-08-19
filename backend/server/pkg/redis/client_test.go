@@ -26,3 +26,12 @@ func TestNewRedisClient_PingFail(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, client)
 }
+
+func TestNewRedisClient_Skip(t *testing.T) {
+	cfg := &config.Config{
+		RedisURL: "skip",
+	}
+	client, err := NewRedisClient(cfg)
+	assert.NoError(t, err)
+	assert.Nil(t, client)
+}
