@@ -21,6 +21,7 @@ dependencies:
   app_links: ^6.1.1
   fl_chart: ^0.66.0
   just_audio: ^0.9.36
+  flutter_card_swiper: any
 
 dev_dependencies:
   flutter_test:
