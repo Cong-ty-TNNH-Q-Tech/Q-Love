@@ -88,6 +88,7 @@ class _CourtScreenState extends State<CourtScreen> {
                     child: CardSwiper(
                       controller: _swiperController,
                       cardsCount: state.cases.length,
+                      allowedSwipeDirection: const AllowedSwipeDirection.only(right: true, left: true),
                       onSwipe: (previousIndex, currentIndex, direction) {
                         _onSwipe(previousIndex, currentIndex, direction, state);
                         return true;
