@@ -92,7 +92,7 @@ func TestCardStealRepository_Errors(t *testing.T) {
 	ctx := context.Background()
 
 	// 1. FindByID Error
-	mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM \"card_steals\" WHERE\")).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "card_steals" WHERE`)).
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnError(gorm.ErrRecordNotFound)
 
@@ -102,7 +102,7 @@ func TestCardStealRepository_Errors(t *testing.T) {
 	}
 
 	// 2. TransferCardOwnership Error
-	mock.ExpectQuery(regexp.QuoteMeta("INSERT INTO \"card_transactions\"\")).
+	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "card_transactions"`)).
 		WillReturnError(gorm.ErrInvalidDB)
 
 	err = repo.TransferCardOwnership(ctx, uuid.New(), uuid.New())
