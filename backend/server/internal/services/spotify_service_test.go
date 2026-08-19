@@ -5,6 +5,8 @@ package services
 
 import (
 	"testing"
+	"time"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,6 +21,9 @@ func TestSpotifyService_GetCurrentTrack(t *testing.T) {
 func TestSpotifyService_CheckUnlockTime(t *testing.T) {
 	service := NewSpotifyService()
 	unlocked := service.CheckUnlockTime()
-	// Since we mocked it to return true
-	assert.True(t, unlocked)
+	
+	// Check against the current actual time
+	hour := time.Now().Hour()
+	expected := (hour >= 23 || hour < 5)
+	assert.Equal(t, expected, unlocked)
 }

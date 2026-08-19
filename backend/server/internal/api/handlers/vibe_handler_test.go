@@ -17,6 +17,12 @@ func setupVibeApp() (*fiber.App, *VibeHandler) {
 	app := fiber.New()
 	service := services.NewSpotifyService()
 	handler := NewVibeHandler(service)
+
+	app.Use(func(c *fiber.Ctx) error {
+		c.Locals("userID", "test-user-id")
+		return c.Next()
+	})
+
 	app.Get("/vibe/status", handler.Status)
 	app.Get("/vibe/current-track", handler.CurrentTrack)
 	app.Post("/vibe/match", handler.Match)
