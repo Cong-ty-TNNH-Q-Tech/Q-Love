@@ -1,4 +1,4 @@
-// Copyright 2026 Q-Tech Team
+// Copyright 2026 Q-Tech Team.
 // Licensed under the GNU AGPLv3 License.
 // See LICENSE file in the project root for full license information.
 
@@ -20,4 +20,10 @@ type WallOfShame struct {
 	CreatedAt      time.Time      `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt      time.Time      `gorm:"autoUpdateTime" json:"updated_at"`
 	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+type WallOfShameResponse struct {
+	WallOfShame
+	UserName  string `json:"user_name"`
+	AvatarURL string `json:"avatar_url"`
 }
