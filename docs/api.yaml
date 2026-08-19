@@ -1543,24 +1543,59 @@ paths:
                     format: uuid
                   status:
                     type: string
-  /cards/steal:
+  /minigame/steal/init:
     post:
       summary: Kích hoạt PK cướp Thẻ Bài
       tags:
         - Cards
         - Minigame
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - target_card_id
+                - defender_id
               properties:
-                target_user_id:
+                target_card_id:
                   type: string
+                  format: uuid
+                defender_id:
+                  type: string
+                  format: uuid
       responses:
         '200':
           description: PK Match created
+  /minigame/steal/submit:
+    post:
+      summary: Gửi kết quả trận PK cướp Thẻ Bài
+      tags:
+        - Cards
+        - Minigame
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - steal_id
+                - is_win
+              properties:
+                steal_id:
+                  type: string
+                  format: uuid
+                is_win:
+                  type: boolean
+      responses:
+        '200':
+          description: Kết quả được ghi nhận
   /chat/ws:
     get:
       summary: Kết nối WebSocket nhận tin nhắn Real-time

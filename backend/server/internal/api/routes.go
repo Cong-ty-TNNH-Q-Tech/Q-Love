@@ -54,6 +54,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 
 	spotifyService := services.NewSpotifyService()
 	vibeHandler := handlers.NewVibeHandler(spotifyService)
+	stealRepo := repository.NewCardStealRepository(db)
+	minigameService := services.NewMinigameService(stealRepo, walletRepo, txManager)
+	minigameHandler := handlers.NewMinigameHandler(minigameService)
 
 	// API v1 group
 	v1 := app.Group("/api/v1")
@@ -104,4 +107,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	vibeGroup.Get("/status", vibeHandler.Status)
 	vibeGroup.Get("/current-track", vibeHandler.CurrentTrack)
 	vibeGroup.Post("/match", vibeHandler.Match)
+
+	// Minigame Steal routes
+	stealGroup := v1.Group("/minigame/steal", middleware.JWTMiddleware(""))
+	stealGroup.Post("/init", minigameHandler.InitSteal)
+	stealGroup.Post("/submit", minigameHandler.SubmitStealResult)
 }
