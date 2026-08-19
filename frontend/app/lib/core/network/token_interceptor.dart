@@ -31,8 +31,8 @@ class TokenInterceptor extends Interceptor {
 
   @override
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
-    // If the error is 401 Unauthorized, try to refresh the token
-    if (err.response?.statusCode == 401) {
+    // If the error is 401 Unauthorized and the path is not refresh token, try to refresh the token
+    if (err.response?.statusCode == 401 && err.requestOptions.path != '/auth/refresh') {
       final refreshToken = await secureStorageService.getRefreshToken();
       if (refreshToken != null && refreshToken.isNotEmpty) {
         try {
