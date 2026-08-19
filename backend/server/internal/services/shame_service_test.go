@@ -17,11 +17,11 @@ import (
 // --- Mocks for ShameRepo ---
 
 type mockShameRepo struct {
-	getActiveShamesFn      func(ctx context.Context, limit, offset int) ([]models.WallOfShame, error)
+	getActiveShamesFn      func(ctx context.Context, limit, offset int) ([]models.WallOfShameResponse, error)
 	incrementTomatoCountFn func(ctx context.Context, shameID uuid.UUID, count int) error
 }
 
-func (m *mockShameRepo) GetActiveShames(ctx context.Context, limit, offset int) ([]models.WallOfShame, error) {
+func (m *mockShameRepo) GetActiveShames(ctx context.Context, limit, offset int) ([]models.WallOfShameResponse, error) {
 	return m.getActiveShamesFn(ctx, limit, offset)
 }
 
@@ -70,9 +70,9 @@ func (m *shameMockWalletRepo) CheckTransactionExists(ctx context.Context, txID u
 
 func TestShameService_GetActiveShames(t *testing.T) {
 	shameRepo := &mockShameRepo{
-		getActiveShamesFn: func(ctx context.Context, limit, offset int) ([]models.WallOfShame, error) {
-			return []models.WallOfShame{
-				{ID: uuid.New(), UserID: uuid.New(), Reason: "Cheating", TomatoesThrown: 5, ExpiresAt: time.Now().Add(1 * time.Hour)},
+		getActiveShamesFn: func(ctx context.Context, limit, offset int) ([]models.WallOfShameResponse, error) {
+			return []models.WallOfShameResponse{
+				{WallOfShame: models.WallOfShame{ID: uuid.New(), UserID: uuid.New(), Reason: "Cheating", TomatoesThrown: 5, ExpiresAt: time.Now().Add(1 * time.Hour)}, UserName: "TestUser", AvatarURL: "test.jpg"},
 			}, nil
 		},
 	}

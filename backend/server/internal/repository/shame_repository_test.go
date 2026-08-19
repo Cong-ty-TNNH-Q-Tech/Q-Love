@@ -19,7 +19,7 @@ func TestShameRepository_GetActiveShames(t *testing.T) {
 	}
 	repo := NewShameRepository(db)
 
-	mock.ExpectQuery(`SELECT \* FROM "wall_of_shames"`).
+	mock.ExpectQuery(`SELECT (.*) FROM "wall_of_shames"`).
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "user_id"}).AddRow(uuid.New(), uuid.New()))
 
@@ -39,7 +39,7 @@ func TestShameRepository_GetActiveShames_Error(t *testing.T) {
 	}
 	repo := NewShameRepository(db)
 
-	mock.ExpectQuery(`SELECT \* FROM "wall_of_shames"`).
+	mock.ExpectQuery(`SELECT (.*) FROM "wall_of_shames"`).
 		WithArgs(sqlmock.AnyArg()).
 		WillReturnError(sqlmock.ErrCancelled)
 
