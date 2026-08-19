@@ -43,7 +43,10 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 
 	matchRepo := repository.NewMatchRepository(db)
 	userPremRepo := repository.NewUserPremiumRepository(db)
-	locketService := services.NewLocketService(chatRepo, matchRepo, r2Client)
+	
+	violationRepo := repository.NewUserViolationRepository(db)
+	nsfwService := services.NewNSFWService()
+	locketService := services.NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
 	locketHandler := handlers.NewLocketHandler(locketService)
 
 	iapService := services.NewIAPService(txManager, walletRepo, userPremRepo)
@@ -84,6 +87,15 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	// Locket routes
 	locketGroup := v1.Group("/locket", middleware.JWTMiddleware(""))
 	locketGroup.Post("/send", middleware.LocketRateLimiter(), locketHandler.SendLocket)
+	
+	// Auction routes
+	auctionRepo := repository.NewAuctionRepository(db)
+	auctionService := services.NewAuctionService(auctionRepo, walletRepo, txManager, db)
+	auctionHandler := handlers.NewAuctionHandler(auctionService, auctionRepo)
+	auctionGroup := v1.Group("/auctions", middleware.JWTMiddleware(""))
+	auctionGroup.Get("/active", auctionHandler.GetActiveAuctions)
+	auctionGroup.Post("/:id/bid", auctionHandler.PlaceBid)
+
 	// Webhooks
 	webhookGroup := v1.Group("/webhooks")
 	webhookGroup.Post("/revenuecat", webhookHandler.HandleRevenueCat)
