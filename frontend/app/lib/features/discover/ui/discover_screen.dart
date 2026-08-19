@@ -164,6 +164,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                     child: CardSwiper(
                       controller: _swiperController,
                       cardsCount: state.profiles.length,
+                      allowedSwipeDirection: const AllowedSwipeDirection.only(right: true, left: true),
                       onSwipe: (previousIndex, currentIndex, direction) {
                         _onSwipe(previousIndex, currentIndex, direction, state);
                         return true;
