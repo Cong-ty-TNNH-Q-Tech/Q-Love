@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - [frontend/app] UI Khế Ước Hẹn Hò & Quét QR Code (Issue #46).
+- [frontend/app] Thêm UI/UX Luồng chia sẻ Deep Link Cò Mối & Quản lý Hoa hồng (Issue #57).
 - [backend/server/api] Thêm API backend cho tính năng Vibe Check.
 - [frontend/app] Tích hợp API Backend thật cho tính năng Vibe Check (thay thế Mock Data) và thêm UI Vibe Check Screen (Issue #55).
 - [backend/server/api] Thêm endpoint kiểm duyệt ảnh NSFW và Locket (Issue #24).
