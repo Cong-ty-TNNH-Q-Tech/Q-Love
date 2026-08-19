@@ -5,11 +5,20 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_links/app_links.dart';
+import 'package:qlove/core/network/dio_client.dart';
+import 'package:qlove/core/network/secure_storage_service.dart';
+import 'package:qlove/features/auth/bloc/auth_bloc.dart';
+import 'package:qlove/features/auth/bloc/auth_state.dart';
+import 'package:qlove/features/auth/bloc/auth_event.dart';
+import 'package:qlove/features/auth/data/auth_repository.dart';
+import 'package:qlove/features/auth/ui/login_screen.dart';
+import 'package:qlove/features/auth/ui/profile_creation_screen.dart';
 import 'core/theme/app_theme.dart';
 import 'core/bloc/app_bloc.dart';
 import 'features/wingman/ui/matchmaker_popup.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const QLoveApp());
 }
 
@@ -25,9 +34,34 @@ class _QLoveAppState extends State<QLoveApp> {
   late AppLinks _appLinks;
   StreamSubscription<Uri>? _linkSubscription;
 
+  late final SecureStorageService _secureStorageService;
+  late final AuthRepository _authRepository;
+  late final AuthBloc _authBloc;
+  late final DioClient _dioClient;
+
   @override
   void initState() {
     super.initState();
+    _secureStorageService = SecureStorageService();
+    
+    _dioClient = DioClient(
+      secureStorageService: _secureStorageService,
+      getAccessToken: () => _authBloc.currentAccessToken,
+      onTokenRefreshed: (token) {
+        _authBloc.add(TokenRefreshed(token));
+      },
+      onLogoutRequired: () {
+        _authBloc.add(LogoutRequested());
+      },
+    );
+
+    _authRepository = AuthRepository(
+      dio: _dioClient.dio,
+      secureStorageService: _secureStorageService,
+    );
+
+    _authBloc = AuthBloc(authRepository: _authRepository);
+
     _initDeepLinks();
   }
 
@@ -69,27 +103,45 @@ class _QLoveAppState extends State<QLoveApp> {
   @override
   void dispose() {
     _linkSubscription?.cancel();
+    _authBloc.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
+    return MultiRepositoryProvider(
       providers: [
-        BlocProvider<AppBloc>(
-          create: (context) => AppBloc()..add(AppInitialized()),
-        ),
+        RepositoryProvider.value(value: _secureStorageService),
+        RepositoryProvider.value(value: _authRepository),
       ],
-      child: MaterialApp(
-        navigatorKey: _navigatorKey,
-        title: 'Q-Love',
-        theme: AppTheme.darkTheme,
-        home: const Scaffold(
-          body: Center(
-            child: Text(
-              'Q-Love App Foundation',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<AppBloc>(
+            create: (context) => AppBloc()..add(AppInitialized()),
+          ),
+          BlocProvider<AuthBloc>.value(value: _authBloc),
+        ],
+        child: MaterialApp(
+          navigatorKey: _navigatorKey,
+          title: 'Q-Love',
+          theme: AppTheme.darkTheme,
+          home: BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              if (state is AuthAuthenticated) {
+                return const Scaffold(
+                  body: Center(
+                    child: Text(
+                      'Q-Love App Foundation (Home)',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                );
+              } else if (state is AuthProfileNeedsCreation) {
+                return const ProfileCreationScreen();
+              } else {
+                return const LoginScreen();
+              }
+            },
           ),
         ),
       ),
