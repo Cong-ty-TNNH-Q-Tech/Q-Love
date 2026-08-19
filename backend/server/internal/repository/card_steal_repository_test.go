@@ -13,6 +13,7 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func TestCardStealRepository(t *testing.T) {
@@ -78,5 +79,34 @@ func TestCardStealRepository(t *testing.T) {
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestCardStealRepository_Errors(t *testing.T) {
+	db, mock, err := setupTestDB()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	repo := NewCardStealRepository(db)
+	ctx := context.Background()
+
+	// 1. FindByID Error
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM \"card_steals\" WHERE\")).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnError(gorm.ErrRecordNotFound)
+
+	_, err = repo.FindByID(ctx, uuid.New())
+	if err == nil {
+		t.Fatalf("Expected error, got nil")
+	}
+
+	// 2. TransferCardOwnership Error
+	mock.ExpectQuery(regexp.QuoteMeta("INSERT INTO \"card_transactions\"\")).
+		WillReturnError(gorm.ErrInvalidDB)
+
+	err = repo.TransferCardOwnership(ctx, uuid.New(), uuid.New())
+	if err == nil {
+		t.Fatalf("Expected error, got nil")
 	}
 }
