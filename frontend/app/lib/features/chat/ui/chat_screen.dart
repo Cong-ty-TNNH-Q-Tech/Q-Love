@@ -11,13 +11,15 @@ class ChatScreen extends StatelessWidget {
   final String matchId;
   final String targetId;
 
-  const ChatScreen({super.key, required this.matchId, required this.targetId});
+  final String currentUserId;
+
+  const ChatScreen({super.key, required this.matchId, required this.targetId, required this.currentUserId});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ChatBloc(
-        repository: ChatRepository(currentUserId: 'mock_user_123'),
+        repository: ChatRepository(currentUserId: currentUserId),
       )..add(LoadChatHistory(matchId: matchId))
        ..add(ConnectWebSocket()),
       child: ChatView(matchId: matchId, targetId: targetId),

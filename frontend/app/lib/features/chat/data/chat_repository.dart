@@ -9,8 +9,8 @@ import 'chat_model.dart';
 class ChatRepository {
   WebSocketChannel? _channel;
   final Dio _dio = Dio();
-  final String baseUrl = 'http://localhost:8080/api/v1'; // Configuration mock
-  final String wsUrl = 'ws://localhost:8080/api/v1/chat/ws'; // Configuration mock
+  final String baseUrl = const String.fromEnvironment('API_URL', defaultValue: 'http://10.0.2.2:8080/api/v1');
+  final String wsUrl = const String.fromEnvironment('WS_URL', defaultValue: 'ws://10.0.2.2:8080/api/v1/chat/ws');
   final String currentUserId;
 
   ChatRepository({required this.currentUserId});

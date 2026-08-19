@@ -27,17 +27,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     try {
       final history = await repository.getHistory(event.matchId);
       // Generate some mock history if empty for demo purposes
-      final messages = history.isNotEmpty ? history : List.generate(50, (index) => ChatMessage(
-        id: 'mock_$index',
-        matchId: event.matchId,
-        senderId: index % 2 == 0 ? repository.currentUserId : 'other_user',
-        targetId: index % 2 == 0 ? 'other_user' : repository.currentUserId,
-        type: 'text',
-        content: 'This is mock message $index to test UI performance.',
-        createdAt: DateTime.now().subtract(Duration(minutes: index)),
-        isMine: index % 2 == 0,
-      ));
-      emit(ChatLoaded(messages: messages));
+      emit(ChatLoaded(messages: history));
     } catch (e) {
       emit(ChatError(message: e.toString()));
     }
