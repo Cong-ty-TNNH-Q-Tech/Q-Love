@@ -14,7 +14,7 @@ import (
 )
 
 type ShameRepository interface {
-	GetActiveShames(ctx context.Context, limit, offset int) ([]models.WallOfShame, error)
+	GetActiveShames(ctx context.Context, limit, offset int) ([]models.WallOfShameResponse, error)
 	IncrementTomatoCount(ctx context.Context, shameID uuid.UUID, count int) error
 }
 
@@ -26,11 +26,14 @@ func NewShameRepository(db *gorm.DB) ShameRepository {
 	return &shameRepository{db: db}
 }
 
-func (r *shameRepository) GetActiveShames(ctx context.Context, limit, offset int) ([]models.WallOfShame, error) {
-	var shames []models.WallOfShame
+func (r *shameRepository) GetActiveShames(ctx context.Context, limit, offset int) ([]models.WallOfShameResponse, error) {
+	var shames []models.WallOfShameResponse
 	err := r.db.WithContext(ctx).
-		Where("expires_at > ?", time.Now()).
-		Order("created_at desc").
+		Table("wall_of_shames").
+		Select("wall_of_shames.*, users.user_name, users.avatar_url").
+		Joins("LEFT JOIN users ON users.id = wall_of_shames.user_id").
+		Where("wall_of_shames.expires_at > ? AND wall_of_shames.deleted_at IS NULL", time.Now()).
+		Order("wall_of_shames.created_at desc").
 		Limit(limit).
 		Offset(offset).
 		Find(&shames).Error
