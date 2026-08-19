@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [frontend/app] Locket Widget iOS/Android (Issue #15).
 - [frontend/app] UI Tòa Án Tình Yêu (Vuốt để Vote Tội/Vô tội) (Issue #16).
 - [frontend/app] UI Đăng nhập, Xác thực OTP và Tạo Profile (Issue #13).
 - [frontend/app] UI Khế Ước Hẹn Hò & Quét QR Code (Issue #46).
