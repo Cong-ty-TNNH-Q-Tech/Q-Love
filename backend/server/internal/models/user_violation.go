@@ -17,5 +17,6 @@ type UserViolation struct {
 	Reason    string     `gorm:"type:text" json:"reason"`
 	IsActive  bool       `gorm:"default:true" json:"is_active"`
 	ExpiresAt *time.Time `json:"expires_at"`
-	CreatedAt time.Time  `gorm:"autoCreateTime" json:"created_at"`
+	CreatedAt time.Time      `gorm:"autoCreateTime" json:"created_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
