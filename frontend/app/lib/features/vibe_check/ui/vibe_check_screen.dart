@@ -3,8 +3,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dio/dio.dart';
 import '../bloc/vibe_check_cubit.dart';
 import '../bloc/vibe_check_state.dart';
+import '../data/vibe_api_client.dart';
+import '../data/vibe_repository.dart';
 import 'widgets/spotify_card_widget.dart';
 
 class VibeCheckScreen extends StatefulWidget {
@@ -42,7 +45,12 @@ class _VibeCheckScreenState extends State<VibeCheckScreen> {
           centerTitle: true,
         ),
         body: BlocProvider(
-          create: (context) => VibeCheckCubit()..fetchVibeTracks(),
+          create: (context) {
+            final dio = Dio(BaseOptions(baseUrl: 'http://10.0.2.2:3000/api/v1'));
+            final apiClient = VibeApiClient(dio: dio);
+            final repository = VibeRepository(apiClient: apiClient);
+            return VibeCheckCubit(repository: repository)..fetchVibeTracks();
+          },
           child: Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -70,7 +78,11 @@ class _VibeCheckScreenState extends State<VibeCheckScreen> {
                           return Dismissible(
                             key: Key(tracks[0]['title']!),
                             onDismissed: (direction) {
-                              context.read<VibeCheckCubit>().removeTrack(0);
+                              if (direction == DismissDirection.startToEnd) {
+                                context.read<VibeCheckCubit>().matchTrack(0);
+                              } else {
+                                context.read<VibeCheckCubit>().removeTrack(0);
+                              }
                             },
                             child: SpotifyCardWidget(
                               title: tracks[0]['title']!,

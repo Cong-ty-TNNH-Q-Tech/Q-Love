@@ -3,30 +3,18 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'vibe_check_state.dart';
+import '../data/vibe_repository.dart';
 
 class VibeCheckCubit extends Cubit<VibeCheckState> {
-  VibeCheckCubit() : super(VibeCheckInitial());
+  final VibeRepository repository;
+
+  VibeCheckCubit({required this.repository}) : super(VibeCheckInitial());
 
   Future<void> fetchVibeTracks() async {
     emit(VibeCheckLoading());
     try {
-      // Simulate API call to backend
-      await Future.delayed(const Duration(seconds: 1));
-      
-      final List<Map<String, String>> tracks = [
-        {
-          "title": "Shape of You",
-          "artist": "Ed Sheeran",
-          "coverUrl": "https://upload.wikimedia.org/wikipedia/en/b/b4/Shape_Of_You_%28Official_Single_Cover%29_by_Ed_Sheeran.png",
-          "previewUrl": "",
-        },
-        {
-          "title": "Blinding Lights",
-          "artist": "The Weeknd",
-          "coverUrl": "https://upload.wikimedia.org/wikipedia/en/e/e6/The_Weeknd_-_Blinding_Lights.png",
-          "previewUrl": "",
-        }
-      ];
+      final track = await repository.getCurrentVibeTrack();
+      final List<Map<String, String>> tracks = [track];
       emit(VibeCheckLoaded(tracks));
     } catch (e) {
       emit(VibeCheckError("Failed to load vibe tracks: $e"));
@@ -40,6 +28,23 @@ class VibeCheckCubit extends Cubit<VibeCheckState> {
       if (index >= 0 && index < newTracks.length) {
         newTracks.removeAt(index);
         emit(VibeCheckLoaded(newTracks));
+      }
+    }
+  }
+
+  Future<void> matchTrack(int index) async {
+    if (state is VibeCheckLoaded) {
+      final currentState = state as VibeCheckLoaded;
+      if (index >= 0 && index < currentState.tracks.length) {
+        final trackId = currentState.tracks[index]['id'];
+        if (trackId != null && trackId.isNotEmpty) {
+          try {
+            await repository.matchVibe(trackId);
+          } catch (e) {
+            // Ignore for now, or emit some error state
+          }
+        }
+        removeTrack(index);
       }
     }
   }
