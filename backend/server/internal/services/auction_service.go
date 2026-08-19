@@ -94,10 +94,10 @@ func (s *auctionService) PlaceBid(ctx context.Context, auctionID, bidderID uuid.
 		if err != nil {
 			return err
 		}
-		var totalBid float64
+		var maxBid float64
 		for _, b := range bids {
-			if b.BidderID == bidderID {
-				totalBid += b.Amount
+			if b.BidderID == bidderID && b.Amount > maxBid {
+				maxBid = b.Amount
 			}
 		}
 
@@ -128,7 +128,7 @@ func (s *auctionService) PlaceBid(ctx context.Context, auctionID, bidderID uuid.
 			ID:        uuid.New(),
 			AuctionID: auctionID,
 			BidderID:  bidderID,
-			Amount:    totalBid + amount, // Record total bid so far for simplicity
+			Amount:    maxBid + amount, // Record max bid so far for simplicity
 		}
 		return s.auctionRepo.PlaceBid(txCtx, bid)
 	}, &sql.TxOptions{Isolation: sql.LevelSerializable})
