@@ -13,12 +13,14 @@ import 'package:qlove/features/auth/bloc/auth_event.dart';
 import 'package:qlove/features/auth/data/auth_repository.dart';
 import 'package:qlove/features/auth/ui/login_screen.dart';
 import 'package:qlove/features/auth/ui/profile_creation_screen.dart';
+import 'package:qlove/features/locket/data/widget_repository.dart';
 import 'core/theme/app_theme.dart';
 import 'core/bloc/app_bloc.dart';
 import 'features/wingman/ui/matchmaker_popup.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await WidgetRepository().initialize();
   runApp(const QLoveApp());
 }
 
