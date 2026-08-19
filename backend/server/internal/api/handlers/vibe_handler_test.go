@@ -15,6 +15,11 @@ import (
 )
 
 func setupVibeApp() (*fiber.App, *VibeHandler) {
+	// Mock time so that CheckUnlockTime returns true
+	services.TimeNow = func() time.Time {
+		return time.Date(2026, 1, 1, 23, 0, 0, 0, time.UTC)
+	}
+
 	app := fiber.New()
 	service := services.NewSpotifyService()
 	handler := NewVibeHandler(service)
@@ -45,12 +50,7 @@ func TestVibeHandler_CurrentTrack(t *testing.T) {
 	req := httptest.NewRequest("GET", "/vibe/current-track", nil)
 	resp, _ := app.Test(req)
 
-	hour := time.Now().Hour()
-	expected := 403
-	if hour >= 23 || hour < 5 {
-		expected = 200
-	}
-	assert.Equal(t, expected, resp.StatusCode)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestVibeHandler_Match(t *testing.T) {
@@ -61,12 +61,7 @@ func TestVibeHandler_Match(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	resp, _ := app.Test(req)
 
-	hour := time.Now().Hour()
-	expected := 403
-	if hour >= 23 || hour < 5 {
-		expected = 201
-	}
-	assert.Equal(t, expected, resp.StatusCode)
+	assert.Equal(t, 201, resp.StatusCode)
 }
 
 func TestVibeHandler_Match_InvalidBody(t *testing.T) {
@@ -77,10 +72,5 @@ func TestVibeHandler_Match_InvalidBody(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	resp, _ := app.Test(req)
 
-	hour := time.Now().Hour()
-	expected := 403
-	if hour >= 23 || hour < 5 {
-		expected = 400
-	}
-	assert.Equal(t, expected, resp.StatusCode)
+	assert.Equal(t, 400, resp.StatusCode)
 }

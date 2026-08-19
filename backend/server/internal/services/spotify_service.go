@@ -38,9 +38,11 @@ func (s *SpotifyService) GetCurrentTrack(userID string) (Track, error) {
 	return track, nil
 }
 
+var TimeNow = time.Now
+
 // CheckUnlockTime returns whether it is >= 23:00 and < 05:00
 func (s *SpotifyService) CheckUnlockTime() bool {
-	now := time.Now()
+	now := TimeNow()
 	hour := now.Hour()
 	if hour >= 23 || hour < 5 {
 		return true

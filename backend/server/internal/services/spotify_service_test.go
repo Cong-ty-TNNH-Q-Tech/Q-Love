@@ -20,10 +20,12 @@ func TestSpotifyService_GetCurrentTrack(t *testing.T) {
 
 func TestSpotifyService_CheckUnlockTime(t *testing.T) {
 	service := NewSpotifyService()
+
+	// Mock time
+	TimeNow = func() time.Time {
+		return time.Date(2026, 1, 1, 23, 0, 0, 0, time.UTC)
+	}
+
 	unlocked := service.CheckUnlockTime()
-	
-	// Check against the current actual time
-	hour := time.Now().Hour()
-	expected := (hour >= 23 || hour < 5)
-	assert.Equal(t, expected, unlocked)
+	assert.True(t, unlocked)
 }
