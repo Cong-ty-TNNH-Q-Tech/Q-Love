@@ -249,7 +249,10 @@ func createValidMultipartFileHeader(t *testing.T) *multipart.FileHeader {
 	req := httptest.NewRequest("POST", "/", body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	_ = req.ParseMultipartForm(1024)
-	return req.MultipartForm.File["image"][0]
+	
+	file := req.MultipartForm.File["image"][0]
+	file.Header.Set("Content-Type", "image/jpeg")
+	return file
 }
 
 func TestLocketService_SendLocket_R2UploadError(t *testing.T) {
@@ -261,6 +264,7 @@ func TestLocketService_SendLocket_R2UploadError(t *testing.T) {
 	// Fake R2 Client with dummy S3Client that will fail network request
 	r2Client := &storage.R2Client{
 		BucketName: "test-bucket",
+		S3Client:   &mockS3Client{err: errors.New("s3 upload failed")},
 	}
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
