@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
