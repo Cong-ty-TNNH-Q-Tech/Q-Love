@@ -1,42 +1,6 @@
 package services
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"mime/multipart"
-
-	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
-	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
-	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
-	"github.com/google/uuid"
-)
-
-type LocketService interface {
-	SendLocket(ctx context.Context, senderID uuid.UUID, matchID uuid.UUID, file *multipart.FileHeader) error
-}
-
-type locketService struct {
-	chatRepo      repository.ChatRepository
-	matchRepo     repository.MatchRepository
-	violationRepo repository.UserViolationRepository
-	nsfwService   NSFWService
-	r2Client      *storage.R2Client
-}
-
-func NewLocketService(
-	chatRepo repository.ChatRepository,
-	matchRepo repository.MatchRepository,
-	violationRepo repository.UserViolationRepository,
-	nsfwService NSFWService,
-	r2Client *storage.R2Client,
-) LocketService {
-	return &locketService{
-		chatRepo:      chatRepo,
-		matchRepo:     matchRepo,
-package services
-
-import (
 	"bytes"
 	"context"
 	"errors"
