@@ -33,6 +33,9 @@ func (m *mockMatchRepo) Create(ctx context.Context, match *models.Match) error {
 	return m.err
 }
 
+func (m *mockMatchRepo) SoftDelete(ctx context.Context, id uuid.UUID) error {
+	return m.err
+}
 type mockChatRepo struct {
 	err error
 }
