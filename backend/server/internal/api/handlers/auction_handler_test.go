@@ -1,5 +1,6 @@
-// Copyright (c) 2026 Q-Tech. All rights reserved.
+// Copyright 2026 Q-Tech Team
 // Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
 
 package handlers
 
@@ -18,12 +19,15 @@ import (
 )
 
 // mockAuctionService and mockAuctionRepository
-type mockAuctionService struct {
-	err error
-}
 func (m *mockAuctionService) StartDailyAuctions(ctx context.Context) error { return m.err }
 func (m *mockAuctionService) PlaceBid(ctx context.Context, auctionID, bidderID uuid.UUID, amount float64) error { return m.err }
 func (m *mockAuctionService) FinalizeAuctions(ctx context.Context) error { return m.err }
+func (m *mockAuctionService) GetActiveAuctions(ctx context.Context) ([]models.BlindAuction, error) { return m.auctions, m.err }
+
+type mockAuctionService struct {
+	auctions []models.BlindAuction
+	err      error
+}
 
 type mockAuctionRepo struct {
 	auctions []models.BlindAuction
@@ -40,13 +44,12 @@ func (m *mockAuctionRepo) UpdateAuctionStatus(ctx context.Context, auctionID uui
 
 func TestAuctionHandler_GetActiveAuctions(t *testing.T) {
 	app := fiber.New()
-	svc := &mockAuctionService{}
-	repo := &mockAuctionRepo{
+	svc := &mockAuctionService{
 		auctions: []models.BlindAuction{
 			{ID: uuid.New(), TargetUserID: uuid.New(), Status: "active", StartTime: time.Now(), EndTime: time.Now().Add(time.Hour)},
 		},
 	}
-	h := NewAuctionHandler(svc, repo)
+	h := NewAuctionHandler(svc)
 	app.Get("/api/v1/auctions/active", h.GetActiveAuctions)
 
 	req := httptest.NewRequest("GET", "/api/v1/auctions/active", nil)
@@ -58,8 +61,7 @@ func TestAuctionHandler_GetActiveAuctions(t *testing.T) {
 func TestAuctionHandler_PlaceBid(t *testing.T) {
 	app := fiber.New()
 	svc := &mockAuctionService{}
-	repo := &mockAuctionRepo{}
-	h := NewAuctionHandler(svc, repo)
+	h := NewAuctionHandler(svc)
 
 	app.Post("/api/v1/auctions/:id/bid", func(c *fiber.Ctx) error {
 		// Mock JWT middleware
@@ -77,11 +79,10 @@ func TestAuctionHandler_PlaceBid(t *testing.T) {
 
 func TestAuctionHandler_GetActiveAuctions_Error(t *testing.T) {
 	app := fiber.New()
-	svc := &mockAuctionService{}
-	repo := &mockAuctionRepo{
+	svc := &mockAuctionService{
 		err: assert.AnError,
 	}
-	h := NewAuctionHandler(svc, repo)
+	h := NewAuctionHandler(svc)
 	app.Get("/api/v1/auctions/active", h.GetActiveAuctions)
 
 	req := httptest.NewRequest("GET", "/api/v1/auctions/active", nil)
@@ -93,8 +94,7 @@ func TestAuctionHandler_GetActiveAuctions_Error(t *testing.T) {
 func TestAuctionHandler_PlaceBid_InvalidInput(t *testing.T) {
 	app := fiber.New()
 	svc := &mockAuctionService{}
-	repo := &mockAuctionRepo{}
-	h := NewAuctionHandler(svc, repo)
+	h := NewAuctionHandler(svc)
 
 	app.Post("/api/v1/auctions/:id/bid", func(c *fiber.Ctx) error {
 		c.Locals("userID", uuid.New())
@@ -113,8 +113,7 @@ func TestAuctionHandler_PlaceBid_InvalidInput(t *testing.T) {
 func TestAuctionHandler_PlaceBid_ServiceError(t *testing.T) {
 	app := fiber.New()
 	svc := &mockAuctionService{err: assert.AnError}
-	repo := &mockAuctionRepo{}
-	h := NewAuctionHandler(svc, repo)
+	h := NewAuctionHandler(svc)
 
 	app.Post("/api/v1/auctions/:id/bid", func(c *fiber.Ctx) error {
 		c.Locals("userID", uuid.New())

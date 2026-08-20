@@ -1,3 +1,6 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
 package handlers
 
 import (
@@ -45,3 +48,4 @@ func (h *LocketHandler) SendLocket(c *fiber.Ctx) error {
 		"message": "Yêu cầu gửi Locket đã được tiếp nhận",
 	})
 }
+

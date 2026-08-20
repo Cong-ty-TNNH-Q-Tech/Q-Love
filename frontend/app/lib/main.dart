@@ -3,6 +3,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_links/app_links.dart';
 import 'package:qlove/core/network/dio_client.dart';
@@ -13,12 +14,14 @@ import 'package:qlove/features/auth/bloc/auth_event.dart';
 import 'package:qlove/features/auth/data/auth_repository.dart';
 import 'package:qlove/features/auth/ui/login_screen.dart';
 import 'package:qlove/features/auth/ui/profile_creation_screen.dart';
+import 'package:qlove/features/locket/data/widget_repository.dart';
 import 'core/theme/app_theme.dart';
 import 'core/bloc/app_bloc.dart';
 import 'features/wingman/ui/matchmaker_popup.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await WidgetRepository().initialize();
   runApp(const QLoveApp());
 }
 
@@ -87,13 +90,24 @@ class _QLoveAppState extends State<QLoveApp> {
   }
 
   void _handleDeepLink(Uri uri) {
-    if (uri.scheme == 'qlove' && uri.host == 'wingman' && uri.path == '/match') {
-      final targetId = uri.queryParameters['target'];
-      if (targetId != null) {
-        // Wait for navigator to be ready
+    if (uri.scheme == 'qlove') {
+      if (uri.host == 'wingman' && uri.path == '/match') {
+        final targetId = uri.queryParameters['target'];
+        if (targetId != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_navigatorKey.currentContext != null) {
+              MatchmakerPopup.show(_navigatorKey.currentContext!, targetId);
+            }
+          });
+        }
+      } else if (uri.host == 'match' && uri.pathSegments.isNotEmpty) {
+        final token = uri.pathSegments.first;
+        // Navigate or handle match token
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (_navigatorKey.currentContext != null) {
-            MatchmakerPopup.show(_navigatorKey.currentContext!, targetId);
+             ScaffoldMessenger.of(_navigatorKey.currentContext!).showSnackBar(
+              SnackBar(content: Text('Received match token: $token')),
+            );
           }
         });
       }
@@ -124,6 +138,15 @@ class _QLoveAppState extends State<QLoveApp> {
         child: MaterialApp(
           navigatorKey: _navigatorKey,
           title: 'Q-Love',
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en', ''),
+            Locale('vi', ''),
+          ],
           theme: AppTheme.darkTheme,
           home: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {

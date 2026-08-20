@@ -7,7 +7,6 @@ package services
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	"github.com/google/uuid"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
@@ -52,7 +51,7 @@ func (s *shameService) ThrowTomato(ctx context.Context, throwerID uuid.UUID, sha
 		// 2. Check balance (Tomato cost = 1 Xu)
 		cost := 1.0
 		if wallet.Balance < cost {
-			return errors.New("insufficient balance to throw a tomato")
+			return ErrInsufficientBalance
 		}
 
 		// 3. Deduct balance

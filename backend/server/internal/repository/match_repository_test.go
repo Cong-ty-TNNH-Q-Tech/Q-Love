@@ -1,15 +1,31 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package repository
 
 import (
 	"context"
+	"regexp"
 	"testing"
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+func setupMatchRepoMock(t *testing.T) (MatchRepository, sqlmock.Sqlmock) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+	gormDB, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: db,
+	}), &gorm.Config{})
+	assert.NoError(t, err)
+	return NewMatchRepository(gormDB), mock
+}
 
 func TestMatchRepository_FindByID(t *testing.T) {
 	db, mock, err := sqlmock.New()
@@ -75,3 +91,33 @@ func TestMatchRepository_UpdateLastInteraction(t *testing.T) {
 		t.Errorf("Unfulfilled expectations: %v", err)
 	}
 }
+
+func TestMatchRepository_UpdateLastInteraction_Error(t *testing.T) {
+	repo, mock := setupMatchRepoMock(t)
+
+	matchID := uuid.New()
+	tValue := time.Now()
+
+	mock.ExpectExec(regexp.QuoteMeta(`UPDATE "matches" SET "last_interaction_at"=$1 WHERE id = $2 AND "matches"."deleted_at" IS NULL`)).
+		WithArgs(tValue, matchID).
+		WillReturnError(assert.AnError)
+
+	err := repo.UpdateLastInteraction(context.Background(), matchID, tValue)
+	assert.Error(t, err)
+}
+
+func TestMatchRepository_SoftDelete(t *testing.T) {
+	repo, mock := setupMatchRepoMock(t)
+
+	matchID := uuid.New()
+
+	mock.ExpectBegin()
+	mock.ExpectExec(regexp.QuoteMeta(`UPDATE "matches" SET "deleted_at"=$1 WHERE id = $2 AND "matches"."deleted_at" IS NULL`)).
+		WithArgs(sqlmock.AnyArg(), matchID).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
+	err := repo.SoftDelete(context.Background(), matchID)
+	assert.NoError(t, err)
+}
+

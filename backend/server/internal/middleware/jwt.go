@@ -17,13 +17,10 @@ type JWTConfig struct {
 	SecretKey string
 }
 
-// Default JWT secret for testing/development. In production, this should come from env!
-var DefaultSecret = "qlove-secret-key-super-secure"
-
 // JWTMiddleware creates a fiber middleware to authenticate users using JWT.
 func JWTMiddleware(secret string) fiber.Handler {
 	if secret == "" {
-		secret = DefaultSecret
+		panic("JWT secret must not be empty")
 	}
 	
 	return func(c *fiber.Ctx) error {

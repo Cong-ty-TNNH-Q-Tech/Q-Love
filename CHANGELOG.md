@@ -8,7 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
-- [frontend/app] UI Quẹt Thẻ & Bộ lọc Tâm Linh (Issue #14).
+- [frontend/app] Tích hợp tính năng UI Quẹt Thẻ (Tinder-like swipe) & Bộ lọc Tâm Linh (Issue #14).
+- [frontend/app] Tạo thư mục native (android/ và ios/) cho Flutter app, cấu hình Bundle ID, Permissions và Deep Links (Issue #111).
+- [backend/server/api] Thêm API Unmatch (Issue #42).
+- [frontend/app] Hoàn thiện cấu hình App Store Optimization (ASO): Thêm App Icon, Splash Screen, Deep Links (`qlove://match`), Localization (en, vi) và tính năng In-App Review (Issue #121).
+- [frontend/app] Locket Widget iOS/Android (Issue #15).
 - [frontend/app] UI Tòa Án Tình Yêu (Vuốt để Vote Tội/Vô tội) (Issue #16).
 - [frontend/app] UI Đăng nhập, Xác thực OTP và Tạo Profile (Issue #13).
 - [frontend/app] UI Khế Ước Hẹn Hò & Quét QR Code (Issue #46).
@@ -37,3 +41,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [backend/server/api] Ngăn chặn fatal panic do thay đổi map đồng thời trong websocket.
 - [backend/server/api] Xóa mềm (Soft Delete) người dùng không phá vỡ logic quan hệ.
 - [docs] Sửa lỗi API Docs trùng lặp endpoint và lỗi font.
+- [backend/server/cmd] Refactor `main.go` để loại bỏ global state `app`, chuyển sang DI để hỗận Unit Test độc lập.
+- [backend/server/Dockerfile] Cập nhật base image lên `golang:alpine` để tương thích với `go 1.25.0`.
+- [docs/readme] Cập nhật toàn bộ README theo chuẩn Investor Ready và thêm logo mới.
+- [backend/server] Bổ sung file `.env.example` và thiết lập hệ thống database migrations bằng `golang-migrate` (Issue #120): Thêm Makefile commands và 2 file migration khởi tạo schema.
+- [backend/server] Bổ sung header bản quyền AGPLv3 cho các file còn thiếu và thêm pre-commit hook (Issue #115).
+- [backend/server] Triển khai `UploadFile` lên Cloudflare R2 cho LocketService thay vì dùng URL ảo (Issue #112).
+- [backend/server] Refactor error handling trong `ShameHandler` và `WingmanHandler` (Issue #118): Sử dụng sentinel errors (`ErrInsufficientBalance`, `ErrReferralNotFound`, v.v.) thay vì so sánh string literals.
+
+### Fixed
+- [frontend/app] Khắc phục `ShameWallBloc` dùng mock data (Issue #119): Thêm `ShameRepository`, tách `ShameModel`, gọi API thực sự và thêm empty state UI.
+- [backend/server/services] Sửa lỗi kiểu dữ liệu LocketRateLimiter (`uint64` sang `int64`) gây panic khi so sánh (Issue #110).
+- [backend/server/architecture] Khắc phục vi phạm DIP và Repository pattern ở `AuctionHandler` và `AuctionService` (Issue #113): Thêm `GetActiveAuctions` vào `AuctionService`, tạo `ChatLockRepository`, loại bỏ sử dụng trực tiếp `auctionRepo` trong Handler và `*gorm.DB` trong Service.
+- [backend/server] Loại bỏ hardcoded `JWT_SECRET` trong `jwt_middleware.go` và yêu cầu tải từ Environment Variable, nếu thiếu sẽ panic khi khởi động (Issue #107).
+- [backend/server] Khắc phục vi phạm audit từ issue 74 (thiếu bản quyền, cập nhật CHANGELOG).
+- [backend/server/api] Sửa lỗi thiếu `JWTMiddleware` cho các API `/wingman` và `/upload`.
+- [backend/server/api] Sửa lỗi sử dụng dummy UUID thay cho JWT context tại `WingmanHandler`.
+- [backend/server/tests] Sửa lỗi sai argument count của `go-sqlmock` trong `wingman_service_test.go`.

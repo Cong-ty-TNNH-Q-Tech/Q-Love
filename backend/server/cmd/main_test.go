@@ -14,6 +14,7 @@ import (
 
 func TestMainServer(t *testing.T) {
 	// Setup app locally instead of using global
+	t.Setenv("JWT_SECRET", "test-secret")
 	cfg := config.LoadConfig()
 	
 	// Skip real db connection for tests
@@ -66,6 +67,7 @@ func TestMainServer(t *testing.T) {
 	t.Setenv("PORT", "3002")
 	t.Setenv("DATABASE_DSN", "skip")
 	t.Setenv("REDIS_URL", "skip")
+	t.Setenv("JWT_SECRET", "test-secret")
 	go func() {
 		// This will block, but the test will exit and kill the goroutine
 		main()

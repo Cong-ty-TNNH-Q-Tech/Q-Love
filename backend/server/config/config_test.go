@@ -12,6 +12,7 @@ import (
 func TestLoadConfig(t *testing.T) {
 	os.Setenv("R2_ACCOUNT_ID", "test_id")
 	os.Setenv("PORT", "4000")
+	os.Setenv("JWT_SECRET", "test-secret")
 	defer os.Clearenv()
 
 	cfg := LoadConfig()

@@ -1,3 +1,6 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
 package handlers
 
 import (
@@ -123,3 +126,4 @@ func (h *ChatHandler) GetMessages(c *fiber.Ctx) error {
 
 	return c.JSON(messages)
 }
+

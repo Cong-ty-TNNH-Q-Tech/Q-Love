@@ -14,13 +14,14 @@ import (
 	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
 type mockWingmanService struct {
 	shouldError bool
-	errMessage  string
+	err         error
 }
 
 func (m *mockWingmanService) CreateReferral(ctx context.Context, wingmanID, target1ID, target2ID uuid.UUID) (*models.WingmanReferral, error) {
@@ -36,7 +37,10 @@ func (m *mockWingmanService) CreateReferral(ctx context.Context, wingmanID, targ
 
 func (m *mockWingmanService) AcceptReferral(ctx context.Context, referralID, acceptingUserID uuid.UUID) (*models.WingmanReferral, error) {
 	if m.shouldError {
-		return nil, errors.New(m.errMessage)
+		if m.err != nil {
+			return nil, m.err
+		}
+		return nil, errors.New("mock accept error")
 	}
 	return &models.WingmanReferral{
 		ID:     referralID,
@@ -145,7 +149,7 @@ func TestAcceptReferral(t *testing.T) {
 
 	t.Run("Service Bad Request", func(t *testing.T) {
 		appErr := fiber.New()
-		errSvc := &mockWingmanService{shouldError: true, errMessage: "referral link expired"}
+		errSvc := &mockWingmanService{shouldError: true, err: services.ErrReferralExpired}
 		hErr := NewWingmanHandler(errSvc)
 		appErr.Use(func(c *fiber.Ctx) error {
 			c.Locals("user_id", uuid.New())
@@ -162,7 +166,7 @@ func TestAcceptReferral(t *testing.T) {
 
 	t.Run("Service Internal Error", func(t *testing.T) {
 		appErr := fiber.New()
-		errSvc := &mockWingmanService{shouldError: true, errMessage: "database connection lost"}
+		errSvc := &mockWingmanService{shouldError: true, err: errors.New("database connection lost")}
 		hErr := NewWingmanHandler(errSvc)
 		appErr.Use(func(c *fiber.Ctx) error {
 			c.Locals("user_id", uuid.New())

@@ -1,13 +1,10 @@
-// Copyright (c) 2026 Q-Tech. All rights reserved.
+// Copyright 2026 Q-Tech Team
 // Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
 
 package services
 
 import (
-	"github.com/DATA-DOG/go-sqlmock"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-
 	"context"
 	"testing"
 	"time"
@@ -68,6 +65,13 @@ func (m *mockAuctionWalletRepo) UpdateBalance(ctx context.Context, userID uuid.U
 	return nil
 }
 func (m *mockAuctionWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
+
+type mockChatLockRepo struct {
+	err error
+}
+func (m *mockChatLockRepo) Create(ctx context.Context, lock *models.ChatLock) error {
+	return m.err
+}
 
 func TestAuctionService_PlaceBid_Success(t *testing.T) {
 	auctionID := uuid.New()
@@ -370,12 +374,22 @@ func TestAuctionService_FinalizeAuctions_ChatLock_DB_Error(t *testing.T) {
 	walletRepo := &mockAuctionWalletRepo{}
 	txManager := &mockTxManager{}
 	
-	// mock DB to return error on Create
-	db, mock, _ := sqlmock.New()
-	gormDB, _ := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{})
-	mock.ExpectQuery("INSERT INTO .*chat_locks.*").WillReturnError(assert.AnError)
-
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, gormDB)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockChatLockRepo{err: assert.AnError})
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err)
+}
+
+func TestAuctionService_GetActiveAuctions(t *testing.T) {
+	auctionID := uuid.New()
+	auction := &models.BlindAuction{
+		ID:           auctionID,
+		Status:       "active",
+	}
+	auctionRepo := &mockAuctionRepo{auction: auction}
+	service := NewAuctionService(auctionRepo, nil, nil, nil)
+	
+	auctions, err := service.GetActiveAuctions(context.Background())
+	assert.NoError(t, err)
+	assert.Len(t, auctions, 1)
+	assert.Equal(t, auctionID, auctions[0].ID)
 }
