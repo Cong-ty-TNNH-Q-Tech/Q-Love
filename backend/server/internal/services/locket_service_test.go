@@ -276,7 +276,7 @@ func TestLocketService_SendLocket_WithStreak(t *testing.T) {
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
 
-	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), getMockFileHeader(t))
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), createValidMultipartFile(t))
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -292,7 +292,7 @@ func TestLocketService_SendLocket_WithHighStreak(t *testing.T) {
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
 
-	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), getMockFileHeader(t))
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), createValidMultipartFile(t))
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
