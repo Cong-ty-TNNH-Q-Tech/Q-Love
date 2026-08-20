@@ -48,7 +48,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	userPremRepo := repository.NewUserPremiumRepository(db)
 	
 	violationRepo := repository.NewUserViolationRepository(db)
-	nsfwService := services.NewNSFWService()
+	nsfwService := services.NewNSFWService(cfg)
 	locketService := services.NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
 	locketHandler := handlers.NewLocketHandler(locketService)
 
