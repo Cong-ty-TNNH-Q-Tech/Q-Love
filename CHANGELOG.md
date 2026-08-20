@@ -42,7 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - [frontend/app] Khắc phục `ShameWallBloc` dùng mock data (Issue #119): Thêm `ShameRepository`, tách `ShameModel`, gọi API thực sự và thêm empty state UI.
-- [backend/server] Loại bỏ hardcoded secret key JWT và yêu cầu `JWT_SECRET` qua biến môi trường (Issue #107).
+- [backend/server] Loại bỏ hardcoded `JWT_SECRET` trong `jwt_middleware.go` và yêu cầu tải từ Environment Variable, nếu thiếu sẽ panic khi khởi động (Issue #107).
+- [backend/server] Bổ sung file `.env.example` và thiết lập hệ thống database migrations bằng `golang-migrate` (Issue #120): Thêm Makefile commands và 2 file migration khởi tạo schema.
 - [backend/server] Khắc phục vi phạm audit từ issue 74 (thiếu bản quyền, cập nhật CHANGELOG).
 - [backend/server/api] Sửa lỗi thiếu `JWTMiddleware` cho các API `/wingman` và `/upload`.
 - [backend/server/api] Sửa lỗi sử dụng dummy UUID thay cho JWT context tại `WingmanHandler`.
