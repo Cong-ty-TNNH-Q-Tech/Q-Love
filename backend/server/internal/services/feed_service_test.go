@@ -16,9 +16,14 @@ import (
 )
 
 type mockUserRepository struct {
-	user models.User
-	feed []models.User
-	err  error
+	user  models.User
+	users []models.User
+	feed  []models.User
+	err   error
+}
+
+func (m *mockUserRepository) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) {
+	return nil, nil
 }
 
 func (m *mockUserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*models.User, error) {

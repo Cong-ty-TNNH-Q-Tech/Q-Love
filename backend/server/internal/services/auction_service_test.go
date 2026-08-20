@@ -87,9 +87,7 @@ func (m *mockAuctionWalletRepo) CheckTransactionExists(ctx context.Context, txID
 type mockUserRepo struct {
 	users map[uuid.UUID]*models.User
 }
-func (m *mockUserRepo) GetFeed(ctx context.Context, userID uuid.UUID, page, limit int) ([]models.User, error) {
-	return nil, nil
-}
+
 func (m *mockUserRepo) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) {
 	var users []uuid.UUID
 	for i := 0; i < limit; i++ {
@@ -191,9 +189,6 @@ func TestAuctionService_StartDailyAuctions(t *testing.T) {
 }
 
 type mockUserRepoError struct{}
-func (m *mockUserRepoError) GetFeed(ctx context.Context, userID uuid.UUID, page, limit int) ([]models.User, error) {
-	return nil, assert.AnError
-}
 func (m *mockUserRepoError) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) {
 	return nil, assert.AnError
 }
