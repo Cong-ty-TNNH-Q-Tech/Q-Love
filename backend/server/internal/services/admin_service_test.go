@@ -95,10 +95,10 @@ func TestAdminService_OverrideCourtCase(t *testing.T) {
 type mockUserViolationRepoError struct {
 	mockUserViolationRepo
 }
-func (m *mockUserViolationRepoError) SoftDelete(ctx context.Context, id uuid.UUID) error {
+func (m *mockUserViolationRepoError) BanUser(ctx context.Context, userID uuid.UUID) error {
 	return errors.New("db error")
 }
-func (m *mockUserViolationRepoError) BanUser(ctx context.Context, userID uuid.UUID) error {
+func (m *mockUserViolationRepoError) DeleteViolation(ctx context.Context, id uuid.UUID) error {
 	return errors.New("db error")
 }
 
