@@ -1,0 +1,101 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
+package services
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
+	"go.uber.org/zap"
+)
+
+type mockUserViolationRepo struct {
+	mock.Mock
+}
+
+func (m *mockUserViolationRepo) Create(ctx context.Context, violation *models.UserViolation) error {
+	args := m.Called(ctx, violation)
+	return args.Error(0)
+}
+
+func (m *mockUserViolationRepo) CountActiveViolationsByType(ctx context.Context, userID uuid.UUID, vType string) (int64, error) {
+	return 0, nil
+}
+
+func (m *mockUserViolationRepo) BanUser(ctx context.Context, userID uuid.UUID) error {
+	args := m.Called(ctx, userID)
+	return args.Error(0)
+}
+
+func TestCourtWorker_EvaluateExpiredCases_Guilty(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	mockViolation := new(mockUserViolationRepo)
+	logger := zap.NewNop()
+
+	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger)
+
+	caseID := uuid.New()
+	defendantID := uuid.New()
+
+	cases := []models.CourtCase{
+		{
+			ID:          caseID,
+			DefendantID: defendantID,
+			Status:      models.CourtCaseStatusVoting,
+			ExpiresAt:   time.Now().Add(-1 * time.Hour), // expired
+		},
+	}
+
+	mockCourt.On("GetExpiredVotingCases", mock.Anything).Return(cases, nil)
+	// 50 votes total, 35 guilty (70%)
+	mockCourt.On("CountVotesByCase", mock.Anything, caseID).Return(int64(50), int64(35), nil)
+
+	mockViolation.On("Create", mock.Anything, mock.AnythingOfType("*models.UserViolation")).Return(nil)
+	mockViolation.On("BanUser", mock.Anything, defendantID).Return(nil)
+
+	mockCourt.On("UpdateCaseStatus", mock.Anything, caseID, models.CourtCaseStatusGuilty).Return(nil)
+
+	worker.evaluateExpiredCases(context.Background())
+
+	mockCourt.AssertExpectations(t)
+	mockViolation.AssertExpectations(t)
+}
+
+func TestCourtWorker_EvaluateExpiredCases_NotGuilty(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	mockViolation := new(mockUserViolationRepo)
+	logger := zap.NewNop()
+
+	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger)
+
+	caseID := uuid.New()
+	defendantID := uuid.New()
+
+	cases := []models.CourtCase{
+		{
+			ID:          caseID,
+			DefendantID: defendantID,
+			Status:      models.CourtCaseStatusVoting,
+			ExpiresAt:   time.Now().Add(-1 * time.Hour), // expired
+		},
+	}
+
+	mockCourt.On("GetExpiredVotingCases", mock.Anything).Return(cases, nil)
+	// 50 votes total, 30 guilty (60% -> not guilty, requires > 65%)
+	mockCourt.On("CountVotesByCase", mock.Anything, caseID).Return(int64(50), int64(30), nil)
+
+	// Violation repo should NOT be called
+	
+	mockCourt.On("UpdateCaseStatus", mock.Anything, caseID, models.CourtCaseStatusNotGuilty).Return(nil)
+
+	worker.evaluateExpiredCases(context.Background())
+
+	mockCourt.AssertExpectations(t)
+	mockViolation.AssertExpectations(t)
+}
