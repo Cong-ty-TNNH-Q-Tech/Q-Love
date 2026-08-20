@@ -77,3 +77,42 @@ func TestVoucherRepository_MarkAsClaimed(t *testing.T) {
 	// We'll just assert error could be anything or nil. We mainly want coverage.
 	_ = err 
 }
+
+func TestVoucherRepository_GetAvailableVoucher(t *testing.T) {
+	db, mock := setupVoucherMockDB()
+	repo := NewVoucherRepository(db)
+
+	brand := "Highlands"
+	valueXu := 100
+
+	rows := sqlmock.NewRows([]string{"id", "brand", "code", "value_xu", "status"}).
+		AddRow(uuid.New(), brand, "HL-1", valueXu, "available")
+
+	mock.ExpectQuery("SELECT \\* FROM \"vouchers\"").WillReturnRows(rows)
+
+	v, err := repo.GetAvailableVoucher(context.Background(), brand, valueXu)
+	assert.NoError(t, err)
+	assert.NotNil(t, v)
+
+	// Error case (record not found)
+	mock.ExpectQuery("SELECT \\* FROM \"vouchers\"").WillReturnError(gorm.ErrRecordNotFound)
+	v, err = repo.GetAvailableVoucher(context.Background(), brand, valueXu)
+	assert.Error(t, err)
+	assert.Nil(t, v)
+}
+
+func TestVoucherRepository_Delete(t *testing.T) {
+	db, mock := setupVoucherMockDB()
+	repo := NewVoucherRepository(db)
+	id := uuid.New()
+
+	mock.ExpectExec("UPDATE \"vouchers\" SET \"deleted_at\"").WillReturnResult(sqlmock.NewResult(0, 1))
+
+	err := repo.Delete(context.Background(), id)
+	assert.NoError(t, err)
+
+	// Error case (0 rows affected)
+	mock.ExpectExec("UPDATE \"vouchers\" SET \"deleted_at\"").WillReturnResult(sqlmock.NewResult(0, 0))
+	err = repo.Delete(context.Background(), id)
+	assert.Error(t, err)
+}

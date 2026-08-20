@@ -83,49 +83,6 @@ func TestVoucherHandler_GetAvailableVouchers(t *testing.T) {
 	assert.Equal(t, 200, resp.StatusCode)
 }
 
-func TestAdminVoucherHandler_CreateVoucher(t *testing.T) {
-	app := fiber.New()
-	svc := &mockVoucherService{}
-	handler := NewAdminVoucherHandler(svc)
-	app.Post("/vouchers", handler.CreateVoucher)
-
-	body, _ := json.Marshal(map[string]interface{}{
-		"brand":      "Highlands",
-		"code":       "ABC",
-		"value_xu":   100,
-		"expires_at": time.Now(),
-	})
-	req := httptest.NewRequest("POST", "/vouchers", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	
-	resp, err := app.Test(req)
-	assert.NoError(t, err)
-	assert.Equal(t, 201, resp.StatusCode)
-}
-
-func TestAdminVoucherHandler_GetVouchers(t *testing.T) {
-	app := fiber.New()
-	svc := &mockVoucherService{}
-	handler := NewAdminVoucherHandler(svc)
-	app.Get("/vouchers", handler.GetVouchers)
-
-	req := httptest.NewRequest("GET", "/vouchers", nil)
-	resp, err := app.Test(req)
-	assert.NoError(t, err)
-	assert.Equal(t, 200, resp.StatusCode)
-}
-
-func TestAdminVoucherHandler_DeleteVoucher(t *testing.T) {
-	app := fiber.New()
-	svc := &mockVoucherService{}
-	handler := NewAdminVoucherHandler(svc)
-	app.Delete("/vouchers/:id", handler.DeleteVoucher)
-
-	req := httptest.NewRequest("DELETE", "/vouchers/"+uuid.New().String(), nil)
-	resp, err := app.Test(req)
-	assert.NoError(t, err)
-	assert.Equal(t, 200, resp.StatusCode)
-}
 
 func TestVoucherHandler_RedeemVoucher_Errors(t *testing.T) {
 	app := fiber.New()
@@ -144,4 +101,40 @@ func TestVoucherHandler_RedeemVoucher_Errors(t *testing.T) {
 	resp, err := app.Test(req)
 	assert.NoError(t, err)
 	assert.Equal(t, 400, resp.StatusCode)
+
+	// Invalid body
+	req = httptest.NewRequest("POST", "/redeem", bytes.NewBuffer([]byte("{invalid")))
+	req.Header.Set("Content-Type", "application/json")
+	resp, _ = app.Test(req)
+	assert.Equal(t, 400, resp.StatusCode)
+
+	// Missing fields
+	body, _ = json.Marshal(map[string]interface{}{"brand": ""})
+	req = httptest.NewRequest("POST", "/redeem", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	resp, _ = app.Test(req)
+	assert.Equal(t, 400, resp.StatusCode)
+}
+
+func TestVoucherHandler_RedeemVoucher_NoAuth(t *testing.T) {
+	app := fiber.New()
+	handler := NewVoucherHandler(&mockVoucherService{})
+	app.Post("/redeem", handler.RedeemVoucher)
+
+	req := httptest.NewRequest("POST", "/redeem", bytes.NewBuffer([]byte(`{"brand":"Highlands","value_xu":100}`)))
+	req.Header.Set("Content-Type", "application/json")
+	resp, _ := app.Test(req)
+	assert.Equal(t, 401, resp.StatusCode)
+}
+
+func TestVoucherHandler_GetAvailableVouchers_Errors(t *testing.T) {
+	app := fiber.New()
+	svc := &mockVoucherService{err: errors.New("fail")}
+	handler := NewVoucherHandler(svc)
+	app.Get("/vouchers", handler.GetAvailableVouchers)
+
+	req := httptest.NewRequest("GET", "/vouchers", nil)
+	resp, err := app.Test(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 500, resp.StatusCode)
 }

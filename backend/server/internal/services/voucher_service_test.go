@@ -126,10 +126,24 @@ func TestVoucherService_GetVouchers(t *testing.T) {
 	assert.Nil(t, v)
 }
 
+func TestVoucherService_CreateVoucher_RepoErr(t *testing.T) {
+	svc := NewVoucherService(&mockVoucherRepo{createErr: errors.New("lỗi db")}, nil, nil)
+	err := svc.CreateVoucher(context.Background(), CreateVoucherRequest{
+		Brand:   "Highlands",
+		Code:    "HL-123",
+		ValueXu: 50,
+	})
+	assert.Error(t, err)
+}
+
 func TestVoucherService_DeleteVoucher(t *testing.T) {
 	svc := NewVoucherService(&mockVoucherRepo{}, nil, nil)
 	err := svc.DeleteVoucher(context.Background(), uuid.New())
 	assert.NoError(t, err)
+
+	svc = NewVoucherService(&mockVoucherRepo{deleteErr: errors.New("lỗi db")}, nil, nil)
+	err = svc.DeleteVoucher(context.Background(), uuid.New())
+	assert.Error(t, err)
 }
 
 func TestVoucherService_RedeemVoucher_UpdateWalletErr(t *testing.T) {
