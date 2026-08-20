@@ -227,7 +227,7 @@ func TestExRatingService_ViewRating_InsufficientFunds(t *testing.T) {
 
 type mockTxManagerWithError struct{}
 
-func (m *mockTxManagerWithError) WithTransaction(ctx context.Context, fn func(txCtx context.Context) error) error {
+func (m *mockTxManagerWithError) WithTransaction(ctx context.Context, fn func(txCtx context.Context) error, opts ...*sql.TxOptions) error {
 	return errors.New("lỗi truy xuất ví")
 }
 
