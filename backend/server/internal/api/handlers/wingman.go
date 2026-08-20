@@ -5,6 +5,8 @@
 package handlers
 
 import (
+	"context"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
@@ -66,13 +68,13 @@ func (h *WingmanHandler) AcceptReferral(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to accept referral"})
 	}
 
-	// When accepted, we simulate that we trigger commission to wingman if they date. 
-	// The process commission usually runs in a worker or another webhook, but we can expose it or run it synchronously for testing:
-	// s.service.ProcessCommission(c.Context(), referral.ID)
-	// For this endpoint, we just return matched.
+	// Process commission asynchronously since it's matched
+	go func() {
+		_ = h.service.ProcessCommission(context.Background(), referral.ID)
+	}()
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"match_id": uuid.New(), // dummy match ID generated
+		"match_id": referral.MatchID,
 		"status":   referral.Status,
 	})
 }

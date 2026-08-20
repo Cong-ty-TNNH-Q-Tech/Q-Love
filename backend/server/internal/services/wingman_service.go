@@ -27,17 +27,20 @@ type wingmanService struct {
 	wingmanRepo repository.WingmanRepository
 	walletRepo  repository.WalletRepository
 	txManager   repository.TransactionManager
+	matchRepo   repository.MatchRepository
 }
 
 func NewWingmanService(
 	wingmanRepo repository.WingmanRepository, 
 	walletRepo repository.WalletRepository, 
 	txManager repository.TransactionManager,
+	matchRepo repository.MatchRepository,
 ) WingmanService {
 	return &wingmanService{
 		wingmanRepo: wingmanRepo,
 		walletRepo:  walletRepo,
 		txManager:   txManager,
+		matchRepo:   matchRepo,
 	}
 }
 
@@ -88,8 +91,23 @@ func (s *wingmanService) AcceptReferral(ctx context.Context, referralID, accepti
 			return errors.New("user is not part of this referral")
 		}
 
-		// For simplicity, we assume one person clicking the link accepts it and creates a match.
+		if referral.Target1ID == referral.WingmanID || referral.Target2ID == referral.WingmanID {
+			return errors.New("wingman cannot refer themselves")
+		}
+
+		// Tao Match thuc su
+		match := &models.Match{
+			ID:      uuid.New(),
+			User1ID: referral.Target1ID,
+			User2ID: referral.Target2ID,
+			Source:  "wingman",
+		}
+		if err := s.matchRepo.Create(txCtx, match); err != nil {
+			return err
+		}
+
 		referral.Status = "matched"
+		referral.MatchID = &match.ID
 		if err := s.wingmanRepo.UpdateReferral(txCtx, referral); err != nil {
 			return err
 		}
