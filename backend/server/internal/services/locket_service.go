@@ -55,7 +55,7 @@ func (s *locketService) SendLocket(ctx context.Context, matchID, senderID uuid.U
 	// AI Check NSFW
 	isNSFW, _, err := s.nsfwService.CheckNSFW(ctx, file)
 	if err != nil {
-		return errors.New("failed to check image content")
+		return "", errors.New("failed to check image content")
 	}
 
 	if isNSFW {
@@ -71,10 +71,10 @@ func (s *locketService) SendLocket(ctx context.Context, matchID, senderID uuid.U
 		count, _ := s.violationRepo.CountActiveViolationsByType(ctx, senderID, "nsfw_image")
 		if count >= 3 {
 			_ = s.violationRepo.BanUser(ctx, senderID)
-			return errors.New("tài khoản của bạn đã bị khóa do vi phạm gửi ảnh nhạy cảm 3 lần")
+			return "", errors.New("tài khoản của bạn đã bị khóa do vi phạm gửi ảnh nhạy cảm 3 lần")
 		}
 
-		return errors.New("ảnh chứa nội dung nhạy cảm, không được phép gửi")
+		return "", errors.New("ảnh chứa nội dung nhạy cảm, không được phép gửi")
 	}
 
 	// Upload to R2 (Simplified for now, assuming worker processes blur later)
