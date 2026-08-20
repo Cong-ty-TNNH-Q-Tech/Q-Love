@@ -80,6 +80,7 @@ func (m *mockWingmanMatchRepo) Create(ctx context.Context, match *models.Match) 
 	return nil
 }
 func (m *mockWingmanMatchRepo) FindByID(ctx context.Context, id uuid.UUID) (*models.Match, error) { return nil, nil }
+func (m *mockWingmanMatchRepo) FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error) { return nil, nil }
 func (m *mockWingmanMatchRepo) UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error { return nil }
 
 // --- Tests ---
