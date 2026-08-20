@@ -73,12 +73,67 @@ func TestNotificationService_SendPush_MockFCMKeyEmpty(t *testing.T) {
 			return nil
 		},
 	}
+
+type mockTransport struct {
+	roundTripFn func(req *http.Request) (*http.Response, error)
+}
+
+func (t *mockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	if t.roundTripFn != nil {
+		return t.roundTripFn(req)
+	}
+	return nil, nil
+}
+
+func TestNotificationService_SendPush_FCMError(t *testing.T) {
+	mr, _ := miniredis.Run()
+	defer mr.Close()
+
+	redisClient := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	userID := uuid.New()
+	redisClient.Set(context.Background(), "fcm_token:"+userID.String(), "token", 0)
+
+	mockRepo := &mockNotificationRepo{}
 	
-	svc := NewNotificationService(mockRepo, redisClient, "") // Empty FCM key
+	svc := NewNotificationService(mockRepo, redisClient, "real-key").(*notificationService)
+	svc.httpClient = &http.Client{
+		Transport: &mockTransport{
+			roundTripFn: func(req *http.Request) (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 400,
+					Body:       http.NoBody,
+				}, nil
+			},
+		},
+	}
 
-	err = svc.SendPush(context.Background(), userID, "alert", "Hello", "World", map[string]string{"key": "value"})
-	assert.NoError(t, err)
+	err := svc.SendPush(context.Background(), userID, "alert", "Hello", "World", nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "FCM API error: status 400")
+}
 
-	err = svc.SendSilentPush(context.Background(), userID, map[string]string{"type": "locket"})
+func TestNotificationService_SendSilentPush_FCMSuccess(t *testing.T) {
+	mr, _ := miniredis.Run()
+	defer mr.Close()
+
+	redisClient := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	userID := uuid.New()
+	redisClient.Set(context.Background(), "fcm_token:"+userID.String(), "token", 0)
+
+	mockRepo := &mockNotificationRepo{}
+	
+	svc := NewNotificationService(mockRepo, redisClient, "real-key").(*notificationService)
+	svc.httpClient = &http.Client{
+		Transport: &mockTransport{
+			roundTripFn: func(req *http.Request) (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Body:       http.NoBody,
+				}, nil
+			},
+		},
+	}
+
+	err := svc.SendSilentPush(context.Background(), userID, nil)
 	assert.NoError(t, err)
 }
