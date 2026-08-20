@@ -62,32 +62,32 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	v1 := app.Group("/api/v1")
 
 	// Wingman routes
-	wingmanGroup := v1.Group("/wingman", middleware.JWTMiddleware(""))
+	wingmanGroup := v1.Group("/wingman", middleware.JWTMiddleware(cfg.JWTSecret))
 	wingmanGroup.Post("/referrals", wingmanHandler.CreateReferral)
 	wingmanGroup.Post("/referrals/:id/accept", wingmanHandler.AcceptReferral)
 
 	// Shame (Wall of Shame) routes
-	shameGroup := v1.Group("/shames", middleware.JWTMiddleware(""))
+	shameGroup := v1.Group("/shames", middleware.JWTMiddleware(cfg.JWTSecret))
 	shameGroup.Get("/", shameHandler.GetActiveShames)
 	shameGroup.Post("/:id/tomato", shameHandler.ThrowTomato)
 
 	// Upload routes
 	uploadHandler := handlers.NewUploadHandler(r2Client)
-	uploadGroup := v1.Group("/upload", middleware.JWTMiddleware(""))
+	uploadGroup := v1.Group("/upload", middleware.JWTMiddleware(cfg.JWTSecret))
 	uploadGroup.Post("/presigned-url", uploadHandler.GenerateUploadURL)
 
 	// Clan routes
-	clanGroup := v1.Group("/clans", middleware.JWTMiddleware(""))
+	clanGroup := v1.Group("/clans", middleware.JWTMiddleware(cfg.JWTSecret))
 	clanGroup.Post("/", clanHandler.CreateClan)
 
 	// Chat routes
 	chatGroup := v1.Group("/chat")
 	chatGroup.Get("/ws", chatHandler.Upgrade, websocket.New(chatHandler.WSHandler))
-	chatGroup.Post("/messages", middleware.JWTMiddleware(""), chatHandler.SendMessage)
-	chatGroup.Get("/messages/:match_id", middleware.JWTMiddleware(""), chatHandler.GetMessages)
+	chatGroup.Post("/messages", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.SendMessage)
+	chatGroup.Get("/messages/:match_id", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.GetMessages)
 
 	// Locket routes
-	locketGroup := v1.Group("/locket", middleware.JWTMiddleware(""))
+	locketGroup := v1.Group("/locket", middleware.JWTMiddleware(cfg.JWTSecret))
 	locketGroup.Post("/send", middleware.LocketRateLimiter(), locketHandler.SendLocket)
 	
 	// Auction routes
@@ -96,7 +96,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	chatLockRepo := repository.NewChatLockRepository(db)
 	auctionService := services.NewAuctionService(auctionRepo, walletRepo, txManager, userRepo, chatLockRepo)
 	auctionHandler := handlers.NewAuctionHandler(auctionService)
-	auctionGroup := v1.Group("/auctions", middleware.JWTMiddleware(""))
+	auctionGroup := v1.Group("/auctions", middleware.JWTMiddleware(cfg.JWTSecret))
 	auctionGroup.Get("/active", auctionHandler.GetActiveAuctions)
 	auctionGroup.Post("/:id/bid", auctionHandler.PlaceBid)
 
@@ -105,13 +105,13 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	webhookGroup.Post("/revenuecat", webhookHandler.HandleRevenueCat)
 
 	// Vibe Check (Spotify)
-	vibeGroup := v1.Group("/vibe", middleware.JWTMiddleware(""))
+	vibeGroup := v1.Group("/vibe", middleware.JWTMiddleware(cfg.JWTSecret))
 	vibeGroup.Get("/status", vibeHandler.Status)
 	vibeGroup.Get("/current-track", vibeHandler.CurrentTrack)
 	vibeGroup.Post("/match", vibeHandler.Match)
 
 	// Minigame Steal routes
-	stealGroup := v1.Group("/minigame/steal", middleware.JWTMiddleware(""))
+	stealGroup := v1.Group("/minigame/steal", middleware.JWTMiddleware(cfg.JWTSecret))
 	stealGroup.Post("/init", minigameHandler.InitSteal)
 	stealGroup.Post("/submit", minigameHandler.SubmitStealResult)
 }
