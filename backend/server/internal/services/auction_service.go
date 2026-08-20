@@ -12,21 +12,17 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type AuctionService interface {
 	StartDailyAuctions(ctx context.Context) error
 	PlaceBid(ctx context.Context, auctionID, bidderID uuid.UUID, amount float64) error
 	FinalizeAuctions(ctx context.Context) error
+	GetActiveAuctions(ctx context.Context, offset, limit int) ([]models.BlindAuction, error)
 }
 
 type auctionService struct {
-	auctionRepo repository.AuctionRepository
-	walletRepo  repository.WalletRepository
-	txManager   repository.TransactionManager
-	userRepo    repository.UserRepository
-	db          *gorm.DB // Using db for chat lock and top users for simplicity since repo methods are missing
+	chatLockRepo  repository.ChatLockRepository
 }
 
 func NewAuctionService(
@@ -34,17 +30,22 @@ func NewAuctionService(
 	walletRepo repository.WalletRepository,
 	txManager repository.TransactionManager,
 	userRepo repository.UserRepository,
-	db *gorm.DB,
+	chatLockRepo repository.ChatLockRepository,
 ) AuctionService {
 	return &auctionService{
-		auctionRepo: auctionRepo,
-		walletRepo:  walletRepo,
-		txManager:   txManager,
-		userRepo:    userRepo,
-		db:          db,
+		auctionRepo:   auctionRepo,
+		walletRepo:    walletRepo,
+		txManager:     txManager,
+		userRepo:      userRepo,
+		chatLockRepo:  chatLockRepo,
 	}
 }
+func (s *auctionService) GetActiveAuctions(ctx context.Context, offset, limit int) ([]models.BlindAuction, error) {
+	return s.auctionRepo.GetActiveAuctions(ctx, offset, limit)
+}
 
+// StartDailyAuctions picks Top 5 users based on some metric (e.g. cards) and creates Blind Auctions.
+>>>>>>> d69d2bc3f48aeda7bd7dea8179ca8832e5fc8057
 func (s *auctionService) StartDailyAuctions(ctx context.Context) error {
 	// Query real top users
 	topUsers, err := s.userRepo.GetTopUsersByScore(ctx, 5)
@@ -231,14 +232,15 @@ func (s *auctionService) FinalizeAuctions(ctx context.Context) error {
 						return err
 					}
 
-					if s.db != nil {
+					// Create ChatLock
+					if s.chatLockRepo != nil {
 						lock := models.ChatLock{
 							ID:        uuid.New(),
 							UserID1:   auction.TargetUserID,
 							UserID2:   highestBid.BidderID,
 							ExpiresAt: time.Now().Add(24 * time.Hour),
 						}
-						if err := repository.GetDB(txCtx, s.db).WithContext(txCtx).Create(&lock).Error; err != nil {
+						if err := s.chatLockRepo.Create(txCtx, &lock); err != nil {
 							return err
 						}
 					}

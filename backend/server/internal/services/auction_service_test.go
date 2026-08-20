@@ -4,10 +4,6 @@
 package services
 
 import (
-	"github.com/DATA-DOG/go-sqlmock"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-
 	"context"
 	"testing"
 	"time"
@@ -78,6 +74,7 @@ func (m *mockAuctionWalletRepo) UpdateBalance(ctx context.Context, userID uuid.U
 }
 func (m *mockAuctionWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
 
+<<<<<<< HEAD
 type mockUserRepo struct{}
 func (m *mockUserRepo) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) {
 	var users []uuid.UUID
@@ -85,6 +82,13 @@ func (m *mockUserRepo) GetTopUsersByScore(ctx context.Context, limit int) ([]uui
 		users = append(users, uuid.New())
 	}
 	return users, nil
+=======
+type mockChatLockRepo struct {
+	err error
+}
+func (m *mockChatLockRepo) Create(ctx context.Context, lock *models.ChatLock) error {
+	return m.err
+>>>>>>> d69d2bc3f48aeda7bd7dea8179ca8832e5fc8057
 }
 
 func TestAuctionService_PlaceBid_Success(t *testing.T) {
@@ -388,12 +392,22 @@ func TestAuctionService_FinalizeAuctions_ChatLock_DB_Error(t *testing.T) {
 	walletRepo := &mockAuctionWalletRepo{}
 	txManager := &mockTxManager{}
 	
-	// mock DB to return error on Create
-	db, mock, _ := sqlmock.New()
-	gormDB, _ := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{})
-	mock.ExpectQuery("INSERT INTO .*chat_locks.*").WillReturnError(assert.AnError)
-
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, gormDB)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{err: assert.AnError})
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err)
+}
+
+func TestAuctionService_GetActiveAuctions(t *testing.T) {
+	auctionID := uuid.New()
+	auction := &models.BlindAuction{
+		ID:           auctionID,
+		Status:       "active",
+	}
+	auctionRepo := &mockAuctionRepo{auction: auction}
+	service := NewAuctionService(auctionRepo, nil, nil, nil, nil)
+	
+	auctions, err := service.GetActiveAuctions(context.Background(), 0, 100)
+	assert.NoError(t, err)
+	assert.Len(t, auctions, 1)
+	assert.Equal(t, auctionID, auctions[0].ID)
 }
