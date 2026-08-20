@@ -49,7 +49,14 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	
 	violationRepo := repository.NewUserViolationRepository(db)
 	nsfwService := services.NewNSFWService()
-	locketService := services.NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
+	
+	notificationRepo := repository.NewNotificationRepository(db)
+	// We pass an empty string for fcmKey in this initialization, should be cfg.FCMKey in real setup
+	// Since cfg.FCMKey might not exist, we just pass empty string to mock it
+	fcmKey := ""
+	notificationService := services.NewNotificationService(notificationRepo, redisClient, fcmKey)
+
+	locketService := services.NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, notificationService, r2Client)
 	locketHandler := handlers.NewLocketHandler(locketService)
 
 	iapService := services.NewIAPService(txManager, walletRepo, userPremRepo)
@@ -105,6 +112,11 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	// Webhooks
 	webhookGroup := v1.Group("/webhooks")
 	webhookGroup.Post("/revenuecat", webhookHandler.HandleRevenueCat)
+
+	// Device routes
+	deviceHandler := handlers.NewDeviceHandler(redisClient)
+	deviceGroup := v1.Group("/devices", middleware.JWTMiddleware(cfg.JWTSecret))
+	deviceGroup.Post("/token", deviceHandler.RegisterFCMToken)
 
 	// Vibe Check (Spotify)
 	vibeGroup := v1.Group("/vibe", middleware.JWTMiddleware(cfg.JWTSecret))

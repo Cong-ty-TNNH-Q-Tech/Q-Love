@@ -1848,3 +1848,25 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /devices/token:
+    post:
+      summary: Ðang ký FCM Token cho thi?t b?
+      tags:
+        - Devices
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: "fcm_token_xyz..."
+      responses:
+        '200':
+          description: Ðang ký token thành công
+

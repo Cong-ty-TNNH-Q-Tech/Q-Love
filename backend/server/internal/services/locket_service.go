@@ -19,18 +19,20 @@ type LocketService interface {
 }
 
 type locketService struct {
-	chatRepo      repository.ChatRepository
+	chatRepo      repository.ChatMessageRepository
 	matchRepo     repository.MatchRepository
 	violationRepo repository.UserViolationRepository
 	nsfwService   NSFWService
+	notifService  NotificationService
 	r2Client      *storage.R2Client
 }
 
 func NewLocketService(
-	chatRepo repository.ChatRepository,
+	chatRepo repository.ChatMessageRepository,
 	matchRepo repository.MatchRepository,
 	violationRepo repository.UserViolationRepository,
 	nsfwService NSFWService,
+	notifService NotificationService,
 	r2Client *storage.R2Client,
 ) LocketService {
 	return &locketService{
@@ -38,6 +40,7 @@ func NewLocketService(
 		matchRepo:     matchRepo,
 		violationRepo: violationRepo,
 		nsfwService:   nsfwService,
+		notifService:  notifService,
 		r2Client:      r2Client,
 	}
 }
@@ -100,8 +103,17 @@ func (s *locketService) SendLocket(ctx context.Context, senderID uuid.UUID, matc
 	_ = s.matchRepo.UpdateLastInteraction(ctx, matchID, chatMessage.CreatedAt)
 
 	// Trigger silent push (In a real app, send to FCM/APNs)
-	// s.notificationService.SendSilentPush(...)
+	receiverID := match.User1ID
+	if receiverID == senderID {
+		receiverID = match.User2ID
+	}
+
+	if s.notifService != nil {
+		s.notifService.SendSilentPush(ctx, receiverID, map[string]string{
+			"type": "locket_update",
+			"url":  imageURL,
+		})
+	}
 
 	return nil
 }
-
