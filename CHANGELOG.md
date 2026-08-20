@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [backend/server/api] Thêm endpoint kiểm duyệt ảnh NSFW và Locket (Issue #24).
 - [frontend/app] Thêm UI/UX Minigame PK Cướp Đoạt Thẻ Bài (Glassmorphism & Haptics).
 - [backend/server/api] Thêm API Đấu Giá Đặc Quyền (Blind Auction) và Cronjob khóa chat 24h (Issue #50).
+- [backend/server/api] Thêm API đánh giá Ex-Rating ẩn danh sau Unmatch (`POST /ex-ratings`).
+- [backend/server/api] Thêm API tra cứu CV Tình Trường (Ex-Rating) tốn 50 Xu (`GET /users/:user_id/ex-rating`).
+- [backend/server/api] Thêm endpoint `/ai/suggest` để Trợ lý Mỏ Hỗn sinh gợi ý tin nhắn.
 - [backend/server] Thêm endpoint `/shames` và sửa transaction, join query, API docs (Issue #74).
 - [backend/server/api] Thêm endpoint gửi Locket (Issue #24).
 - [frontend/app] Tích hợp package `google_fonts` và cấu hình `textTheme` chuẩn cho `AppTheme.darkTheme`.
