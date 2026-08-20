@@ -80,8 +80,8 @@ func (m *mockWalletRepoForExRating) CheckTransactionExists(ctx context.Context, 
 	return false, nil
 }
 
-type mockTxManager struct{}
-func (m *mockTxManager) WithTransaction(ctx context.Context, fn func(txCtx context.Context) error) error {
+type mockTxManagerForExRating struct{}
+func (m *mockTxManagerForExRating) WithTransaction(ctx context.Context, fn func(txCtx context.Context) error, opts ...*sql.TxOptions) error {
 	return fn(ctx)
 }
 
@@ -92,8 +92,8 @@ func TestExRatingService_SubmitRating_Success(t *testing.T) {
 
 	svc := NewExRatingService(
 		&mockExRatingRepo{hasRated: false},
-		nil,
-		nil,
+		&mockTxManagerForExRating{},
+		&mockWalletRepoForExRating{balance: 100},
 		&mockChatRepoForExRating{msgCount: 51},
 		&mockMatchRepoForExRating{match: match},
 	)
@@ -109,8 +109,8 @@ func TestExRatingService_SubmitRating_NotUnmatched(t *testing.T) {
 
 	svc := NewExRatingService(
 		&mockExRatingRepo{hasRated: false},
-		nil,
-		nil,
+		&mockTxManagerForExRating{},
+		&mockWalletRepoForExRating{balance: 100},
 		&mockChatRepoForExRating{msgCount: 51},
 		&mockMatchRepoForExRating{match: match},
 	)
@@ -127,8 +127,8 @@ func TestExRatingService_SubmitRating_NotEnoughMessages(t *testing.T) {
 
 	svc := NewExRatingService(
 		&mockExRatingRepo{hasRated: false},
-		nil,
-		nil,
+		&mockTxManagerForExRating{},
+		&mockWalletRepoForExRating{balance: 100},
 		&mockChatRepoForExRating{msgCount: 49}, // < 50
 		&mockMatchRepoForExRating{match: match},
 	)
@@ -144,8 +144,8 @@ func TestExRatingService_ViewRating_Success(t *testing.T) {
 
 	svc := NewExRatingService(
 		&mockExRatingRepo{avg: 4.5, total: 10, tags: map[string]int{"#green": 5}},
+		&mockTxManagerForExRating{},
 		&mockWalletRepoForExRating{balance: 100}, // > 50 xu
-		&mockTxManager{},
 		nil,
 		nil,
 	)
@@ -163,8 +163,8 @@ func TestExRatingService_ViewRating_InsufficientFunds(t *testing.T) {
 
 	svc := NewExRatingService(
 		&mockExRatingRepo{},
+		&mockTxManagerForExRating{},
 		&mockWalletRepoForExRating{balance: 49}, // < 50 xu
-		&mockTxManager{},
 		nil,
 		nil,
 	)
