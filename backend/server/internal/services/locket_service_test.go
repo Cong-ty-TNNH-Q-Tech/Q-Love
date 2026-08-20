@@ -150,3 +150,35 @@ func TestLocketService_SendLocket_NSFWDetected_3Strikes(t *testing.T) {
 		t.Errorf("Expected ban message, got %v", err.Error())
 	}
 }
+
+func TestLocketService_SendLocket_InvalidSize(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{}}
+	chatRepo := &mockChatRepo{}
+	violationRepo := &mockViolationRepo{}
+	nsfwService := &mockNSFWService{isNSFW: false}
+
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
+
+	fileHeader := &multipart.FileHeader{Filename: "test.jpg", Size: 11 * 1024 * 1024, Header: make(map[string][]string)}
+	fileHeader.Header.Set("Content-Type", "image/jpeg")
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
+	if err == nil || err.Error() != "file too large, limit is 10MB" {
+		t.Errorf("Expected file too large error, got %v", err)
+	}
+}
+
+func TestLocketService_SendLocket_InvalidType(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{}}
+	chatRepo := &mockChatRepo{}
+	violationRepo := &mockViolationRepo{}
+	nsfwService := &mockNSFWService{isNSFW: false}
+
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
+
+	fileHeader := &multipart.FileHeader{Filename: "test.pdf", Size: 1024, Header: make(map[string][]string)}
+	fileHeader.Header.Set("Content-Type", "application/pdf")
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
+	if err == nil || err.Error() != "only jpeg, png, and webp images are supported" {
+		t.Errorf("Expected invalid type error, got %v", err)
+	}
+}
