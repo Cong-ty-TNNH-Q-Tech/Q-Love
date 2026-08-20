@@ -45,7 +45,7 @@ func (s *auctionService) GetActiveAuctions(ctx context.Context, offset, limit in
 }
 
 // StartDailyAuctions picks Top 5 users based on some metric (e.g. cards) and creates Blind Auctions.
->>>>>>> d69d2bc3f48aeda7bd7dea8179ca8832e5fc8057
+
 func (s *auctionService) StartDailyAuctions(ctx context.Context) error {
 	// Query real top users
 	topUsers, err := s.userRepo.GetTopUsersByScore(ctx, 5)

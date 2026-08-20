@@ -74,7 +74,6 @@ func (m *mockAuctionWalletRepo) UpdateBalance(ctx context.Context, userID uuid.U
 }
 func (m *mockAuctionWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
 
-<<<<<<< HEAD
 type mockUserRepo struct{}
 func (m *mockUserRepo) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) {
 	var users []uuid.UUID
@@ -82,13 +81,13 @@ func (m *mockUserRepo) GetTopUsersByScore(ctx context.Context, limit int) ([]uui
 		users = append(users, uuid.New())
 	}
 	return users, nil
-=======
+}
+
 type mockChatLockRepo struct {
 	err error
 }
 func (m *mockChatLockRepo) Create(ctx context.Context, lock *models.ChatLock) error {
 	return m.err
->>>>>>> d69d2bc3f48aeda7bd7dea8179ca8832e5fc8057
 }
 
 func TestAuctionService_PlaceBid_Success(t *testing.T) {
@@ -114,7 +113,7 @@ func TestAuctionService_PlaceBid_Success(t *testing.T) {
 	auctionRepo := &mockAuctionRepo{auction: auction}
 	txManager := &mockTxManager{}
 
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.PlaceBid(context.Background(), auctionID, bidderID, 500)
 	assert.NoError(t, err)
 }
@@ -153,7 +152,7 @@ func TestAuctionService_FinalizeAuctions(t *testing.T) {
 	}
 	txManager := &mockTxManager{}
 
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err)
 }
@@ -164,7 +163,7 @@ func TestAuctionService_StartDailyAuctions(t *testing.T) {
 	walletRepo := &mockAuctionWalletRepo{}
 	txManager := &mockTxManager{}
 
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.StartDailyAuctions(context.Background())
 	// Usually this returns nil if successful or no db is provided in mock
 	assert.NoError(t, err)
@@ -212,7 +211,7 @@ func TestAuctionService_PlaceBid_InsufficientBalance(t *testing.T) {
 		},
 	}
 	txManager := &mockTxManager{}
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.PlaceBid(context.Background(), uuid.New(), uid, 100)
 	assert.Error(t, err)
 	assert.Equal(t, "insufficient balance for this bid", err.Error())
@@ -229,7 +228,7 @@ func TestAuctionService_PlaceBid_GetWalletError(t *testing.T) {
 		},
 	}
 	txManager := &mockTxManager{}
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.PlaceBid(context.Background(), uuid.New(), uid, 100)
 	assert.Error(t, err)
 	assert.Equal(t, assert.AnError, err)
@@ -289,7 +288,7 @@ func TestAuctionService_FinalizeAuctions_WithBidsAndRefunds(t *testing.T) {
 	walletRepo := &mockAuctionWalletRepo{}
 	txManager := &mockTxManager{}
 
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err)
 }
@@ -330,7 +329,7 @@ func TestAuctionService_FinalizeAuctions_Refund_UpdateBalance_Error(t *testing.T
 		},
 	}
 	txManager := &mockTxManager{}
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err) // It continues on inner loop error
 }
@@ -364,7 +363,7 @@ func TestAuctionService_FinalizeAuctions_Winner_UpdateBalance_Error(t *testing.T
 		},
 	}
 	txManager := &mockTxManager{}
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err)
 }
