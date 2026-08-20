@@ -12,17 +12,18 @@ import (
 	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 type mockFeedService struct {
-	feed []models.FeedUserResponse
+	feed []services.FeedUserResponse
 	err  error
 }
 
-func (m *mockFeedService) GetFeed(ctx context.Context, userID uuid.UUID, filter string, radius int) ([]models.FeedUserResponse, error) {
+func (m *mockFeedService) GetFeed(ctx context.Context, userID uuid.UUID, filter string, radius int) ([]services.FeedUserResponse, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -32,7 +33,7 @@ func (m *mockFeedService) GetFeed(ctx context.Context, userID uuid.UUID, filter 
 func TestFeedHandler_GetFeed_Success(t *testing.T) {
 	app := fiber.New()
 	mockSvc := &mockFeedService{
-		feed: []models.FeedUserResponse{
+		feed: []services.FeedUserResponse{
 			{User: models.User{ID: uuid.New(), DOB: time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)}},
 		},
 	}

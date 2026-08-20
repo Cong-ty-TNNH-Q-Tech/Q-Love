@@ -41,9 +41,9 @@ func TestMatchRepository_Create(t *testing.T) {
 	}
 
 	mock.ExpectBegin()
-	mock.ExpectExec(`INSERT INTO "matches"`).
+	mock.ExpectQuery(`INSERT INTO "matches"`).
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), match.ID, match.User1ID, match.User2ID, sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
-		WillReturnResult(sqlmock.NewResult(1, 1))
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(match.ID))
 	mock.ExpectCommit()
 
 	err = repo.Create(context.Background(), match)
