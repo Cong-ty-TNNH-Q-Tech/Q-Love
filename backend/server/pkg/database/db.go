@@ -38,9 +38,7 @@ func NewPostgresDB(cfg *config.Config) (*gorm.DB, error) {
 
 	err = db.AutoMigrate(
 		&models.VibeMatch{},
-		&models.CardProfile{},
 		&models.CardTransaction{},
-		&models.Bounty{},
 		&models.BlindAuction{},
 		&models.AuctionBid{},
 		&models.WallOfShame{},
