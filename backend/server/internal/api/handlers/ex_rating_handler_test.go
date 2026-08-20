@@ -66,6 +66,7 @@ func TestExRatingHandler_ViewRating(t *testing.T) {
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	assert.NoError(t, err)
 	assert.Equal(t, float64(4.5), result["average_rating"])
+}
 func TestExRatingHandler_SubmitRating_InvalidBody(t *testing.T) {
 	app := fiber.New()
 	handler := NewExRatingHandler(&mockExRatingService{})
