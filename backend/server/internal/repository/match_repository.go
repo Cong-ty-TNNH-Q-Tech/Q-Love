@@ -58,3 +58,4 @@ func (r *matchRepository) SoftDelete(ctx context.Context, id uuid.UUID) error {
 		Where("id = ?", id).
 		Delete(&models.Match{}).Error
 }
+
