@@ -1,9 +1,11 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"mime/multipart"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -232,5 +234,38 @@ func TestLocketService_SendLocket_R2Error(t *testing.T) {
 	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
 	if err == nil {
 		t.Errorf("Expected error from file.Open or R2 upload, got nil")
+	}
+}
+
+func createValidMultipartFileHeader(t *testing.T) *multipart.FileHeader {
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+	part, _ := writer.CreateFormFile("image", "test.jpg")
+	part.Write([]byte("test image content"))
+	writer.Close()
+
+	req := httptest.NewRequest("POST", "/", body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	_ = req.ParseMultipartForm(1024)
+	return req.MultipartForm.File["image"][0]
+}
+
+func TestLocketService_SendLocket_R2UploadError(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{}}
+	chatRepo := &mockChatRepo{}
+	violationRepo := &mockViolationRepo{}
+	nsfwService := &mockNSFWService{isNSFW: false}
+
+	// Fake R2 Client with dummy S3Client that will fail network request
+	r2Client := &storage.R2Client{
+		BucketName: "test-bucket",
+	}
+
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
+
+	fileHeader := createValidMultipartFileHeader(t)
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
+	if err == nil {
+		t.Errorf("Expected error from R2 upload, got nil")
 	}
 }
