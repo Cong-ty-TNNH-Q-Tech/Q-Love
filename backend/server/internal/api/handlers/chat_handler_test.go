@@ -67,6 +67,15 @@ func TestChatHandler_SendMessage(t *testing.T) {
 	}
 	
 	handler := NewChatHandler(mockSvc, hub)
+
+	app.Use(func(c *fiber.Ctx) error {
+		if id := c.Get("X-User-ID"); id != "" {
+			uid, _ := uuid.Parse(id)
+			c.Locals("user_id", uid)
+		}
+		return c.Next()
+	})
+
 	app.Post("/send", handler.SendMessage)
 
 	t.Run("ValidRequest", func(t *testing.T) {
@@ -188,6 +197,13 @@ func TestChatHandler_SendMessage(t *testing.T) {
 			},
 		}
 		handlerErr := NewChatHandler(errSvc, hub)
+		appErr.Use(func(c *fiber.Ctx) error {
+			if id := c.Get("X-User-ID"); id != "" {
+				uid, _ := uuid.Parse(id)
+				c.Locals("user_id", uid)
+			}
+			return c.Next()
+		})
 		appErr.Post("/send", handlerErr.SendMessage)
 
 		body := map[string]interface{}{
@@ -269,6 +285,16 @@ func TestChatHandler_WSHandler(t *testing.T) {
 	handler := NewChatHandler(&mockChatService{}, hub)
 
 	testUserID := uuid.New()
+
+	app.Use(func(c *fiber.Ctx) error {
+		if id := c.Query("user_id"); id != "" {
+			uid, err := uuid.Parse(id)
+			if err == nil {
+				c.Locals("user_id", uid)
+			}
+		}
+		return c.Next()
+	})
 	
 	// Create the route using fiberWebsocket
 	app.Get("/ws", handler.Upgrade, fiberWebsocket.New(handler.WSHandler))

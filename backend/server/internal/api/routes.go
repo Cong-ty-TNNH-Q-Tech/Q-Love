@@ -92,7 +92,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 
 	// Chat routes
 	chatGroup := v1.Group("/chat")
-	chatGroup.Get("/ws", chatHandler.Upgrade, websocket.New(chatHandler.WSHandler))
+	chatGroup.Get("/ws", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.Upgrade, websocket.New(chatHandler.WSHandler))
 	chatGroup.Post("/messages", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.SendMessage)
 	chatGroup.Get("/messages/:match_id", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.GetMessages)
 
