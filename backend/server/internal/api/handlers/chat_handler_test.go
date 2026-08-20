@@ -197,6 +197,13 @@ func TestChatHandler_SendMessage(t *testing.T) {
 			},
 		}
 		handlerErr := NewChatHandler(errSvc, hub)
+		appErr.Use(func(c *fiber.Ctx) error {
+			if id := c.Get("X-User-ID"); id != "" {
+				uid, _ := uuid.Parse(id)
+				c.Locals("user_id", uid)
+			}
+			return c.Next()
+		})
 		appErr.Post("/send", handlerErr.SendMessage)
 
 		body := map[string]interface{}{
