@@ -23,7 +23,7 @@ func setupVoucherMockDB() (*gorm.DB, sqlmock.Sqlmock) {
 		Conn:       sqlDB,
 		DriverName: "postgres",
 	})
-	db, _ := gorm.Open(dialector, &gorm.Config{})
+	db, _ := gorm.Open(dialector, &gorm.Config{SkipDefaultTransaction: true})
 	return db, mock
 }
 
@@ -41,9 +41,7 @@ func TestVoucherRepository_Create(t *testing.T) {
 		CreatedAt: time.Now(),
 	}
 
-	mock.ExpectBegin()
-	mock.ExpectExec("INSERT INTO \"vouchers\"").WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectCommit()
+	mock.ExpectQuery("INSERT INTO \"vouchers\"").WillReturnRows(sqlmock.NewRows([]string{"created_at"}).AddRow(voucher.CreatedAt))
 
 	err := repo.Create(context.Background(), voucher)
 	assert.NoError(t, err)
@@ -70,10 +68,8 @@ func TestVoucherRepository_MarkAsClaimed(t *testing.T) {
 	vid := uuid.New()
 	uid := uuid.New()
 
-	mock.ExpectBegin()
 	mock.ExpectExec("UPDATE \"vouchers\"").WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectExec("INSERT INTO \"user_vouchers\"").WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectCommit()
+	mock.ExpectQuery("INSERT INTO \"user_vouchers\"").WillReturnRows(sqlmock.NewRows([]string{"claimed_at"}).AddRow(time.Now()))
 
 	// Need to use transaction manually or let gorm handle it. Since we mocked it linearly:
 	err := repo.MarkAsClaimed(context.Background(), vid, uid)
