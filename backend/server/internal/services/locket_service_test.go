@@ -14,6 +14,7 @@ import (
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
 )
 
@@ -299,9 +300,9 @@ func TestLocketService_SendLocket_R2Error(t *testing.T) {
 
 	r2Client := &storage.R2Client{
 		BucketName: "test-bucket",
+		S3Client:   s3.New(s3.Options{}),
 	}
-	// We can't mock R2Client easily here without refactoring, but we can cause a panic or network error.
-	// Since r2Client uses uninitialized AWS config, it will return an error during upload.
+	// This will cause a network error instead of a panic since S3Client is not nil but unconfigured
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
 
 	fileHeader := createValidMultipartFile(t)
