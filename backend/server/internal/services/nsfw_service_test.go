@@ -12,6 +12,8 @@ import (
 	"os"
 	"errors"
 
+	appconfig "github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
@@ -163,5 +165,39 @@ func TestNSFWService_CheckNSFW_RekognitionError(t *testing.T) {
 	_, _, err := importErr.CheckNSFW(context.Background(), file)
 	if err == nil {
 		t.Errorf("Expected rekognition error, got nil")
+	}
+}
+
+func TestNSFWService_CheckNSFW_FileSizeLimit(t *testing.T) {
+	service := &nsfwService{client: &mockRekognitionClient{}}
+	
+	largeFile := createDummyFile(6 * 1024 * 1024) // 6MB
+	_, _, err := service.CheckNSFW(context.Background(), largeFile)
+	if err == nil || err.Error() != "file too large, max size is 5MB" {
+		t.Errorf("Expected file size error, got %v", err)
+	}
+}
+
+func TestNSFWService_NewNSFWService(t *testing.T) {
+	// Test without config
+	service := NewNSFWService(nil)
+	if service.(*nsfwService).client != nil {
+		t.Errorf("Expected nil client when cfg is nil")
+	}
+
+	// Test with config but no AWS Access Key
+	cfg := &appconfig.Config{}
+	service = NewNSFWService(cfg)
+	if service.(*nsfwService).client != nil {
+		t.Errorf("Expected nil client when AWSAccessKeyID is empty")
+	}
+
+	// Test with valid config
+	cfg.AWSAccessKeyID = "test"
+	cfg.AWSSecretAccessKey = "test"
+	cfg.AWSRegion = "us-east-1"
+	service = NewNSFWService(cfg)
+	if service.(*nsfwService).client == nil {
+		t.Errorf("Expected client to be created when credentials are provided")
 	}
 }
