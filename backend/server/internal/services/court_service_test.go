@@ -203,13 +203,14 @@ func TestCourtService_VoteCase_Success(t *testing.T) {
 }
 
 func TestCourtService_GetFeed_Success(t *testing.T) {
-	mockCourt := &mockCourtRepoForCourt{
-		activeCases: []models.CourtCase{
-			{ID: uuid.New(), Status: models.CourtCaseStatusVoting},
-		},
-	}
-	mockMatch := &mockMatchRepoForCourt{}
+	mockCourt := new(mockCourtRepo)
+	mockMatch := new(mockMatchRepoForCourt)
 	svc := NewCourtService(mockCourt, mockMatch, nil)
+
+	activeCases := []models.CourtCase{
+		{ID: uuid.New(), Status: models.CourtCaseStatusVoting},
+	}
+	mockCourt.On("GetActiveCases", mock.Anything, 10).Return(activeCases, nil)
 
 	cases, err := svc.GetFeed(context.Background(), uuid.New(), 10)
 	assert.NoError(t, err)
@@ -220,17 +221,17 @@ func TestCourtService_WithdrawCase_Success(t *testing.T) {
 	caseID := uuid.New()
 	plaintiffID := uuid.New()
 	
-	mockCourt := &mockCourtRepoForCourt{
-		cases: map[uuid.UUID]*models.CourtCase{
-			caseID: {
-				ID:          caseID,
-				PlaintiffID: plaintiffID,
-				Status:      models.CourtCaseStatusVoting,
-			},
-		},
-	}
-	mockMatch := &mockMatchRepoForCourt{}
+	mockCourt := new(mockCourtRepo)
+	mockMatch := new(mockMatchRepoForCourt)
 	svc := NewCourtService(mockCourt, mockMatch, nil)
+
+	courtCase := &models.CourtCase{
+		ID:          caseID,
+		PlaintiffID: plaintiffID,
+		Status:      models.CourtCaseStatusVoting,
+	}
+	mockCourt.On("GetCaseByID", mock.Anything, caseID).Return(courtCase, nil)
+	mockCourt.On("UpdateCaseStatus", mock.Anything, caseID, models.CourtCaseStatusWithdrawn).Return(nil)
 
 	err := svc.WithdrawCase(context.Background(), caseID, plaintiffID)
 	assert.NoError(t, err)
@@ -241,17 +242,16 @@ func TestCourtService_WithdrawCase_NotPlaintiff(t *testing.T) {
 	plaintiffID := uuid.New()
 	wrongID := uuid.New()
 	
-	mockCourt := &mockCourtRepoForCourt{
-		cases: map[uuid.UUID]*models.CourtCase{
-			caseID: {
-				ID:          caseID,
-				PlaintiffID: plaintiffID,
-				Status:      models.CourtCaseStatusVoting,
-			},
-		},
-	}
-	mockMatch := &mockMatchRepoForCourt{}
+	mockCourt := new(mockCourtRepo)
+	mockMatch := new(mockMatchRepoForCourt)
 	svc := NewCourtService(mockCourt, mockMatch, nil)
+
+	courtCase := &models.CourtCase{
+		ID:          caseID,
+		PlaintiffID: plaintiffID,
+		Status:      models.CourtCaseStatusVoting,
+	}
+	mockCourt.On("GetCaseByID", mock.Anything, caseID).Return(courtCase, nil)
 
 	err := svc.WithdrawCase(context.Background(), caseID, wrongID)
 	assert.Error(t, err)
