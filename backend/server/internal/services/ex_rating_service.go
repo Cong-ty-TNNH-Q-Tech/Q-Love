@@ -112,8 +112,8 @@ func (s *exRatingService) ViewRating(ctx context.Context, viewerID, targetUserID
 			ID:          uuid.New(),
 			UserID:      viewerID,
 			Amount:      -50,
-			Type:        "deduct",
-			Reference:   "Phí tra cứu CV Tình trường",
+			Type:        "deduct_ex_rating",
+			ReferenceID: targetUserID,
 			CreatedAt:   time.Now(),
 		})
 		if err != nil {
