@@ -201,3 +201,59 @@ func TestCourtService_VoteCase_Success(t *testing.T) {
 	assert.NoError(t, err)
 	mockCourt.AssertExpectations(t)
 }
+
+func TestCourtService_GetFeed_Success(t *testing.T) {
+	mockCourt := &mockCourtRepoForCourt{
+		activeCases: []models.CourtCase{
+			{ID: uuid.New(), Status: models.CourtCaseStatusVoting},
+		},
+	}
+	mockMatch := &mockMatchRepoForCourt{}
+	svc := NewCourtService(mockCourt, mockMatch, nil)
+
+	cases, err := svc.GetFeed(context.Background(), uuid.New(), 10)
+	assert.NoError(t, err)
+	assert.Len(t, cases, 1)
+}
+
+func TestCourtService_WithdrawCase_Success(t *testing.T) {
+	caseID := uuid.New()
+	plaintiffID := uuid.New()
+	
+	mockCourt := &mockCourtRepoForCourt{
+		cases: map[uuid.UUID]*models.CourtCase{
+			caseID: {
+				ID:          caseID,
+				PlaintiffID: plaintiffID,
+				Status:      models.CourtCaseStatusVoting,
+			},
+		},
+	}
+	mockMatch := &mockMatchRepoForCourt{}
+	svc := NewCourtService(mockCourt, mockMatch, nil)
+
+	err := svc.WithdrawCase(context.Background(), caseID, plaintiffID)
+	assert.NoError(t, err)
+}
+
+func TestCourtService_WithdrawCase_NotPlaintiff(t *testing.T) {
+	caseID := uuid.New()
+	plaintiffID := uuid.New()
+	wrongID := uuid.New()
+	
+	mockCourt := &mockCourtRepoForCourt{
+		cases: map[uuid.UUID]*models.CourtCase{
+			caseID: {
+				ID:          caseID,
+				PlaintiffID: plaintiffID,
+				Status:      models.CourtCaseStatusVoting,
+			},
+		},
+	}
+	mockMatch := &mockMatchRepoForCourt{}
+	svc := NewCourtService(mockCourt, mockMatch, nil)
+
+	err := svc.WithdrawCase(context.Background(), caseID, wrongID)
+	assert.Error(t, err)
+	assert.Equal(t, "only the plaintiff can withdraw the case", err.Error())
+}

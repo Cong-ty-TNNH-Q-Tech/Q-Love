@@ -137,3 +137,56 @@ func TestCourtRepository_UpdateCaseStatus(t *testing.T) {
 	found, _ := repo.GetCaseByID(context.Background(), caseID)
 	assert.Equal(t, models.CourtCaseStatusGuilty, found.Status)
 }
+
+func TestCourtRepository_GetActiveCases(t *testing.T) {
+	db := setupCourtTestDB(t)
+	repo := NewCourtRepository(db)
+
+	db.Create(&models.CourtCase{
+		ID:          uuid.New(),
+		PlaintiffID: uuid.New(),
+		DefendantID: uuid.New(),
+		MatchID:     uuid.New(),
+		Reason:      "Active",
+		Status:      models.CourtCaseStatusVoting,
+		ExpiresAt:   time.Now().Add(48 * time.Hour),
+	})
+	
+	cases, err := repo.GetActiveCases(context.Background(), 10)
+	assert.NoError(t, err)
+	assert.Len(t, cases, 1)
+}
+
+func TestCourtRepository_GetExpiredVotingCases(t *testing.T) {
+	db := setupCourtTestDB(t)
+	repo := NewCourtRepository(db)
+
+	db.Create(&models.CourtCase{
+		ID:          uuid.New(),
+		PlaintiffID: uuid.New(),
+		DefendantID: uuid.New(),
+		MatchID:     uuid.New(),
+		Reason:      "Expired",
+		Status:      models.CourtCaseStatusVoting,
+		ExpiresAt:   time.Now().Add(-1 * time.Hour),
+	})
+	
+	cases, err := repo.GetExpiredVotingCases(context.Background())
+	assert.NoError(t, err)
+	assert.Len(t, cases, 1)
+}
+
+func TestCourtRepository_CountVotesByCase(t *testing.T) {
+	db := setupCourtTestDB(t)
+	repo := NewCourtRepository(db)
+
+	caseID := uuid.New()
+	db.Create(&models.CourtVote{CaseID: caseID, JurorID: uuid.New(), Vote: models.CourtVoteGuilty})
+	db.Create(&models.CourtVote{CaseID: caseID, JurorID: uuid.New(), Vote: models.CourtVoteGuilty})
+	db.Create(&models.CourtVote{CaseID: caseID, JurorID: uuid.New(), Vote: models.CourtVoteNotGuilty})
+	
+	total, guilty, err := repo.CountVotesByCase(context.Background(), caseID)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(3), total)
+	assert.Equal(t, int64(2), guilty)
+}

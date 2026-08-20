@@ -59,6 +59,10 @@ func setupCourtHandlerApp(mockSvc *mockCourtService) *fiber.App {
 		c.Locals("userID", uuid.New().String())
 		return h.WithdrawCase(c)
 	})
+	app.Get("/court/feed", func(c *fiber.Ctx) error {
+		c.Locals("userID", uuid.New().String())
+		return h.GetFeed(c)
+	})
 	return app
 }
 
@@ -121,4 +125,50 @@ func TestCourtHandler_WithdrawCase_Success(t *testing.T) {
 	
 	resp, _ := app.Test(req)
 	assert.Equal(t, 200, resp.StatusCode)
+}
+
+func TestCourtHandler_GetFeed_Success(t *testing.T) {
+	app := setupCourtHandlerApp(&mockCourtService{})
+	req := httptest.NewRequest("GET", "/court/feed", nil)
+	
+	resp, _ := app.Test(req)
+	assert.Equal(t, 200, resp.StatusCode)
+}
+
+func TestCourtHandler_GetFeed_ServiceErr(t *testing.T) {
+	app := setupCourtHandlerApp(&mockCourtService{err: errors.New("error")})
+	req := httptest.NewRequest("GET", "/court/feed", nil)
+	
+	resp, _ := app.Test(req)
+	assert.Equal(t, 500, resp.StatusCode)
+}
+
+func TestCourtHandler_VoteCase_BadRequest(t *testing.T) {
+	app := setupCourtHandlerApp(&mockCourtService{})
+	req := httptest.NewRequest("POST", "/court/"+uuid.New().String()+"/vote", bytes.NewBuffer([]byte("invalid")))
+	req.Header.Set("Content-Type", "application/json")
+	
+	resp, _ := app.Test(req)
+	assert.Equal(t, 400, resp.StatusCode)
+}
+
+func TestCourtHandler_VoteCase_InvalidVote(t *testing.T) {
+	app := setupCourtHandlerApp(&mockCourtService{})
+	body := map[string]interface{}{
+		"vote": "invalid_vote",
+	}
+	bodyBytes, _ := json.Marshal(body)
+	req := httptest.NewRequest("POST", "/court/"+uuid.New().String()+"/vote", bytes.NewBuffer(bodyBytes))
+	req.Header.Set("Content-Type", "application/json")
+	
+	resp, _ := app.Test(req)
+	assert.Equal(t, 400, resp.StatusCode)
+}
+
+func TestCourtHandler_WithdrawCase_ServiceErr(t *testing.T) {
+	app := setupCourtHandlerApp(&mockCourtService{err: errors.New("cannot withdraw")})
+	req := httptest.NewRequest("POST", "/court/"+uuid.New().String()+"/withdraw", nil)
+	
+	resp, _ := app.Test(req)
+	assert.Equal(t, 400, resp.StatusCode)
 }
