@@ -5,6 +5,7 @@
 package config
 
 import (
+	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -24,10 +25,16 @@ type Config struct {
 	AWSRegion               string
 	AWSAccessKeyID          string
 	AWSSecretAccessKey      string
+	JWTSecret               string
 }
 
 func LoadConfig() *Config {
 	_ = godotenv.Load()
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET environment variable is required")
+	}
 
 	return &Config{
 		R2AccountID:             getEnv("R2_ACCOUNT_ID", "default_account_id"),
@@ -43,6 +50,7 @@ func LoadConfig() *Config {
 		AWSRegion:               getEnv("AWS_REGION", "us-east-1"),
 		AWSAccessKeyID:          getEnv("AWS_ACCESS_KEY_ID", ""),
 		AWSSecretAccessKey:      getEnv("AWS_SECRET_ACCESS_KEY", ""),
+		JWTSecret:               jwtSecret,
 	}
 }
 
