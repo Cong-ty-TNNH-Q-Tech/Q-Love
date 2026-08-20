@@ -31,20 +31,21 @@ type nsfwService struct {
 }
 
 func NewNSFWService(cfg *appconfig.Config) NSFWService {
-	var client *rekognition.Client
-	
 	if cfg != nil && cfg.AWSAccessKeyID != "" {
 		awsCfg, err := config.LoadDefaultConfig(context.Background(),
 			config.WithRegion(cfg.AWSRegion),
 			config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(cfg.AWSAccessKeyID, cfg.AWSSecretAccessKey, "")),
 		)
 		if err == nil {
-			client = rekognition.NewFromConfig(awsCfg)
+			client := rekognition.NewFromConfig(awsCfg)
+			return &nsfwService{
+				client: client,
+			}
 		}
 	}
 
 	return &nsfwService{
-		client: client,
+		client: nil,
 	}
 }
 
