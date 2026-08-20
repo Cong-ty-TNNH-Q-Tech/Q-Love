@@ -74,6 +74,17 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	shameGroup.Get("/", shameHandler.GetActiveShames)
 	shameGroup.Post("/:id/tomato", shameHandler.ThrowTomato)
 
+	// Device routes
+	deviceHandler := handlers.NewDeviceHandler(redisClient)
+	deviceGroup := v1.Group("/devices", middleware.JWTMiddleware(cfg.JWTSecret))
+	deviceGroup.Post("/token", deviceHandler.RegisterFCMToken)
+
+	// AI Wingman routes
+	aiService := services.NewAIWingmanService(chatRepo, cfg.OpenAIAPIKey)
+	aiHandler := handlers.NewAIWingmanHandler(aiService)
+	aiGroup := v1.Group("/ai", middleware.JWTMiddleware(cfg.JWTSecret))
+	aiGroup.Post("/suggest", aiHandler.SuggestReplies)
+
 	// Upload routes
 	uploadHandler := handlers.NewUploadHandler(r2Client)
 	uploadGroup := v1.Group("/upload", middleware.JWTMiddleware(cfg.JWTSecret))

@@ -23,6 +23,10 @@ type Config struct {
 	RedisURL                string
 	RevenueCatWebhookSecret string
 	JWTSecret               string
+	AWSAccessKeyID          string
+	AWSSecretKey            string
+	AWSRegion               string
+	OpenAIAPIKey            string
 }
 
 func LoadConfig() *Config {
@@ -45,6 +49,10 @@ func LoadConfig() *Config {
 		RedisURL:                getEnv("REDIS_URL", "redis://localhost:6379/0"),
 		RevenueCatWebhookSecret: getEnv("REVENUECAT_WEBHOOK_SECRET", "secret123"),
 		JWTSecret:               jwtSecret,
+		AWSAccessKeyID:          getEnv("AWS_ACCESS_KEY_ID", "default_aws_access_key"),
+		AWSSecretKey:            getEnv("AWS_SECRET_KEY", "default_aws_secret_key"),
+		AWSRegion:               getEnv("AWS_REGION", "ap-southeast-1"),
+		OpenAIAPIKey:            getEnv("OPENAI_API_KEY", ""),
 	}
 }
 
