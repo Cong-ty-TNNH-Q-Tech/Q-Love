@@ -72,7 +72,7 @@ func (m *mockMatchRepoForCourt) Create(ctx context.Context, match *models.Match)
 	return nil
 }
 
-func (m *mockMatchRepoForCourt) GetByID(ctx context.Context, id uuid.UUID) (*models.Match, error) {
+func (m *mockMatchRepoForCourt) FindByID(ctx context.Context, id uuid.UUID) (*models.Match, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -120,7 +120,7 @@ func TestCourtService_FileLawsuit_Success(t *testing.T) {
 		LastInteractionAt: time.Now().Add(-50 * time.Hour),
 	}
 
-	mockMatch.On("GetByID", mock.Anything, matchID).Return(match, nil)
+	mockMatch.On("FindByID", mock.Anything, matchID).Return(match, nil)
 	mockCourt.On("CreateCase", mock.Anything, mock.AnythingOfType("*models.CourtCase")).Return(nil)
 
 	courtCase, err := service.FileLawsuit(context.Background(), plaintiffID, defendantID, matchID, "Ghosting")
@@ -154,7 +154,7 @@ func TestCourtService_FileLawsuit_FailsIfNot48Hours(t *testing.T) {
 		LastInteractionAt: time.Now().Add(-10 * time.Hour), // Less than 48h
 	}
 
-	mockMatch.On("GetByID", mock.Anything, matchID).Return(match, nil)
+	mockMatch.On("FindByID", mock.Anything, matchID).Return(match, nil)
 
 	_, err := service.FileLawsuit(context.Background(), plaintiffID, defendantID, matchID, "Ghosting")
 

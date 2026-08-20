@@ -16,7 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func setupTestDB(t *testing.T) *gorm.DB {
+func setupCourtTestDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("failed to connect database: %v", err)
@@ -26,7 +26,7 @@ func setupTestDB(t *testing.T) *gorm.DB {
 }
 
 func TestCourtRepository_CreateCase(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupCourtTestDB(t)
 	repo := NewCourtRepository(db)
 
 	courtCase := &models.CourtCase{
@@ -45,7 +45,7 @@ func TestCourtRepository_CreateCase(t *testing.T) {
 }
 
 func TestCourtRepository_FindCaseByID(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupCourtTestDB(t)
 	repo := NewCourtRepository(db)
 
 	caseID := uuid.New()
@@ -67,7 +67,7 @@ func TestCourtRepository_FindCaseByID(t *testing.T) {
 }
 
 func TestCourtRepository_HasUserVoted(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupCourtTestDB(t)
 	repo := NewCourtRepository(db)
 
 	caseID := uuid.New()
@@ -87,7 +87,7 @@ func TestCourtRepository_HasUserVoted(t *testing.T) {
 }
 
 func TestCourtRepository_CreateVote(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupCourtTestDB(t)
 	repo := NewCourtRepository(db)
 
 	caseID := uuid.New()
@@ -119,7 +119,7 @@ func TestCourtRepository_CreateVote(t *testing.T) {
 }
 
 func TestCourtRepository_UpdateCaseStatus(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupCourtTestDB(t)
 	repo := NewCourtRepository(db)
 
 	caseID := uuid.New()

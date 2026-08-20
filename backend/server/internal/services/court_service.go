@@ -42,7 +42,7 @@ func NewCourtService(
 }
 
 func (s *courtService) FileLawsuit(ctx context.Context, plaintiffID, defendantID, matchID uuid.UUID, reason string) (*models.CourtCase, error) {
-	match, err := s.matchRepo.GetByID(ctx, matchID)
+	match, err := s.matchRepo.FindByID(ctx, matchID)
 	if err != nil {
 		return nil, errors.New("match not found")
 	}
