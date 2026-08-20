@@ -64,11 +64,23 @@ func TestAdminService_GetViolations(t *testing.T) {
 	}
 	service := NewAdminService(mockRepo, nil, nil)
 	
-	// Test pagination bounds
-	v, total, err := service.GetViolations(context.Background(), -1, 0)
+	// Test normal case
+	violations, total, err := service.GetViolations(context.Background(), 1, 10)
 	assert.NoError(t, err)
+	assert.Len(t, violations, 1)
 	assert.Equal(t, int64(1), total)
-	assert.Len(t, v, 1)
+
+	// Test boundary case: page < 1
+	violations2, total2, err2 := service.GetViolations(context.Background(), 0, 10)
+	assert.NoError(t, err2)
+	assert.Len(t, violations2, 1)
+	assert.Equal(t, int64(1), total2)
+
+	// Test boundary case: limit < 1 or limit > 100
+	violations3, total3, err3 := service.GetViolations(context.Background(), 1, 150)
+	assert.NoError(t, err3)
+	assert.Len(t, violations3, 1)
+	assert.Equal(t, int64(1), total3)
 }
 
 func TestAdminService_BanUser(t *testing.T) {
