@@ -5,8 +5,11 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"io"
+	"net/http"
 	"testing"
 	"time"
 
@@ -63,6 +66,55 @@ func TestAIWingmanService_SuggestReplies_Error(t *testing.T) {
 	_, err := svc.SuggestReplies(context.Background(), uuid.New())
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "db error")
+}
+
+type roundTripFunc func(req *http.Request) *http.Response
+
+func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req), nil
+}
+
+type roundTripErrorFunc func(req *http.Request) (*http.Response, error)
+
+func (f roundTripErrorFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
+}
+
+func TestAIWingmanService_SuggestReplies_APIError(t *testing.T) {
+	mockRepo := &mockChatRepoForAI{}
+	svc := NewAIWingmanService(mockRepo, "fake-api-key")
+
+	// Mock HTTP Client to return 500
+	client := &http.Client{
+		Transport: roundTripFunc(func(req *http.Request) *http.Response {
+			return &http.Response{
+				StatusCode: 500,
+				Body:       io.NopCloser(bytes.NewBufferString("Internal Server Error")),
+			}
+		}),
+	}
+	svc.(*aiWingmanService).httpClient = client
+
+	_, err := svc.SuggestReplies(context.Background(), uuid.New())
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "API returned status: 500")
+}
+
+func TestAIWingmanService_SuggestReplies_HTTPError(t *testing.T) {
+	mockRepo := &mockChatRepoForAI{}
+	svc := NewAIWingmanService(mockRepo, "fake-api-key")
+
+	// Mock HTTP Client to return connection error
+	client := &http.Client{
+		Transport: roundTripErrorFunc(func(req *http.Request) (*http.Response, error) {
+			return nil, errors.New("connection reset by peer")
+		}),
+	}
+	svc.(*aiWingmanService).httpClient = client
+
+	_, err := svc.SuggestReplies(context.Background(), uuid.New())
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "connection reset by peer")
 }
 
 func TestAIWingmanService_SuggestReplies_NoMessages(t *testing.T) {
