@@ -35,7 +35,7 @@ CREATE TABLE wallet_transactions (
 );
 
 CREATE TABLE user_premiums (
-    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID PRIMARY KEY REFERENCES users(id),
     is_active BOOLEAN DEFAULT false,
     expires_at TIMESTAMP,
     free_cancel_left INT DEFAULT 1,
@@ -46,8 +46,8 @@ CREATE TABLE user_premiums (
 -- Engagement & Matchmaking
 CREATE TABLE matches (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user1_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    user2_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    user1_id UUID REFERENCES users(id),
+    user2_id UUID REFERENCES users(id),
     streak_score INT DEFAULT 0,
     highest_streak_score INT DEFAULT 0,
     island_level INT DEFAULT 1,
@@ -58,7 +58,7 @@ CREATE TABLE matches (
 CREATE TABLE chat_messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     match_id UUID REFERENCES matches(id) ON DELETE CASCADE,
-    sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    sender_id UUID REFERENCES users(id),
     type VARCHAR(20),
     content TEXT,
     blur_url TEXT,
@@ -68,8 +68,8 @@ CREATE TABLE chat_messages (
 
 CREATE TABLE ex_ratings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    reviewer_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    target_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    reviewer_id UUID REFERENCES users(id),
+    target_id UUID REFERENCES users(id),
     rating_score INT CHECK (rating_score >= 1 AND rating_score <= 5),
     tags TEXT[],
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -78,8 +78,8 @@ CREATE TABLE ex_ratings (
 -- O2O & Gamification (Khế Ước, Bản Đồ, Tòa Án)
 CREATE TABLE dating_contracts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_a_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    user_b_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    user_a_id UUID REFERENCES users(id),
+    user_b_id UUID REFERENCES users(id),
     deposit_amount NUMERIC NOT NULL,
     status VARCHAR(20),
     cancelled_by_id UUID REFERENCES users(id),
@@ -103,7 +103,7 @@ CREATE TABLE clans (
 CREATE TABLE clan_members (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     clan_id UUID REFERENCES clans(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id),
     role VARCHAR(20) DEFAULT 'member',
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(clan_id, user_id)
@@ -121,8 +121,8 @@ CREATE INDEX idx_landmarks_location ON landmarks USING GIST(location);
 
 CREATE TABLE court_cases (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    plaintiff_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    defendant_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    plaintiff_id UUID REFERENCES users(id),
+    defendant_id UUID REFERENCES users(id),
     reason VARCHAR(100),
     status VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -131,7 +131,7 @@ CREATE TABLE court_cases (
 
 CREATE TABLE court_votes (
     case_id UUID REFERENCES court_cases(id) ON DELETE CASCADE,
-    juror_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    juror_id UUID REFERENCES users(id),
     vote VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (case_id, juror_id)
@@ -139,7 +139,7 @@ CREATE TABLE court_votes (
 
 -- Kinh Tế Ảo (Chợ Thẻ Bài Profile)
 CREATE TABLE card_profiles (
-    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID PRIMARY KEY REFERENCES users(id),
     current_price NUMERIC(15,2) DEFAULT 100,
     total_cards INT DEFAULT 1000,
     available_cards INT DEFAULT 1000,
@@ -151,8 +151,8 @@ CREATE TABLE card_profiles (
 
 CREATE TABLE card_transactions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    collector_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    target_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    collector_id UUID REFERENCES users(id),
+    target_user_id UUID REFERENCES users(id),
     type VARCHAR(10),
     quantity INT,
     price_at_transaction NUMERIC,
@@ -162,7 +162,7 @@ CREATE TABLE card_transactions (
 -- Notifications & Violations
 CREATE TABLE notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id),
     type VARCHAR(50) NOT NULL,
     payload TEXT,
     status VARCHAR(20) DEFAULT 'sent',
@@ -174,7 +174,7 @@ CREATE INDEX idx_notifications_user_status ON notifications(user_id, status);
 
 CREATE TABLE user_violations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id),
     type VARCHAR(50) NOT NULL,
     reason TEXT,
     is_active BOOLEAN DEFAULT true,
@@ -187,7 +187,7 @@ CREATE INDEX idx_user_violations_active ON user_violations(user_id, type, expire
 -- Gamification Đột Phá
 CREATE TABLE bounties (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id),
     description TEXT,
     reward_amount INT,
     status VARCHAR(20) DEFAULT 'open',
@@ -197,7 +197,7 @@ CREATE TABLE bounties (
 
 CREATE TABLE blind_auctions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    target_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    target_user_id UUID REFERENCES users(id),
     start_time TIMESTAMP,
     end_time TIMESTAMP,
     current_highest_bid INT DEFAULT 0,
@@ -208,14 +208,14 @@ CREATE TABLE blind_auctions (
 CREATE TABLE auction_bids (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     auction_id UUID REFERENCES blind_auctions(id) ON DELETE CASCADE,
-    bidder_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    bidder_id UUID REFERENCES users(id),
     bid_amount INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE wall_of_shames (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id),
     reason TEXT,
     tomatoes_thrown INT DEFAULT 0,
     expires_at TIMESTAMP,
@@ -224,26 +224,26 @@ CREATE TABLE wall_of_shames (
 
 CREATE TABLE vibe_checks (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user1_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    user2_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    user1_id UUID REFERENCES users(id),
+    user2_id UUID REFERENCES users(id),
     track_id VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE wingman_referrals (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    wingman_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    target1_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    target2_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    wingman_id UUID REFERENCES users(id),
+    target1_id UUID REFERENCES users(id),
+    target2_id UUID REFERENCES users(id),
     status VARCHAR(20) DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE card_steals (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    attacker_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    defender_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    target_card_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    attacker_id UUID REFERENCES users(id),
+    defender_id UUID REFERENCES users(id),
+    target_card_id UUID REFERENCES users(id),
     result VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
