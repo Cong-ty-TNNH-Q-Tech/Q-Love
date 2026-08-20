@@ -5,6 +5,7 @@
 package config
 
 import (
+	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -21,10 +22,16 @@ type Config struct {
 	DatabaseDSN             string
 	RedisURL                string
 	RevenueCatWebhookSecret string
+	JWTSecret               string
 }
 
 func LoadConfig() *Config {
 	_ = godotenv.Load()
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET environment variable is required")
+	}
 
 	return &Config{
 		R2AccountID:             getEnv("R2_ACCOUNT_ID", "default_account_id"),
@@ -37,6 +44,7 @@ func LoadConfig() *Config {
 		DatabaseDSN:             getEnv("DATABASE_DSN", "host=localhost user=postgres password=postgres dbname=qlove port=5432 sslmode=disable"),
 		RedisURL:                getEnv("REDIS_URL", "redis://localhost:6379/0"),
 		RevenueCatWebhookSecret: getEnv("REVENUECAT_WEBHOOK_SECRET", "secret123"),
+		JWTSecret:               jwtSecret,
 	}
 }
 

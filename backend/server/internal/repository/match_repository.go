@@ -12,6 +12,7 @@ import (
 type MatchRepository interface {
 	FindByID(ctx context.Context, id uuid.UUID) (*models.Match, error)
 	UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error
+	SoftDelete(ctx context.Context, id uuid.UUID) error
 }
 
 type matchRepository struct {
@@ -36,4 +37,10 @@ func (r *matchRepository) UpdateLastInteraction(ctx context.Context, id uuid.UUI
 		Model(&models.Match{}).
 		Where("id = ?", id).
 		Update("last_interaction_at", t).Error
+}
+
+func (r *matchRepository) SoftDelete(ctx context.Context, id uuid.UUID) error {
+	return GetDB(ctx, r.db).
+		Where("id = ?", id).
+		Delete(&models.Match{}).Error
 }
