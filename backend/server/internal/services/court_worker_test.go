@@ -99,3 +99,20 @@ func TestCourtWorker_EvaluateExpiredCases_NotGuilty(t *testing.T) {
 	mockCourt.AssertExpectations(t)
 	mockViolation.AssertExpectations(t)
 }
+
+func TestCourtWorker_Start(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	mockViolation := new(mockUserViolationRepo)
+	logger := zap.NewNop()
+
+	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger)
+	ctx, cancel := context.WithCancel(context.Background())
+	
+	worker.Start(ctx)
+	// Give it a moment to start the goroutines
+	time.Sleep(100 * time.Millisecond)
+	
+	cancel()
+	// Give it a moment to stop
+	time.Sleep(100 * time.Millisecond)
+}
