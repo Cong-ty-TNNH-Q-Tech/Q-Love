@@ -1,3 +1,7 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package services
 
 import (
@@ -55,6 +59,15 @@ func (m *mockViolationRepo) CountActiveViolationsByType(ctx context.Context, use
 func (m *mockViolationRepo) BanUser(ctx context.Context, userID uuid.UUID) error {
 	return nil
 }
+
+func (m *mockViolationRepo) GetViolations(ctx context.Context, page, limit int) ([]models.UserViolation, int64, error) {
+	return nil, 0, nil
+}
+
+func (m *mockViolationRepo) DeleteViolation(ctx context.Context, violationID uuid.UUID) error {
+	return nil
+}
+
 
 type mockNSFWService struct {
 	isNSFW bool
