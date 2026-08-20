@@ -117,6 +117,16 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	auctionGroup.Get("/active", auctionHandler.GetActiveAuctions)
 	auctionGroup.Post("/:id/bid", auctionHandler.PlaceBid)
 
+	// Admin routes
+	courtCaseRepo := repository.NewCourtCaseRepository(db)
+	adminService := services.NewAdminService(violationRepo, courtCaseRepo, r2Client)
+	adminHandler := handlers.NewAdminHandler(adminService)
+	adminGroup := app.Group("/admin/v1", middleware.AdminMiddleware(cfg.JWTSecret))
+	adminGroup.Get("/violations", adminHandler.GetViolations)
+	adminGroup.Post("/users/:id/ban", adminHandler.BanUser)
+	adminGroup.Delete("/violations/:id/media", adminHandler.DeleteViolationMedia)
+	adminGroup.Post("/court/:id/override", adminHandler.OverrideCourtCase)
+
 	// Webhooks
 	webhookGroup := v1.Group("/webhooks")
 	webhookGroup.Post("/revenuecat", webhookHandler.HandleRevenueCat)

@@ -2007,3 +2007,115 @@ paths:
       responses:
         '200':
           description: OK
+
+
+  /admin/v1/violations:
+    get:
+      summary: L?y danh sch vi ph?m (Admin)
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Thnh cng
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  limit:
+                    type: integer
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/v1/users/{id}/ban:
+    post:
+      summary: Ban ngu?i dng (Admin)
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ban thnh cng
+
+  /admin/v1/violations/{id}/media:
+    delete:
+      summary: Xa ?nh vi ph?m kh?i Cloudflare R2 (Admin)
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                object_key:
+                  type: string
+      responses:
+        '200':
+          description: Xa thnh cng
+
+  /admin/v1/court/{id}/override:
+    post:
+      summary: Override k?t qu? ta n (Admin)
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+      responses:
+        '200':
+          description: Override thnh cng
