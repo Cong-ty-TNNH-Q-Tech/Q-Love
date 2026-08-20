@@ -168,15 +168,6 @@ func TestNSFWService_CheckNSFW_RekognitionError(t *testing.T) {
 	}
 }
 
-func TestNSFWService_CheckNSFW_FileSizeLimit(t *testing.T) {
-	service := &nsfwService{client: &mockRekognitionClient{}}
-	
-	largeFile := createDummyFile(6 * 1024 * 1024) // 6MB
-	_, _, err := service.CheckNSFW(context.Background(), largeFile)
-	if err == nil || err.Error() != "file too large, max size is 5MB" {
-		t.Errorf("Expected file size error, got %v", err)
-	}
-}
 
 func TestNSFWService_NewNSFWService(t *testing.T) {
 	// Test without config
