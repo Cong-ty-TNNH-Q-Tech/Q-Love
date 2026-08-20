@@ -140,6 +140,12 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	matchGroup := v1.Group("/matches", middleware.JWTMiddleware(cfg.JWTSecret))
 	matchGroup.Delete("/:match_id", matchHandler.Unmatch)
 
+	// Feed API
+	spiritualService := services.NewSpiritualService()
+	feedService := services.NewFeedService(userRepo, spiritualService)
+	feedHandler := handlers.NewFeedHandler(feedService)
+	v1.Get("/users/feed", middleware.JWTMiddleware(cfg.JWTSecret), feedHandler.GetFeed)
+
 	// Vouchers
 	voucherRepo := repository.NewVoucherRepository(db)
 	voucherService := services.NewVoucherService(voucherRepo, walletRepo, txManager)

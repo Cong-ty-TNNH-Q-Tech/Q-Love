@@ -78,6 +78,20 @@ components:
         details:
           type: string
           description: Thông tin lỗi bổ sung (optional)
+    FeedUserResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        spiritual_match_score:
+          type: integer
+          description: "Điểm tương hợp tâm linh (0-100)"
+        zodiac:
+          type: string
+          description: "Cung hoàng đạo"
+        numerology:
+          type: integer
+          description: "Con số chủ đạo"
     User:
       type: object
       properties:
@@ -606,7 +620,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/User'
+                  $ref: '#/components/schemas/FeedUserResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
   /devices/token:

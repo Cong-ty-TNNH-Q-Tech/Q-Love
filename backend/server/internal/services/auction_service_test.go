@@ -84,13 +84,22 @@ func (m *mockAuctionWalletRepo) UpdateBalance(ctx context.Context, userID uuid.U
 }
 func (m *mockAuctionWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
 
-type mockUserRepo struct{}
+type mockUserRepo struct {
+	users map[uuid.UUID]*models.User
+}
+
 func (m *mockUserRepo) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) {
 	var users []uuid.UUID
 	for i := 0; i < limit; i++ {
 		users = append(users, uuid.New())
 	}
 	return users, nil
+}
+func (m *mockUserRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+	return nil, nil
+}
+func (m *mockUserRepo) GetFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
+	return nil, nil
 }
 
 type mockChatLockRepo struct {
@@ -181,6 +190,14 @@ func TestAuctionService_StartDailyAuctions(t *testing.T) {
 
 type mockUserRepoError struct{}
 func (m *mockUserRepoError) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) {
+	return nil, assert.AnError
+}
+
+func (m *mockUserRepoError) GetUserByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+	return nil, assert.AnError
+}
+
+func (m *mockUserRepoError) GetFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
 	return nil, assert.AnError
 }
 
