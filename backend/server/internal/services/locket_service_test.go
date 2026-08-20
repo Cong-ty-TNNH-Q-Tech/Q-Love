@@ -364,3 +364,53 @@ func TestLocketService_SendLocket_WithHighStreak(t *testing.T) {
 	}
 }
 
+
+type mockS3Client struct {
+	output *s3.PutObjectOutput
+	err    error
+}
+
+func (m *mockS3Client) PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error) {
+	return m.output, m.err
+}
+
+func TestLocketService_SendLocket_R2UploadSuccess(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{StreakScore: 0}}
+	chatRepo := &mockChatRepo{}
+	violationRepo := &mockViolationRepo{}
+	nsfwService := &mockNSFWService{isNSFW: false}
+
+	r2Client := &storage.R2Client{
+		BucketName: "test-bucket",
+		S3Client:   &mockS3Client{output: &s3.PutObjectOutput{}},
+	}
+
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
+
+	fileHeader := createValidMultipartFile(t)
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
+	if err != nil {
+		t.Errorf("Expected success, got %v", err)
+	}
+}
+
+func TestLocketService_SendLocket_R2UploadError(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{StreakScore: 0}}
+	chatRepo := &mockChatRepo{}
+	violationRepo := &mockViolationRepo{}
+	nsfwService := &mockNSFWService{isNSFW: false}
+
+	r2Client := &storage.R2Client{
+		BucketName: "test-bucket",
+		S3Client:   &mockS3Client{err: errors.New("s3 upload failed")},
+	}
+
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
+
+	fileHeader := createValidMultipartFile(t)
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
+	if err == nil {
+		t.Errorf("Expected error from R2 upload, got nil")
+	}
+}
+
