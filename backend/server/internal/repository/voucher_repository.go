@@ -12,6 +12,7 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type VoucherRepository interface {
@@ -33,11 +34,15 @@ func NewVoucherRepository(db *gorm.DB) VoucherRepository {
 func (r *voucherRepository) GetAvailableVoucher(ctx context.Context, brand string, valueXu int) (*models.Voucher, error) {
 	var voucher models.Voucher
 	db := GetDB(ctx, r.db)
-	err := db.WithContext(ctx).
+	query := db.WithContext(ctx).
 		Where("brand = ? AND value_xu = ? AND status = 'available' AND expires_at > ?", brand, valueXu, time.Now()).
-		Order("expires_at ASC"). // Use earliest expiring voucher first
-		Clauses(gorm.Expr("FOR UPDATE SKIP LOCKED")).
-		First(&voucher).Error
+		Order("expires_at ASC") // Use earliest expiring voucher first
+
+	if db.Dialector.Name() != "sqlite" {
+		query = query.Clauses(clause.Locking{Strength: "UPDATE", Options: "SKIP LOCKED"})
+	}
+
+	err := query.First(&voucher).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.New("không có voucher khả dụng")
