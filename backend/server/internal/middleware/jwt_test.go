@@ -1,3 +1,7 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package middleware
 
 import (
@@ -106,4 +110,58 @@ func TestJWTMiddleware(t *testing.T) {
 			assert.Equal(t, tt.expectedStatus, resp.StatusCode)
 		})
 	}
+}
+
+func TestAdminMiddleware(t *testing.T) {
+	app := fiber.New()
+	secret := "test-secret"
+
+	app.Use("/admin", AdminMiddleware(secret))
+	app.Get("/admin", func(c *fiber.Ctx) error {
+		return c.SendString("Success Admin")
+	})
+
+	t.Run("Valid Admin Token", func(t *testing.T) {
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"sub":  uuid.New().String(),
+			"role": "admin",
+		})
+		tokenString, _ := token.SignedString([]byte(secret))
+
+		req := httptest.NewRequest("GET", "/admin", nil)
+		req.Header.Set("Authorization", "Bearer "+tokenString)
+		resp, err := app.Test(req)
+
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+	})
+
+	t.Run("Missing Role Admin Token", func(t *testing.T) {
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"sub": uuid.New().String(),
+		})
+		tokenString, _ := token.SignedString([]byte(secret))
+
+		req := httptest.NewRequest("GET", "/admin", nil)
+		req.Header.Set("Authorization", "Bearer "+tokenString)
+		resp, err := app.Test(req)
+
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusForbidden, resp.StatusCode)
+	})
+
+	t.Run("Invalid User Token", func(t *testing.T) {
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"sub":  "invalid-uuid",
+			"role": "admin",
+		})
+		tokenString, _ := token.SignedString([]byte(secret))
+
+		req := httptest.NewRequest("GET", "/admin", nil)
+		req.Header.Set("Authorization", "Bearer "+tokenString)
+		resp, err := app.Test(req)
+
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusUnauthorized, resp.StatusCode)
+	})
 }
