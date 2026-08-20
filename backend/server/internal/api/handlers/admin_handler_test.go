@@ -151,15 +151,23 @@ func (m *mockAdminServiceError) OverrideCourtCase(ctx context.Context, courtID u
 func (m *mockAdminServiceError) DeleteViolationMedia(ctx context.Context, violationID uuid.UUID, objectKey string) error {
 	return errors.New("service error")
 }
+func (m *mockAdminServiceError) GetViolations(ctx context.Context, page, limit int) ([]models.UserViolation, int64, error) {
+	return nil, 0, errors.New("service error")
+}
 
 func TestAdminHandler_ServiceErrors(t *testing.T) {
 	app := fiber.New()
 	mockSvc := &mockAdminServiceError{}
 	handler := NewAdminHandler(mockSvc)
 	
+	app.Get("/admin/violations", handler.GetViolations)
 	app.Put("/admin/ban/:id", handler.BanUser)
 	app.Delete("/admin/violations/:id/media", handler.DeleteViolationMedia)
 	app.Post("/admin/court/:id/override", handler.OverrideCourtCase)
+
+	req0 := httptest.NewRequest("GET", "/admin/violations", nil)
+	resp0, _ := app.Test(req0)
+	assert.Equal(t, fiber.StatusInternalServerError, resp0.StatusCode)
 
 	req1 := httptest.NewRequest("PUT", "/admin/ban/"+uuid.New().String(), nil)
 	resp1, _ := app.Test(req1)
