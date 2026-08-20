@@ -9,26 +9,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-func setupVoucherMockDB() (*gorm.DB, sqlmock.Sqlmock) {
-	sqlDB, mock, _ := sqlmock.New()
-	dialector := postgres.New(postgres.Config{
-		Conn:       sqlDB,
-		DriverName: "postgres",
-	})
-	db, _ := gorm.Open(dialector, &gorm.Config{SkipDefaultTransaction: true})
-	return db, mock
+func setupVoucherTestDB(t *testing.T) *gorm.DB {
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("failed to connect database: %v", err)
+	}
+	db.AutoMigrate(&models.Voucher{}, &models.UserVoucher{})
+	return db
 }
 
 func TestVoucherRepository_Create(t *testing.T) {
-	db, mock := setupVoucherMockDB()
+	db := setupVoucherTestDB(t)
 	repo := NewVoucherRepository(db)
 
 	voucher := &models.Voucher{
@@ -41,78 +39,163 @@ func TestVoucherRepository_Create(t *testing.T) {
 		CreatedAt: time.Now(),
 	}
 
-	mock.ExpectQuery("INSERT INTO \"vouchers\"").WillReturnRows(sqlmock.NewRows([]string{"created_at"}).AddRow(voucher.CreatedAt))
-
 	err := repo.Create(context.Background(), voucher)
 	assert.NoError(t, err)
+
+	// Check if created
+	var count int64
+	db.Model(&models.Voucher{}).Count(&count)
+	assert.Equal(t, int64(1), count)
 }
 
 func TestVoucherRepository_FindAll(t *testing.T) {
-	db, mock := setupVoucherMockDB()
+	db := setupVoucherTestDB(t)
 	repo := NewVoucherRepository(db)
 
-	rows := sqlmock.NewRows([]string{"id", "brand", "code", "value_xu", "status"}).
-		AddRow(uuid.New(), "Highlands", "HL-1", 100, "available")
-
-	mock.ExpectQuery("SELECT \\* FROM \"vouchers\"").WillReturnRows(rows)
+	for i := 0; i < 3; i++ {
+		db.Create(&models.Voucher{
+			ID:        uuid.New(),
+			Brand:     "Highlands",
+			Code:      "HL-" + uuid.New().String(),
+			ValueXu:   100,
+			Status:    "available",
+			ExpiresAt: time.Now(),
+		})
+	}
 
 	vouchers, err := repo.FindAll(context.Background(), 10, 0)
 	assert.NoError(t, err)
+	assert.Len(t, vouchers, 3)
+}
+
+func TestVoucherRepository_FindAvailable(t *testing.T) {
+	db := setupVoucherTestDB(t)
+	repo := NewVoucherRepository(db)
+
+	db.Create(&models.Voucher{
+		ID:        uuid.New(),
+		Brand:     "Highlands",
+		Code:      "HL-1",
+		ValueXu:   100,
+		Status:    "available",
+		ExpiresAt: time.Now().Add(24 * time.Hour),
+	})
+	db.Create(&models.Voucher{
+		ID:        uuid.New(),
+		Brand:     "Highlands",
+		Code:      "HL-2",
+		ValueXu:   100,
+		Status:    "claimed",
+		ExpiresAt: time.Now().Add(24 * time.Hour),
+	})
+
+	vouchers, err := repo.FindAvailable(context.Background(), 10, 0)
+	assert.NoError(t, err)
 	assert.Len(t, vouchers, 1)
+	assert.Equal(t, "HL-1", vouchers[0].Code)
 }
 
-func TestVoucherRepository_MarkAsClaimed(t *testing.T) {
-	db, mock := setupVoucherMockDB()
+func TestVoucherRepository_FindByID(t *testing.T) {
+	db := setupVoucherTestDB(t)
 	repo := NewVoucherRepository(db)
 
-	vid := uuid.New()
-	uid := uuid.New()
-
-	mock.ExpectExec("UPDATE \"vouchers\"").WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectQuery("INSERT INTO \"user_vouchers\"").WillReturnRows(sqlmock.NewRows([]string{"claimed_at"}).AddRow(time.Now()))
-
-	// Need to use transaction manually or let gorm handle it. Since we mocked it linearly:
-	err := repo.MarkAsClaimed(context.Background(), vid, uid)
-	// Since repo.MarkAsClaimed makes 2 calls, we might need a Tx or mock.ExpectBegin depending on Gorm.
-	// We'll just assert error could be anything or nil. We mainly want coverage.
-	_ = err 
-}
-
-func TestVoucherRepository_GetAvailableVoucher(t *testing.T) {
-	db, mock := setupVoucherMockDB()
-	repo := NewVoucherRepository(db)
-
-	brand := "Highlands"
-	valueXu := 100
-
-	rows := sqlmock.NewRows([]string{"id", "brand", "code", "value_xu", "status"}).
-		AddRow(uuid.New(), brand, "HL-1", valueXu, "available")
-
-	mock.ExpectQuery("SELECT \\* FROM \"vouchers\"").WillReturnRows(rows)
-
-	v, err := repo.GetAvailableVoucher(context.Background(), brand, valueXu)
-	assert.NoError(t, err)
-	assert.NotNil(t, v)
-
-	// Error case (record not found)
-	mock.ExpectQuery("SELECT \\* FROM \"vouchers\"").WillReturnError(gorm.ErrRecordNotFound)
-	v, err = repo.GetAvailableVoucher(context.Background(), brand, valueXu)
-	assert.Error(t, err)
-	assert.Nil(t, v)
-}
-
-func TestVoucherRepository_Delete(t *testing.T) {
-	db, mock := setupVoucherMockDB()
-	repo := NewVoucherRepository(db)
 	id := uuid.New()
+	db.Create(&models.Voucher{
+		ID:        id,
+		Brand:     "Highlands",
+		Code:      "HL-1",
+		ValueXu:   100,
+		Status:    "available",
+		ExpiresAt: time.Now().Add(24 * time.Hour),
+	})
 
-	mock.ExpectExec("UPDATE \"vouchers\" SET \"deleted_at\"").WillReturnResult(sqlmock.NewResult(0, 1))
+	voucher, err := repo.FindByID(context.Background(), id)
+	assert.NoError(t, err)
+	assert.Equal(t, id, voucher.ID)
+}
 
-	err := repo.Delete(context.Background(), id)
+func TestVoucherRepository_Claim(t *testing.T) {
+	db := setupVoucherTestDB(t)
+	repo := NewVoucherRepository(db)
+
+	userID := uuid.New()
+	voucherID := uuid.New()
+
+	db.Create(&models.Voucher{
+		ID:        voucherID,
+		Brand:     "Highlands",
+		Code:      "HL-1",
+		ValueXu:   100,
+		Status:    "available",
+		ExpiresAt: time.Now().Add(24 * time.Hour),
+	})
+
+	err := repo.Claim(context.Background(), userID, voucherID)
 	assert.NoError(t, err)
 
-	// Error case (0 rows affected)
-	mock.ExpectExec("UPDATE \"vouchers\" SET \"deleted_at\"").WillReturnResult(sqlmock.NewResult(0, 0))
-	err = repo.Delete(context.Background(), id)
+	// Verify status updated
+	var voucher models.Voucher
+	db.First(&voucher, voucherID)
+	assert.Equal(t, "claimed", voucher.Status)
+
+	// Verify UserVoucher created
+	var uv models.UserVoucher
+	db.First(&uv, "voucher_id = ?", voucherID)
+	assert.Equal(t, userID, uv.UserID)
+}
+
+func TestVoucherRepository_FindUserVouchers(t *testing.T) {
+	db := setupVoucherTestDB(t)
+	repo := NewVoucherRepository(db)
+
+	userID := uuid.New()
+	voucherID := uuid.New()
+
+	db.Create(&models.Voucher{
+		ID:        voucherID,
+		Brand:     "Highlands",
+		Code:      "HL-1",
+		ValueXu:   100,
+		Status:    "claimed",
+		ExpiresAt: time.Now().Add(24 * time.Hour),
+	})
+
+	db.Create(&models.UserVoucher{
+		ID:        uuid.New(),
+		UserID:    userID,
+		VoucherID: voucherID,
+		ClaimedAt: time.Now(),
+	})
+
+	vouchers, err := repo.FindUserVouchers(context.Background(), userID)
+	assert.NoError(t, err)
+	assert.Len(t, vouchers, 1)
+	assert.Equal(t, voucherID, vouchers[0].VoucherID)
+}
+
+func TestVoucherRepository_Errors(t *testing.T) {
+	db := setupVoucherTestDB(t)
+	// Force close db to test errors
+	sqlDB, _ := db.DB()
+	sqlDB.Close()
+	
+	repo := NewVoucherRepository(db)
+	
+	err := repo.Create(context.Background(), &models.Voucher{})
+	assert.Error(t, err)
+	
+	_, err = repo.FindAll(context.Background(), 10, 0)
+	assert.Error(t, err)
+	
+	_, err = repo.FindAvailable(context.Background(), 10, 0)
+	assert.Error(t, err)
+	
+	_, err = repo.FindByID(context.Background(), uuid.New())
+	assert.Error(t, err)
+	
+	err = repo.Claim(context.Background(), uuid.New(), uuid.New())
+	assert.Error(t, err)
+	
+	_, err = repo.FindUserVouchers(context.Background(), uuid.New())
 	assert.Error(t, err)
 }
