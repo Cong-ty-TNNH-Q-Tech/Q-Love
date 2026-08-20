@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
@@ -32,6 +33,22 @@ func NewPostgresDB(cfg *config.Config) (*gorm.DB, error) {
 	db, err := GormOpen(PostgresOpen(cfg.DatabaseDSN), &gorm.Config{})
 	if err != nil {
 		logger.Log.Error("Failed to connect to database", zap.Error(err))
+		return nil, err
+	}
+
+	err = db.AutoMigrate(
+		&models.VibeMatch{},
+		&models.CardTransaction{},
+		&models.BlindAuction{},
+		&models.AuctionBid{},
+		&models.WallOfShame{},
+		&models.WingmanReferral{},
+		&models.CardSteal{},
+		&models.Landmark{},
+		&models.Notification{},
+	)
+	if err != nil {
+		logger.Log.Error("Failed to auto migrate database", zap.Error(err))
 		return nil, err
 	}
 
