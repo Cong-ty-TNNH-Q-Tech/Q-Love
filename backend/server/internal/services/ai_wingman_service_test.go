@@ -34,6 +34,9 @@ func (m *mockChatRepoForAI) GetMessagesByMatchID(ctx context.Context, matchID uu
 		{Content: "Email anh là test@gmail.com"},
 	}, nil
 }
+func (m *mockChatRepoForAI) CountMessagesByMatchID(ctx context.Context, matchID uuid.UUID) (int64, error) {
+	return 2, nil
+}
 
 func TestAIWingmanService_MaskPII(t *testing.T) {
 	svc := NewAIWingmanService(nil, "")
