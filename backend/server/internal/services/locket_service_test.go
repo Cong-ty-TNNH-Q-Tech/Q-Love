@@ -68,7 +68,9 @@ func TestLocketService_SendLocket(t *testing.T) {
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
 
-	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "test.jpg"})
+	fileHeader := &multipart.FileHeader{Filename: "test.jpg", Size: 1024, Header: make(map[string][]string)}
+	fileHeader.Header.Set("Content-Type", "image/jpeg")
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -82,7 +84,9 @@ func TestLocketService_SendLocket_MatchNotFound(t *testing.T) {
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
 
-	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "test.jpg"})
+	fileHeader := &multipart.FileHeader{Filename: "test.jpg", Size: 1024, Header: make(map[string][]string)}
+	fileHeader.Header.Set("Content-Type", "image/jpeg")
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
 	if err == nil {
 		t.Errorf("Expected error, got nil")
 	}
@@ -96,7 +100,9 @@ func TestLocketService_SendLocket_CreateError(t *testing.T) {
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
 
-	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "test.jpg"})
+	fileHeader := &multipart.FileHeader{Filename: "test.jpg", Size: 1024, Header: make(map[string][]string)}
+	fileHeader.Header.Set("Content-Type", "image/jpeg")
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
 	if err == nil {
 		t.Errorf("Expected error, got nil")
 	}
@@ -110,7 +116,9 @@ func TestLocketService_SendLocket_NSFWDetected(t *testing.T) {
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
 
-	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "nsfw.jpg"})
+	fileHeader := &multipart.FileHeader{Filename: "nsfw.jpg", Size: 1024, Header: make(map[string][]string)}
+	fileHeader.Header.Set("Content-Type", "image/jpeg")
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
 	if err == nil {
 		t.Errorf("Expected error for NSFW content, got nil")
 	}
@@ -132,11 +140,93 @@ func TestLocketService_SendLocket_NSFWDetected_3Strikes(t *testing.T) {
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
 
-	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "nsfw.jpg"})
+	fileHeader := &multipart.FileHeader{Filename: "nsfw.jpg", Size: 1024, Header: make(map[string][]string)}
+	fileHeader.Header.Set("Content-Type", "image/jpeg")
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
 	if err == nil {
 		t.Errorf("Expected error for NSFW content, got nil")
 	}
 	if err.Error() != "tài khoản của bạn đã bị khóa do vi phạm gửi ảnh nhạy cảm 3 lần" {
 		t.Errorf("Expected ban message, got %v", err.Error())
+	}
+}
+
+func TestLocketService_SendLocket_InvalidSize(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{}}
+	chatRepo := &mockChatRepo{}
+	violationRepo := &mockViolationRepo{}
+	nsfwService := &mockNSFWService{isNSFW: false}
+
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
+
+	fileHeader := &multipart.FileHeader{Filename: "test.jpg", Size: 11 * 1024 * 1024, Header: make(map[string][]string)}
+	fileHeader.Header.Set("Content-Type", "image/jpeg")
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
+	if err == nil || err.Error() != "file too large, limit is 10MB" {
+		t.Errorf("Expected file too large error, got %v", err)
+	}
+}
+
+func TestLocketService_SendLocket_InvalidType(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{}}
+	chatRepo := &mockChatRepo{}
+	violationRepo := &mockViolationRepo{}
+	nsfwService := &mockNSFWService{isNSFW: false}
+
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
+
+	fileHeader := &multipart.FileHeader{Filename: "test.pdf", Size: 1024, Header: make(map[string][]string)}
+	fileHeader.Header.Set("Content-Type", "application/pdf")
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
+	if err == nil || err.Error() != "only jpeg, png, and webp images are supported" {
+		t.Errorf("Expected invalid type error, got %v", err)
+	}
+}
+
+func TestLocketService_SendLocket_NSFWError(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{}}
+	chatRepo := &mockChatRepo{}
+	violationRepo := &mockViolationRepo{}
+	nsfwService := &mockNSFWService{err: errors.New("ai error")}
+
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
+
+	fileHeader := &multipart.FileHeader{Filename: "test.jpg", Size: 1024, Header: make(map[string][]string)}
+	fileHeader.Header.Set("Content-Type", "image/jpeg")
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
+	if err == nil || err.Error() != "failed to check image content" {
+		t.Errorf("Expected ai error, got %v", err)
+	}
+}
+
+func createMultipartFile(t *testing.T) *multipart.FileHeader {
+	// Instead of a real form, we can just test if the fallback to r2.qlove.com works.
+	// But to test R2Client != nil, we need file.Open() to succeed or fail.
+	// To make file.Open fail, we can just use an empty FileHeader.
+	// Actually file.Open() panics if content is not properly constructed, or returns error.
+	return &multipart.FileHeader{Filename: "test.jpg", Size: 1024, Header: make(map[string][]string)}
+}
+
+func TestLocketService_SendLocket_R2Error(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{}}
+	chatRepo := &mockChatRepo{}
+	violationRepo := &mockViolationRepo{}
+	nsfwService := &mockNSFWService{isNSFW: false}
+
+	// For R2Client to be tested without file.Open() panicking, we rely on file.Open() returning an error
+	// because it's a dummy file header!
+	r2Client := &storage.R2Client{
+		BucketName: "test-bucket",
+		// S3Client: &mockS3API{err: errors.New("s3 err")}, // Don't even need this if file.Open fails!
+	}
+
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
+
+	fileHeader := &multipart.FileHeader{Filename: "test.jpg", Size: 1024, Header: make(map[string][]string)}
+	fileHeader.Header.Set("Content-Type", "image/jpeg")
+	
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
+	if err == nil {
+		t.Errorf("Expected error from file.Open or R2 upload, got nil")
 	}
 }
