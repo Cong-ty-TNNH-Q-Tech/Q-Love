@@ -130,3 +130,25 @@ func TestAIWingmanService_SuggestReplies_NoMessages(t *testing.T) {
 	assert.Contains(t, err.Error(), "không có tin nhắn nào để gợi ý")
 }
 
+func TestAIWingmanService_SuggestReplies_APISuccess(t *testing.T) {
+	mockRepo := &mockChatRepoForAI{}
+	svc := NewAIWingmanService(mockRepo, "fake-api-key")
+
+	// Mock HTTP Client to return 200 with valid JSON
+	client := &http.Client{
+		Transport: roundTripFunc(func(req *http.Request) *http.Response {
+			return &http.Response{
+				StatusCode: 200,
+				Body:       io.NopCloser(bytes.NewBufferString(`{"choices":[{"message":{"content":"Mock 1\nMock 2\nMock 3"}}]}`)),
+			}
+		}),
+	}
+	svc.(*aiWingmanService).httpClient = client
+
+	replies, err := svc.SuggestReplies(context.Background(), uuid.New())
+	assert.NoError(t, err)
+	assert.Len(t, replies, 3)
+	assert.Equal(t, "Mock 1", replies[0])
+	assert.Equal(t, "Mock 2", replies[1])
+	assert.Equal(t, "Mock 3", replies[2])
+}

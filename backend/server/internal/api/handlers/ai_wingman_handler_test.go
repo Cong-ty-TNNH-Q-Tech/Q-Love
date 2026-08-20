@@ -111,3 +111,21 @@ func TestAIWingmanHandler_SuggestReplies_ServiceError(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
 }
+
+func TestAIWingmanHandler_SuggestReplies_Unauthorized(t *testing.T) {
+	app := fiber.New()
+	handler := NewAIWingmanHandler(&mockAIWingmanService{})
+	
+	// Do not set user_id in locals
+	app.Post("/suggest", handler.SuggestReplies)
+
+	body := map[string]string{"match_id": uuid.New().String()}
+	jsonBody, _ := json.Marshal(body)
+
+	req := httptest.NewRequest(http.MethodPost, "/suggest", bytes.NewReader(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := app.Test(req)
+	assert.NoError(t, err)
+	assert.Equal(t, fiber.StatusUnauthorized, resp.StatusCode)
+}

@@ -48,7 +48,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	userPremRepo := repository.NewUserPremiumRepository(db)
 	
 	violationRepo := repository.NewUserViolationRepository(db)
-	nsfwService := services.NewNSFWService()
+	nsfwService := services.NewNSFWService(cfg)
 	locketService := services.NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
 	locketHandler := handlers.NewLocketHandler(locketService)
 
@@ -79,6 +79,13 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	aiHandler := handlers.NewAIWingmanHandler(aiService)
 	aiGroup := v1.Group("/ai", middleware.JWTMiddleware(cfg.JWTSecret))
 	aiGroup.Post("/suggest", aiHandler.SuggestReplies)
+
+	// Ex-Rating routes
+	exRatingRepo := repository.NewExRatingRepository(db)
+	exRatingService := services.NewExRatingService(exRatingRepo, walletRepo, txManager, chatRepo, matchRepo)
+	exRatingHandler := handlers.NewExRatingHandler(exRatingService)
+	v1.Post("/ex-ratings", middleware.JWTMiddleware(cfg.JWTSecret), exRatingHandler.SubmitRating)
+	v1.Get("/users/:user_id/ex-rating", middleware.JWTMiddleware(cfg.JWTSecret), exRatingHandler.ViewRating)
 
 	// Upload routes
 	uploadHandler := handlers.NewUploadHandler(r2Client)

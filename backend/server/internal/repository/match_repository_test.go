@@ -1,3 +1,7 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package repository
 
 import (
@@ -116,3 +120,4 @@ func TestMatchRepository_SoftDelete(t *testing.T) {
 	err := repo.SoftDelete(context.Background(), matchID)
 	assert.NoError(t, err)
 }
+

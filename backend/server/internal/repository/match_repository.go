@@ -1,3 +1,7 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package repository
 
 import (
@@ -11,6 +15,7 @@ import (
 
 type MatchRepository interface {
 	FindByID(ctx context.Context, id uuid.UUID) (*models.Match, error)
+	FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error)
 	UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error
 	SoftDelete(ctx context.Context, id uuid.UUID) error
 }
@@ -32,6 +37,15 @@ func (r *matchRepository) FindByID(ctx context.Context, id uuid.UUID) (*models.M
 	return &match, nil
 }
 
+func (r *matchRepository) FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error) {
+	var match models.Match
+	err := GetDB(ctx, r.db).Unscoped().First(&match, "id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &match, nil
+}
+
 func (r *matchRepository) UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error {
 	return GetDB(ctx, r.db).
 		Model(&models.Match{}).
@@ -44,3 +58,4 @@ func (r *matchRepository) SoftDelete(ctx context.Context, id uuid.UUID) error {
 		Where("id = ?", id).
 		Delete(&models.Match{}).Error
 }
+
