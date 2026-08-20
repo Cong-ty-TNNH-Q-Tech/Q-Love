@@ -36,6 +36,14 @@ func (m *mockClanRepo) AddClanMember(ctx context.Context, member *models.ClanMem
 	return m.addMemberErr
 }
 
+func (m *mockClanRepo) GetTopWeeklyClan(ctx context.Context) (*models.Clan, error) {
+	return nil, nil
+}
+
+func (m *mockClanRepo) ResetWeeklyScores(ctx context.Context) error {
+	return nil
+}
+
 type mockWalletRepoClan struct {
 	wallet    *models.UserWallet
 	walletErr error
