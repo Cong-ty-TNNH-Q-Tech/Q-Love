@@ -1817,3 +1817,34 @@ paths:
       responses:
         '201':
           description: "Thành công"
+  /matches/{match_id}:
+    delete:
+      summary: Hủy tương hợp (Unmatch)
+      tags:
+        - Matches
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: match_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Unmatch thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Unmatched successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
