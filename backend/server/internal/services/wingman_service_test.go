@@ -67,7 +67,6 @@ type mockTxManager struct{}
 func (m *mockTxManager) WithTransaction(ctx context.Context, fn func(ctx context.Context) error, opts ...*sql.TxOptions) error {
 	// Simply execute the function directly, bypassing actual DB transactions
 	return fn(ctx)
-	return fn(ctx)
 }
 
 type mockMatchRepo struct {
