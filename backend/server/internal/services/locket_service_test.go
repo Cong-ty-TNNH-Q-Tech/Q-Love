@@ -1,3 +1,7 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package services
 
 import (
@@ -147,3 +151,4 @@ func TestLocketService_SendLocket_NSFWDetected_3Strikes(t *testing.T) {
 		t.Errorf("Expected ban message, got %v", err.Error())
 	}
 }
+

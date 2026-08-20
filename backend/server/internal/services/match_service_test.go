@@ -1,5 +1,7 @@
-// Copyright (c) 2026 Q-Tech. All rights reserved.
+// Copyright 2026 Q-Tech Team
 // Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 
 package services
 
@@ -117,3 +119,4 @@ func TestMatchService_Unmatch_DBError(t *testing.T) {
 	err := service.Unmatch(context.Background(), matchID, userID)
 	assert.EqualError(t, err, "db error")
 }
+
