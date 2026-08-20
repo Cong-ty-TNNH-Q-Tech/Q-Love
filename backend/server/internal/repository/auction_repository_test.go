@@ -130,6 +130,31 @@ func TestAuctionRepository_UpdateAuctionStatus(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestAuctionRepository_GetActiveAuctionsCursor(t *testing.T) {
+	db, mock, err := setupTestDB()
+	assert.NoError(t, err)
+
+	repo := NewAuctionRepository(db)
+	lastID := uuid.New()
+
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "blind_auctions" WHERE status = $1 AND id > $2 ORDER BY id ASC LIMIT $3`)).
+		WithArgs("active", lastID, 10).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(uuid.New()))
+
+	auctions, err := repo.GetActiveAuctionsCursor(context.Background(), lastID, 10)
+	assert.NoError(t, err)
+	assert.Len(t, auctions, 1)
+
+	// Test with nil lastID
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "blind_auctions" WHERE status = $1 ORDER BY id ASC LIMIT $2`)).
+		WithArgs("active", 10).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(uuid.New()))
+
+	auctionsNil, err := repo.GetActiveAuctionsCursor(context.Background(), uuid.Nil, 10)
+	assert.NoError(t, err)
+	assert.Len(t, auctionsNil, 1)
+}
+
 
 func TestAuctionRepository_GetAuctionForUpdate(t *testing.T) {
 	db, mock, err := setupTestDB()
