@@ -18,6 +18,7 @@ const (
 	CourtCaseStatusGuilty    CourtCaseStatus = "guilty"
 	CourtCaseStatusNotGuilty CourtCaseStatus = "not_guilty"
 	CourtCaseStatusSettled   CourtCaseStatus = "settled"
+	CourtCaseStatusWithdrawn CourtCaseStatus = "withdrawn"
 )
 
 type CourtCase struct {
