@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Q-Tech Team. All rights reserved.
+// Licensed under the GNU AGPLv3 License.
+
 import 'package:in_app_review/in_app_review.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
