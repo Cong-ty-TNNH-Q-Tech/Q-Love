@@ -76,19 +76,19 @@ func (s *wingmanService) AcceptReferral(ctx context.Context, referralID, accepti
 		var err error
 		referral, err = s.wingmanRepo.GetReferralByID(txCtx, referralID)
 		if err != nil {
-			return errors.New("referral not found")
+			return ErrReferralNotFound
 		}
 
 		if referral.Status != "pending" {
-			return errors.New("referral is no longer pending")
+			return ErrReferralNotPending
 		}
 
 		if time.Now().After(referral.ExpiresAt) {
-			return errors.New("referral link expired")
+			return ErrReferralExpired
 		}
 
 		if acceptingUserID != referral.Target1ID && acceptingUserID != referral.Target2ID {
-			return errors.New("user is not part of this referral")
+			return ErrUserNotInReferral
 		}
 
 		if referral.Target1ID == referral.WingmanID || referral.Target2ID == referral.WingmanID {
