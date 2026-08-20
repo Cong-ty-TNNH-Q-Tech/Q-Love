@@ -1,3 +1,7 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package middleware
 
 import (
@@ -14,14 +18,13 @@ import (
 func TestJWTMiddleware(t *testing.T) {
 	app := fiber.New()
 	
+	// Test panic on empty secret
+	assert.Panics(t, func() {
+		JWTMiddleware("")
+	}, "Expected panic when JWT secret is empty")
+	
 	// Create route to test middleware
 	app.Get("/test", JWTMiddleware("test-secret"), func(c *fiber.Ctx) error {
-		userID := c.Locals("user_id").(uuid.UUID)
-		return c.SendString(userID.String())
-	})
-	
-	// Also test default secret
-	app.Get("/default-secret", JWTMiddleware(""), func(c *fiber.Ctx) error {
 		userID := c.Locals("user_id").(uuid.UUID)
 		return c.SendString(userID.String())
 	})
@@ -95,12 +98,6 @@ func TestJWTMiddleware(t *testing.T) {
 			authHeader:     "Bearer " + generateToken("test-secret", jwt.MapClaims{"sub": validUUID.String()}, jwt.SigningMethodHS256),
 			expectedStatus: fiber.StatusOK,
 		},
-		{
-			name:           "Valid token with default secret",
-			route:          "/default-secret",
-			authHeader:     "Bearer " + generateToken(DefaultSecret, jwt.MapClaims{"sub": validUUID.String()}, jwt.SigningMethodHS256),
-			expectedStatus: fiber.StatusOK,
-		},
 	}
 
 	for _, tt := range tests {
@@ -114,3 +111,4 @@ func TestJWTMiddleware(t *testing.T) {
 		})
 	}
 }
+
