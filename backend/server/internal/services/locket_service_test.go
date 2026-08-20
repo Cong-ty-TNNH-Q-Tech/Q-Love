@@ -265,3 +265,35 @@ func TestLocketService_SendLocket_R2Error(t *testing.T) {
 		t.Errorf("Expected error from file.Open or R2 upload, got nil")
 	}
 }
+
+func TestLocketService_SendLocket_WithStreak(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{StreakScore: 15}}
+	chatRepo := &mockChatRepo{}
+	violationRepo := &mockViolationRepo{}
+	nsfwService := &mockNSFWService{isNSFW: false}
+
+	var r2Client *storage.R2Client
+
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
+
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), getMockFileHeader(t))
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+}
+
+func TestLocketService_SendLocket_WithHighStreak(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{StreakScore: 40}}
+	chatRepo := &mockChatRepo{}
+	violationRepo := &mockViolationRepo{}
+	nsfwService := &mockNSFWService{isNSFW: false}
+
+	var r2Client *storage.R2Client
+
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
+
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), getMockFileHeader(t))
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+}
