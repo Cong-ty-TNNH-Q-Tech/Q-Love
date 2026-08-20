@@ -313,6 +313,10 @@ func (m *mockS3Client) PutObject(ctx context.Context, params *s3.PutObjectInput,
 	return m.output, m.err
 }
 
+func (m *mockS3Client) DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+	return &s3.DeleteObjectOutput{}, m.err
+}
+
 func TestLocketService_SendLocket_R2UploadSuccess(t *testing.T) {
 	matchRepo := &mockMatchRepo{match: &models.Match{}}
 	chatRepo := &mockChatRepo{}
