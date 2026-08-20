@@ -36,6 +36,13 @@ func (m *mockMatchRepo) Create(ctx context.Context, match *models.Match) error {
 func (m *mockMatchRepo) SoftDelete(ctx context.Context, id uuid.UUID) error {
 	return m.err
 }
+
+func (m *mockMatchRepo) FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	return m.match, nil
+}
 type mockChatRepo struct {
 	err error
 }
@@ -45,11 +52,11 @@ func (m *mockChatRepo) Create(ctx context.Context, message *models.ChatMessage) 
 }
 
 func (m *mockChatRepo) GetMessagesByMatchID(ctx context.Context, matchID uuid.UUID, limit int, before *time.Time) ([]models.ChatMessage, error) {
-	return m.msgs, nil
+	return nil, nil
 }
 
 func (m *mockChatRepo) CountMessagesByMatchID(ctx context.Context, matchID uuid.UUID) (int64, error) {
-	return int64(len(m.msgs)), nil
+	return 0, nil
 }
 
 type mockViolationRepo struct{}

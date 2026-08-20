@@ -94,8 +94,8 @@ func TestExRatingService_SubmitRating_Success(t *testing.T) {
 
 	svc := NewExRatingService(
 		&mockExRatingRepo{hasRated: false},
-		&mockTxManagerForExRating{},
 		&mockWalletRepoForExRating{balance: 100},
+		&mockTxManagerForExRating{},
 		&mockChatRepoForExRating{msgCount: 51},
 		&mockMatchRepoForExRating{match: match},
 	)

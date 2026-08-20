@@ -1,5 +1,7 @@
-// Copyright (c) 2026 Q-Tech. All rights reserved.
+// Copyright 2026 Q-Tech Team
 // Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 
 package services
 
@@ -26,6 +28,17 @@ func (m *mockMatchServiceRepo) FindByID(ctx context.Context, id uuid.UUID) (*mod
 	match, ok := m.matches[id]
 	if !ok {
 		return nil, nil // Return nil, nil for not found (or however FindByID behaves in GORM)
+	}
+	return match, nil
+}
+
+func (m *mockMatchServiceRepo) FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	match, ok := m.matches[id]
+	if !ok {
+		return nil, nil
 	}
 	return match, nil
 }
@@ -117,3 +130,4 @@ func TestMatchService_Unmatch_DBError(t *testing.T) {
 	err := service.Unmatch(context.Background(), matchID, userID)
 	assert.EqualError(t, err, "db error")
 }
+
