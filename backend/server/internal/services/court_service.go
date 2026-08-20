@@ -42,6 +42,10 @@ func NewCourtService(
 }
 
 func (s *courtService) FileLawsuit(ctx context.Context, plaintiffID, defendantID, matchID uuid.UUID, reason string) (*models.CourtCase, error) {
+	if plaintiffID == defendantID {
+		return nil, errors.New("cannot sue yourself")
+	}
+
 	match, err := s.matchRepo.FindByID(ctx, matchID)
 	if err != nil {
 		return nil, errors.New("match not found")
