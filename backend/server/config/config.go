@@ -27,6 +27,7 @@ type Config struct {
 	AWSSecretAccessKey      string
 	JWTSecret               string
 	OpenAIAPIKey            string
+	FCMKey                  string
 }
 
 func LoadConfig() *Config {
@@ -53,6 +54,7 @@ func LoadConfig() *Config {
 		AWSSecretAccessKey:      getEnv("AWS_SECRET_KEY", "default_aws_secret_key"),
 		JWTSecret:               jwtSecret,
 		OpenAIAPIKey:            getEnv("OPENAI_API_KEY", ""),
+		FCMKey:                  getEnv("FCM_KEY", ""),
 	}
 }
 
