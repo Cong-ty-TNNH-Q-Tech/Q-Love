@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [backend/server/api] Implement Ex-Rating system and Ex-Rating APIs (Issue #27).
 - [backend/server/ai] Tích hợp AI xử lý làm mờ ảnh (Gaussian Blur) dựa trên số nguyên âm bằng Go `image/draw` (Issue #21).
 - [frontend/app] Hoàn thiện cấu hình App Store Optimization (ASO): Thêm App Icon, Splash Screen, Deep Links (`qlove://match`), Localization (en, vi) và tính năng In-App Review (Issue #121).
 - [frontend/app] Locket Widget iOS/Android (Issue #15).
