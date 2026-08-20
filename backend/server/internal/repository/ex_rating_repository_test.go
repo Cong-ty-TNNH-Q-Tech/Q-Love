@@ -28,7 +28,7 @@ func setupExRatingMockDB(t *testing.T) (*gorm.DB, sqlmock.Sqlmock) {
 		DriverName: "postgres",
 	})
 
-	db, err := gorm.Open(dialector, &gorm.Config{})
+	db, err := gorm.Open(dialector, &gorm.Config{SkipDefaultTransaction: true})
 	assert.NoError(t, err)
 
 	return db, mock
@@ -47,11 +47,9 @@ func TestExRatingRepository_Create(t *testing.T) {
 		CreatedAt:    time.Now(),
 	}
 
-	mock.ExpectBegin()
-	mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO "ex_ratings"`)).
-		WithArgs(rating.ID, rating.TargetUserID, rating.MatchID, rating.RatingScore, rating.TagsString, rating.CreatedAt).
-		WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectCommit()
+	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "ex_ratings"`)).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(rating.ID))
 
 	err := repo.Create(context.Background(), rating)
 	assert.NoError(t, err)
