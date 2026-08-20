@@ -5,6 +5,8 @@
 package handlers
 
 import (
+	"errors"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
@@ -60,7 +62,11 @@ func (h *WingmanHandler) AcceptReferral(c *fiber.Ctx) error {
 
 	referral, err := h.service.AcceptReferral(c.Context(), referralID, acceptingUserID)
 	if err != nil {
-		if err.Error() == "referral not found" || err.Error() == "user is not part of this referral" || err.Error() == "referral is no longer pending" || err.Error() == "referral link expired" {
+		if errors.Is(err, services.ErrReferralNotFound) ||
+			errors.Is(err, services.ErrUserNotInReferral) ||
+			errors.Is(err, services.ErrReferralNotPending) ||
+			errors.Is(err, services.ErrReferralExpired) ||
+			errors.Is(err, services.ErrWingmanCannotReferSelf) {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to accept referral"})
