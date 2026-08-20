@@ -152,6 +152,5 @@ func (s *courtService) WithdrawCase(ctx context.Context, caseID, plaintiffID uui
 	if courtCase.Status != models.CourtCaseStatusVoting {
 		return errors.New("can only withdraw cases that are currently in voting phase")
 	}
-
-	return s.courtRepo.UpdateCaseStatus(ctx, caseID, models.CourtCaseStatusSettled)
+	return s.courtRepo.UpdateCaseStatus(ctx, caseID, models.CourtCaseStatusWithdrawn)
 }
