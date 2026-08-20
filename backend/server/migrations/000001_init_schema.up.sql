@@ -12,24 +12,26 @@ CREATE TABLE users (
     location GEOMETRY(Point, 4326),
     level INT DEFAULT 1,
     is_shadowbanned BOOLEAN DEFAULT false,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
 );
 
 CREATE INDEX idx_users_location ON users USING GIST(location);
 
 CREATE TABLE user_wallets (
-    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID PRIMARY KEY REFERENCES users(id),
     balance NUMERIC(15,2) DEFAULT 0.00,
     hold_balance NUMERIC(15,2) DEFAULT 0.00
 );
 
 CREATE TABLE wallet_transactions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id),
     amount NUMERIC NOT NULL,
     type VARCHAR(50),
     reference_id UUID,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
 );
 
 CREATE TABLE user_premiums (
@@ -83,7 +85,8 @@ CREATE TABLE dating_contracts (
     cancelled_by_id UUID REFERENCES users(id),
     totp_secret VARCHAR(255),
     appointment_time TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
 );
 
 CREATE TABLE clans (
@@ -122,7 +125,8 @@ CREATE TABLE court_cases (
     defendant_id UUID REFERENCES users(id) ON DELETE CASCADE,
     reason VARCHAR(100),
     status VARCHAR(20),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
 );
 
 CREATE TABLE court_votes (
