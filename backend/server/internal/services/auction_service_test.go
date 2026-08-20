@@ -176,7 +176,7 @@ func TestAuctionService_StartDailyAuctions(t *testing.T) {
 	err := service.StartDailyAuctions(context.Background())
 	// Usually this returns nil if successful or no db is provided in mock
 	assert.NoError(t, err)
-
+}
 
 type mockUserRepoError struct{}
 func (m *mockUserRepoError) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) {
