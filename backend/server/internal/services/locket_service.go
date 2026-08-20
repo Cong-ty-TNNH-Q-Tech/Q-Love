@@ -34,6 +34,46 @@ func NewLocketService(
 	return &locketService{
 		chatRepo:      chatRepo,
 		matchRepo:     matchRepo,
+package services
+
+import (
+	"bytes"
+	"context"
+	"errors"
+	"fmt"
+	"image"
+	"image/jpeg"
+	"mime/multipart"
+
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/imageutil"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
+	"github.com/google/uuid"
+)
+
+type LocketService interface {
+	SendLocket(ctx context.Context, senderID uuid.UUID, matchID uuid.UUID, file *multipart.FileHeader) error
+}
+
+type locketService struct {
+	chatRepo      repository.ChatRepository
+	matchRepo     repository.MatchRepository
+	violationRepo repository.UserViolationRepository
+	nsfwService   NSFWService
+	r2Client      *storage.R2Client
+}
+
+func NewLocketService(
+	chatRepo repository.ChatRepository,
+	matchRepo repository.MatchRepository,
+	violationRepo repository.UserViolationRepository,
+	nsfwService NSFWService,
+	r2Client *storage.R2Client,
+) LocketService {
+	return &locketService{
+		chatRepo:      chatRepo,
+		matchRepo:     matchRepo,
 		violationRepo: violationRepo,
 		nsfwService:   nsfwService,
 		r2Client:      r2Client,
@@ -42,7 +82,7 @@ func NewLocketService(
 
 func (s *locketService) SendLocket(ctx context.Context, senderID uuid.UUID, matchID uuid.UUID, file *multipart.FileHeader) error {
 	// Verify match exists
-	_, err := s.matchRepo.FindByID(ctx, matchID)
+	match, err := s.matchRepo.FindByID(ctx, matchID)
 	if err != nil {
 		return errors.New("match not found")
 	}
@@ -81,25 +121,52 @@ func (s *locketService) SendLocket(ctx context.Context, senderID uuid.UUID, matc
 		return errors.New("only jpeg, png, and webp images are supported")
 	}
 
+	// 3. Process blur
+	// Default max streak for 0% blur is 30 days
+	blurPercentage := 100
+	if match.StreakScore > 0 {
+		blurPercentage = 100 - int(match.StreakScore*100/30)
+		if blurPercentage < 0 {
+			blurPercentage = 0
+		}
+	}
+
+	// Read raw image
+	var srcImage image.Image
+	f, openErr := file.Open()
+	if openErr != nil {
+		return errors.New("failed to read image")
+	}
+	defer f.Close()
+	
+	srcImage, _, err = image.Decode(f)
+	if err != nil {
+		return errors.New("failed to decode image")
+	}
+
+	// Apply Gaussian Blur approximation
+	blurredImage := imageutil.ApplyGaussianBlur(srcImage, blurPercentage)
+
+	// Encode back to buffer
+	buf := new(bytes.Buffer)
+	if err := jpeg.Encode(buf, blurredImage, &jpeg.Options{Quality: 85}); err != nil {
+		return errors.New("failed to process image")
+	}
+
+	// Upload using R2Client
 	var imageURL string
 	if s.r2Client != nil {
-		// THUC SU upload len R2
-		src, err := file.Open()
+		objectKey := fmt.Sprintf("lockets/%s/%s/blurred_%s", matchID.String(), senderID.String(), file.Filename)
+		url, err := s.r2Client.UploadFile(ctx, objectKey, buf, "image/jpeg")
 		if err != nil {
-			return fmt.Errorf("failed to open file: %w", err)
+			return fmt.Errorf("failed to upload blurred image to R2: %w", err)
 		}
-		defer src.Close()
-
-		objectKey := fmt.Sprintf("lockets/%s/%s/%s", matchID.String(), senderID.String(), file.Filename)
-		imageURL, err = s.r2Client.UploadFile(ctx, objectKey, src, contentType)
-		if err != nil {
-			return fmt.Errorf("failed to upload to R2: %w", err)
-		}
+		imageURL = url
 	} else {
 		imageURL = "https://r2.qlove.com/" + matchID.String() + "/" + file.Filename
 	}
 
-	blurURL := imageURL + "?blur=1" // CDN transform or worker
+	blurURL := imageURL // The image itself is blurred
 
 	chatMessage := &models.ChatMessage{
 		MatchID:  matchID,
@@ -114,11 +181,7 @@ func (s *locketService) SendLocket(ctx context.Context, senderID uuid.UUID, matc
 	}
 
 	// Update last interaction
-	// We ignore the error here as it's not critical for the locket send success
 	_ = s.matchRepo.UpdateLastInteraction(ctx, matchID, chatMessage.CreatedAt)
-
-	// Trigger silent push (In a real app, send to FCM/APNs)
-	// s.notificationService.SendSilentPush(...)
 
 	return nil
 }

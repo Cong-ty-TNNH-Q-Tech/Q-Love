@@ -1,9 +1,14 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"image"
+	"image/jpeg"
+	"io"
 	"mime/multipart"
+	"net/http"
 	"testing"
 	"time"
 
@@ -68,9 +73,7 @@ func TestLocketService_SendLocket(t *testing.T) {
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
 
-	fileHeader := &multipart.FileHeader{Filename: "test.jpg", Size: 1024, Header: make(map[string][]string)}
-	fileHeader.Header.Set("Content-Type", "image/jpeg")
-	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), createValidMultipartFile(t))
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -100,9 +103,7 @@ func TestLocketService_SendLocket_CreateError(t *testing.T) {
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
 
-	fileHeader := &multipart.FileHeader{Filename: "test.jpg", Size: 1024, Header: make(map[string][]string)}
-	fileHeader.Header.Set("Content-Type", "image/jpeg")
-	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), createValidMultipartFile(t))
 	if err == nil {
 		t.Errorf("Expected error, got nil")
 	}
@@ -200,11 +201,40 @@ func TestLocketService_SendLocket_NSFWError(t *testing.T) {
 }
 
 func createMultipartFile(t *testing.T) *multipart.FileHeader {
-	// Instead of a real form, we can just test if the fallback to r2.qlove.com works.
-	// But to test R2Client != nil, we need file.Open() to succeed or fail.
-	// To make file.Open fail, we can just use an empty FileHeader.
-	// Actually file.Open() panics if content is not properly constructed, or returns error.
 	return &multipart.FileHeader{Filename: "test.jpg", Size: 1024, Header: make(map[string][]string)}
+}
+
+func createValidMultipartFile(t *testing.T) *multipart.FileHeader {
+	// Create a minimal valid JPEG image
+	img := image.NewRGBA(image.Rect(0, 0, 10, 10))
+	var buf bytes.Buffer
+	jpeg.Encode(&buf, img, nil)
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("file", "test.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	part.Write(buf.Bytes())
+	writer.Close()
+
+	req := &http.Request{
+		Header: make(http.Header),
+		Body:   io.NopCloser(body),
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	reader, err := req.MultipartReader()
+	if err != nil {
+		t.Fatal(err)
+	}
+	form, err := reader.ReadForm(1024 * 1024)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return form.File["file"][0]
 }
 
 func TestLocketService_SendLocket_R2Error(t *testing.T) {
