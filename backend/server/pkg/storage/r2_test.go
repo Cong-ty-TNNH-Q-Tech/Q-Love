@@ -80,6 +80,10 @@ func (m *mockS3Client) PutObject(ctx context.Context, params *s3.PutObjectInput,
 	return m.output, m.err
 }
 
+func (m *mockS3Client) DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+	return &s3.DeleteObjectOutput{}, m.err
+}
+
 func TestUploadFile_Success(t *testing.T) {
 	client := &R2Client{
 		S3Client:   &mockS3Client{output: &s3.PutObjectOutput{}},
