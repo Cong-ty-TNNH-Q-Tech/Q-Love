@@ -43,13 +43,13 @@ func TestExRatingRepository_Create(t *testing.T) {
 		TargetUserID: uuid.New(),
 		MatchID:      uuid.New(),
 		RatingScore:  5,
-		Tags:         `["#tốt"]`,
+		TagsString:   `#tốt`,
 		CreatedAt:    time.Now(),
 	}
 
 	mock.ExpectBegin()
 	mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO "ex_ratings"`)).
-		WithArgs(rating.ID, rating.TargetUserID, rating.MatchID, rating.RatingScore, rating.Tags, rating.CreatedAt, rating.DeletedAt).
+		WithArgs(rating.ID, rating.TargetUserID, rating.MatchID, rating.RatingScore, rating.TagsString, rating.CreatedAt).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -64,7 +64,7 @@ func TestExRatingRepository_HasRated(t *testing.T) {
 	targetUserID := uuid.New()
 	matchID := uuid.New()
 
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT count(*) FROM "ex_ratings" WHERE match_id = $1 AND target_user_id = $2 AND "ex_ratings"."deleted_at" IS NULL`)).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT count(*) FROM "ex_ratings" WHERE match_id = $1 AND target_user_id = $2`)).
 		WithArgs(matchID, targetUserID).
 		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 
@@ -79,11 +79,11 @@ func TestExRatingRepository_GetSummaryByUserID(t *testing.T) {
 
 	targetUserID := uuid.New()
 
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "ex_ratings" WHERE target_user_id = $1 AND "ex_ratings"."deleted_at" IS NULL`)).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "ex_ratings" WHERE target_user_id = $1`)).
 		WithArgs(targetUserID).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "target_user_id", "match_id", "rating_score", "tags"}).
-			AddRow(uuid.New(), targetUserID, uuid.New(), 5, `["#good","#funny"]`).
-			AddRow(uuid.New(), targetUserID, uuid.New(), 4, `["#good"]`))
+		WillReturnRows(sqlmock.NewRows([]string{"id", "target_user_id", "match_id", "rating_score", "tags_string"}).
+			AddRow(uuid.New(), targetUserID, uuid.New(), 5, `#good,#funny`).
+			AddRow(uuid.New(), targetUserID, uuid.New(), 4, `#good`))
 
 	avg, total, tags, err := repo.GetSummaryByUserID(context.Background(), targetUserID)
 	assert.NoError(t, err)
@@ -99,9 +99,9 @@ func TestExRatingRepository_GetSummaryByUserID_Empty(t *testing.T) {
 
 	targetUserID := uuid.New()
 
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "ex_ratings" WHERE target_user_id = $1 AND "ex_ratings"."deleted_at" IS NULL`)).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "ex_ratings" WHERE target_user_id = $1`)).
 		WithArgs(targetUserID).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "target_user_id", "match_id", "rating_score", "tags"}))
+		WillReturnRows(sqlmock.NewRows([]string{"id", "target_user_id", "match_id", "rating_score", "tags_string"}))
 
 	avg, total, tags, err := repo.GetSummaryByUserID(context.Background(), targetUserID)
 	assert.NoError(t, err)
@@ -116,7 +116,7 @@ func TestExRatingRepository_GetSummaryByUserID_Error(t *testing.T) {
 
 	targetUserID := uuid.New()
 
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "ex_ratings" WHERE target_user_id = $1 AND "ex_ratings"."deleted_at" IS NULL`)).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "ex_ratings" WHERE target_user_id = $1`)).
 		WithArgs(targetUserID).
 		WillReturnError(errors.New("db error"))
 
