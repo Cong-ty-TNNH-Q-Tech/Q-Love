@@ -188,6 +188,19 @@ erDiagram
 | `rating_score`| INT | Check(1-5) | Điểm số (1 đến 5 sao) |
 | `tags` | TEXT[] | | Mảng các tag nhận xét (VD: #RedFlag) |
 
+**Bảng `wingman_referrals`** (Nghề Cò Mối)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `wingman_id` | UUID | FK(users.id) | Người mai mối |
+| `target1_id` | UUID | FK(users.id) | Đối tượng 1 |
+| `target2_id` | UUID | FK(users.id) | Đối tượng 2 |
+| `match_id` | UUID | FK(matches.id), Nullable | Match được tạo nếu thành công |
+| `status` | VARCHAR(20) | Default 'pending' | pending, matched, dated, rewarded |
+| `deep_link` | VARCHAR(255) | | Link chia sẻ |
+| `created_at` | TIMESTAMP | Default NOW() | |
+| `expires_at` | TIMESTAMP | | Thời gian hết hạn lời mời |
+
 ---
 
 ### 2.3. O2O & Gamification (Khế Ước, Bản Đồ, Tòa Án)

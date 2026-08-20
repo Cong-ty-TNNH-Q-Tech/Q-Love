@@ -1,3 +1,7 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package repository
 
 import (
@@ -10,7 +14,9 @@ import (
 )
 
 type MatchRepository interface {
+	Create(ctx context.Context, match *models.Match) error
 	FindByID(ctx context.Context, id uuid.UUID) (*models.Match, error)
+	FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error)
 	UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error
 	SoftDelete(ctx context.Context, id uuid.UUID) error
 }
@@ -23,9 +29,22 @@ func NewMatchRepository(db *gorm.DB) MatchRepository {
 	return &matchRepository{db: db}
 }
 
+func (r *matchRepository) Create(ctx context.Context, match *models.Match) error {
+	return GetDB(ctx, r.db).Create(match).Error
+}
+
 func (r *matchRepository) FindByID(ctx context.Context, id uuid.UUID) (*models.Match, error) {
 	var match models.Match
 	err := GetDB(ctx, r.db).First(&match, "id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &match, nil
+}
+
+func (r *matchRepository) FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error) {
+	var match models.Match
+	err := GetDB(ctx, r.db).Unscoped().First(&match, "id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -44,3 +63,4 @@ func (r *matchRepository) SoftDelete(ctx context.Context, id uuid.UUID) error {
 		Where("id = ?", id).
 		Delete(&models.Match{}).Error
 }
+
