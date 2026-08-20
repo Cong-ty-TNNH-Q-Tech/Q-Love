@@ -5,7 +5,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dio/dio.dart';
 import '../bloc/shame_wall_bloc.dart';
+import '../repositories/shame_repository.dart';
 
 class ShameWallScreen extends StatelessWidget {
   const ShameWallScreen({super.key});
@@ -13,7 +15,9 @@ class ShameWallScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ShameWallBloc()..add(LoadShameWall()),
+      create: (context) => ShameWallBloc(
+        repository: ShameApiRepository(dio: Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8080/v1'))),
+      )..add(LoadShameWall()),
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
@@ -34,6 +38,14 @@ class ShameWallScreen extends StatelessWidget {
               if (state is ShameWallLoading) {
                 return const Center(child: CircularProgressIndicator(color: Color(0xFFFF2D55)));
               } else if (state is ShameWallLoaded) {
+                if (state.shames.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'Chưa có ai trên bảng phong sát!',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white70),
+                    ),
+                  );
+                }
                 return ListView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 100, 16, 20),
                   itemCount: state.shames.length,
