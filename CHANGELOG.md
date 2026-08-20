@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [backend/server/api] Thêm `NotificationService` để gọi API FCM gửi Push và Silent Push cho Locket (Issue #35).
+- [backend/server/api] Thêm API `POST /api/v1/devices/token` để nhận FCM Token từ Mobile App lưu vào Redis (Issue #35).
+- [backend/server/models] Thêm model `Notification` và repository để lưu lịch sử push notification (Issue #35).
 - [backend/server/api] Thêm endpoint `/ai/suggest` để Trợ lý Mỏ Hỗn sinh gợi ý tin nhắn.
 - [frontend/app] Tạo thư mục native (android/ và ios/) cho Flutter app, cấu hình Bundle ID, Permissions và Deep Links (Issue #111).
 - [backend/server/api] Thêm API Unmatch (Issue #42).
