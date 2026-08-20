@@ -77,7 +77,7 @@ func TestNotificationRepository_UpdateStatus(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec("UPDATE \"notifications\"").
-		WithArgs("sent", sqlmock.AnyArg(), id).
+		WithArgs("sent", id).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
