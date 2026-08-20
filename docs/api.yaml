@@ -609,6 +609,36 @@ paths:
                   $ref: '#/components/schemas/User'
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /devices/token:
+    post:
+      summary: Đăng ký FCM Token
+      description: Nhận và lưu trữ FCM Token của user vào Redis để gửi push notification
+      tags:
+        - Devices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fcm_token
+                - device_id
+              properties:
+                fcm_token:
+                  type: string
+                  description: FCM Token nhận được từ Firebase SDK
+                device_id:
+                  type: string
+                  description: Device ID định danh thiết bị
+      responses:
+        '200':
+          description: Đăng ký token thành công
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /matches/swipe:
     post:
       summary: Quẹt thẻ (Like/Pass)
