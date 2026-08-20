@@ -159,6 +159,7 @@ func (s *auctionService) FinalizeAuctions(ctx context.Context) error {
 			}
 		}
 
+		var successfullyUpdated int
 		if len(endedAuctionIDs) > 0 {
 			bids, err := s.auctionRepo.GetBidsForAuctions(ctx, endedAuctionIDs)
 			if err != nil {
@@ -245,13 +246,18 @@ func (s *auctionService) FinalizeAuctions(ctx context.Context) error {
 					return s.auctionRepo.UpdateAuctionStatus(txCtx, auction.ID, "completed", &highestBid.BidderID, highestBid.Amount)
 				}, &sql.TxOptions{Isolation: sql.LevelSerializable})
 				
-				if err != nil {
-					continue
+				if err == nil {
+					successfullyUpdated++
 				}
 			}
 		}
 
-		offset += limit
+		// Calculate new offset:
+		// Any auction that was NOT successfully updated to 'completed' (either because it hasn't ended yet, or it failed)
+		// will remain in the 'active' status. Therefore, it will appear at the beginning of the next query.
+		// To skip over these remaining active auctions, we increment the offset by the number of such auctions.
+		remainingActive := len(auctions) - successfullyUpdated
+		offset += remainingActive
 	}
 	return nil
 }
