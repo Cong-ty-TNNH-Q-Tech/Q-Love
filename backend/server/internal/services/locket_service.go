@@ -15,11 +15,11 @@ import (
 )
 
 type LocketService interface {
-	SendLocket(ctx context.Context, senderID uuid.UUID, matchID uuid.UUID, file *multipart.FileHeader) error
+	SendLocket(ctx context.Context, matchID, senderID uuid.UUID, file *multipart.FileHeader) (string, error)
 }
 
 type locketService struct {
-	chatRepo      repository.ChatMessageRepository
+	chatRepo      repository.ChatRepository
 	matchRepo     repository.MatchRepository
 	violationRepo repository.UserViolationRepository
 	nsfwService   NSFWService
@@ -28,7 +28,7 @@ type locketService struct {
 }
 
 func NewLocketService(
-	chatRepo repository.ChatMessageRepository,
+	chatRepo repository.ChatRepository,
 	matchRepo repository.MatchRepository,
 	violationRepo repository.UserViolationRepository,
 	nsfwService NSFWService,
@@ -45,11 +45,11 @@ func NewLocketService(
 	}
 }
 
-func (s *locketService) SendLocket(ctx context.Context, senderID uuid.UUID, matchID uuid.UUID, file *multipart.FileHeader) error {
+func (s *locketService) SendLocket(ctx context.Context, matchID, senderID uuid.UUID, file *multipart.FileHeader) (string, error) {
 	// Verify match exists
-	_, err := s.matchRepo.FindByID(ctx, matchID)
+	match, err := s.matchRepo.FindByID(ctx, matchID)
 	if err != nil {
-		return errors.New("match not found")
+		return "", errors.New("match not found")
 	}
 
 	// AI Check NSFW

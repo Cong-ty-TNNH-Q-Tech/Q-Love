@@ -40,7 +40,7 @@ func (h *LocketHandler) SendLocket(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Image file is required"})
 	}
 
-	if err := h.locketService.SendLocket(c.Context(), senderID, matchID, file); err != nil {
+	if _, err := h.locketService.SendLocket(c.Context(), matchID, senderID, file); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 

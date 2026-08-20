@@ -1,3 +1,7 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package handlers
 
 import (
@@ -17,8 +21,8 @@ type mockLocketService struct {
 	err error
 }
 
-func (m *mockLocketService) SendLocket(ctx context.Context, senderID uuid.UUID, matchID uuid.UUID, file *multipart.FileHeader) error {
-	return m.err
+func (m *mockLocketService) SendLocket(ctx context.Context, matchID, senderID uuid.UUID, file *multipart.FileHeader) (string, error) {
+	return "mock-url", m.err
 }
 
 func TestLocketHandler_SendLocket_Unauthorized(t *testing.T) {
