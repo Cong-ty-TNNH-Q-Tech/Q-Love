@@ -24,8 +24,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	walletRepo := repository.NewWalletRepository(db)
 	shameRepo := repository.NewShameRepository(db)
 	txManager := repository.NewTransactionManager(db)
+	matchRepo := repository.NewMatchRepository(db)
 
-	wingmanService := services.NewWingmanService(wingmanRepo, walletRepo, txManager)
+	wingmanService := services.NewWingmanService(wingmanRepo, walletRepo, txManager, matchRepo)
 	shameService := services.NewShameService(shameRepo, walletRepo, txManager)
 	clanRepo := repository.NewClanRepository(db)
 	clanService := services.NewClanService(clanRepo, walletRepo, txManager)
@@ -41,10 +42,8 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	go hub.Run(context.Background())
 	chatHandler := handlers.NewChatHandler(chatService, hub)
 
-	matchRepo := repository.NewMatchRepository(db)
 	matchService := services.NewMatchService(matchRepo)
 	matchHandler := handlers.NewMatchHandler(matchService)
-
 	userPremRepo := repository.NewUserPremiumRepository(db)
 	
 	violationRepo := repository.NewUserViolationRepository(db)
