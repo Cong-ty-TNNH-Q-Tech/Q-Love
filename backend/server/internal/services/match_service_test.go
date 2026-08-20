@@ -32,6 +32,17 @@ func (m *mockMatchServiceRepo) FindByID(ctx context.Context, id uuid.UUID) (*mod
 	return match, nil
 }
 
+func (m *mockMatchServiceRepo) FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	match, ok := m.matches[id]
+	if !ok {
+		return nil, nil
+	}
+	return match, nil
+}
+
 func (m *mockMatchServiceRepo) UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error {
 	return nil
 }
