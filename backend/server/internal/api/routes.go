@@ -111,3 +111,12 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	vibeGroup.Get("/status", vibeHandler.Status)
 	vibeGroup.Get("/current-track", vibeHandler.CurrentTrack)
 	vibeGroup.Post("/match", vibeHandler.Match)
+	// Minigame Steal routes
+	stealGroup := v1.Group("/minigame/steal", middleware.JWTMiddleware(cfg.JWTSecret))
+	stealGroup.Post("/init", minigameHandler.InitSteal)
+	stealGroup.Post("/submit", minigameHandler.SubmitStealResult)
+
+	// Match API
+	matchGroup := v1.Group("/matches", middleware.JWTMiddleware(cfg.JWTSecret))
+	matchGroup.Delete("/:match_id", matchHandler.Unmatch)
+}
