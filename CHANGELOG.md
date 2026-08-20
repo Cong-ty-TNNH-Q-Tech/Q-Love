@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [docs/readme] Cập nhật toàn bộ README theo chuẩn Investor Ready và thêm logo mới.
 
 ### Fixed
+- [backend/server/services] Tối ưu hóa hiệu năng `FinalizeAuctions` (xử lý theo batch + pagination) và `StartDailyAuctions` (dùng `UserRepository` lấy real users) thay vì mock UUID và truy vấn N+1, sửa lỗi O(N*M) query (Issue #114).
 - [backend/server] Khắc phục vi phạm audit từ issue 74 (thiếu bản quyền, cập nhật CHANGELOG).
 - [backend/server/api] Sửa lỗi thiếu `JWTMiddleware` cho các API `/wingman` và `/upload`.
 - [backend/server/api] Sửa lỗi sử dụng dummy UUID thay cho JWT context tại `WingmanHandler`.

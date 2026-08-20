@@ -13,11 +13,12 @@ import (
 
 type AuctionRepository interface {
 	CreateAuction(ctx context.Context, auction *models.BlindAuction) error
-	GetActiveAuctions(ctx context.Context) ([]models.BlindAuction, error)
+	GetActiveAuctions(ctx context.Context, offset, limit int) ([]models.BlindAuction, error)
 	GetAuctionForUpdate(ctx context.Context, auctionID uuid.UUID) (*models.BlindAuction, error)
 	PlaceBid(ctx context.Context, bid *models.AuctionBid) error
 	GetHighestBid(ctx context.Context, auctionID uuid.UUID) (*models.AuctionBid, error)
 	GetBidsByAuction(ctx context.Context, auctionID uuid.UUID) ([]models.AuctionBid, error)
+	GetBidsForAuctions(ctx context.Context, auctionIDs []uuid.UUID) ([]models.AuctionBid, error)
 	UpdateAuctionStatus(ctx context.Context, auctionID uuid.UUID, status string, winnerID *uuid.UUID, winningBid float64) error
 }
 
@@ -33,9 +34,12 @@ func (r *auctionRepository) CreateAuction(ctx context.Context, auction *models.B
 	return GetDB(ctx, r.db).WithContext(ctx).Create(auction).Error
 }
 
-func (r *auctionRepository) GetActiveAuctions(ctx context.Context) ([]models.BlindAuction, error) {
+func (r *auctionRepository) GetActiveAuctions(ctx context.Context, offset, limit int) ([]models.BlindAuction, error) {
 	var auctions []models.BlindAuction
-	err := GetDB(ctx, r.db).WithContext(ctx).Where("status = ?", "active").Find(&auctions).Error
+	err := GetDB(ctx, r.db).WithContext(ctx).
+		Where("status = ?", "active").
+		Offset(offset).Limit(limit).
+		Find(&auctions).Error
 	return auctions, err
 }
 
@@ -73,6 +77,15 @@ func (r *auctionRepository) GetHighestBid(ctx context.Context, auctionID uuid.UU
 func (r *auctionRepository) GetBidsByAuction(ctx context.Context, auctionID uuid.UUID) ([]models.AuctionBid, error) {
 	var bids []models.AuctionBid
 	err := GetDB(ctx, r.db).WithContext(ctx).Where("auction_id = ?", auctionID).Find(&bids).Error
+	return bids, err
+}
+
+func (r *auctionRepository) GetBidsForAuctions(ctx context.Context, auctionIDs []uuid.UUID) ([]models.AuctionBid, error) {
+	var bids []models.AuctionBid
+	if len(auctionIDs) == 0 {
+		return bids, nil
+	}
+	err := GetDB(ctx, r.db).WithContext(ctx).Where("auction_id IN ?", auctionIDs).Find(&bids).Error
 	return bids, err
 }
 

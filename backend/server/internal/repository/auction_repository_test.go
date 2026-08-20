@@ -45,9 +45,25 @@ func TestAuctionRepository_GetActiveAuctions(t *testing.T) {
 		WithArgs("active").
 		WillReturnRows(sqlmock.NewRows([]string{"id", "status"}).AddRow(uuid.New(), "active"))
 
-	auctions, err := repo.GetActiveAuctions(context.Background())
+	auctions, err := repo.GetActiveAuctions(context.Background(), 0, 100)
 	assert.NoError(t, err)
 	assert.Len(t, auctions, 1)
+}
+
+func TestAuctionRepository_GetBidsForAuctions(t *testing.T) {
+	db, mock, err := setupTestDB()
+	assert.NoError(t, err)
+
+	repo := NewAuctionRepository(db)
+	auctionID := uuid.New()
+	mock.ExpectQuery(`(?i)SELECT .* FROM "auction_bids"`).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "auction_id", "amount"}).AddRow(uuid.New(), auctionID, float64(1500)).AddRow(uuid.New(), auctionID, float64(2000)))
+
+	bids, err := repo.GetBidsForAuctions(context.Background(), []uuid.UUID{auctionID})
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+	assert.Len(t, bids, 2)
 }
 
 func TestAuctionRepository_PlaceBid(t *testing.T) {
