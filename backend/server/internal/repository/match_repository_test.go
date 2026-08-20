@@ -75,3 +75,32 @@ func TestMatchRepository_UpdateLastInteraction(t *testing.T) {
 		t.Errorf("Unfulfilled expectations: %v", err)
 	}
 }
+
+func TestMatchRepository_UpdateLastInteraction_Error(t *testing.T) {
+	repo, mock := setupMatchRepoMock(t)
+
+	matchID := uuid.New()
+	tValue := time.Now()
+
+	mock.ExpectExec(regexp.QuoteMeta(`UPDATE "matches" SET "last_interaction_at"=$1 WHERE id = $2 AND "matches"."deleted_at" IS NULL`)).
+		WithArgs(tValue, matchID).
+		WillReturnError(assert.AnError)
+
+	err := repo.UpdateLastInteraction(context.Background(), matchID, tValue)
+	assert.Error(t, err)
+}
+
+func TestMatchRepository_SoftDelete(t *testing.T) {
+	repo, mock := setupMatchRepoMock(t)
+
+	matchID := uuid.New()
+
+	mock.ExpectBegin()
+	mock.ExpectExec(regexp.QuoteMeta(`UPDATE "matches" SET "deleted_at"=$1 WHERE id = $2 AND "matches"."deleted_at" IS NULL`)).
+		WithArgs(sqlmock.AnyArg(), matchID).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
+	err := repo.SoftDelete(context.Background(), matchID)
+	assert.NoError(t, err)
+}

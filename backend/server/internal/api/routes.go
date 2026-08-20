@@ -42,6 +42,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	chatHandler := handlers.NewChatHandler(chatService, hub)
 
 	matchRepo := repository.NewMatchRepository(db)
+	matchService := services.NewMatchService(matchRepo)
+	matchHandler := handlers.NewMatchHandler(matchService)
+
 	userPremRepo := repository.NewUserPremiumRepository(db)
 	
 	violationRepo := repository.NewUserViolationRepository(db)
@@ -112,4 +115,8 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	stealGroup := v1.Group("/minigame/steal", middleware.JWTMiddleware(""))
 	stealGroup.Post("/init", minigameHandler.InitSteal)
 	stealGroup.Post("/submit", minigameHandler.SubmitStealResult)
+
+	// Match routes
+	matchGroup := v1.Group("/matches", middleware.JWTMiddleware(""))
+	matchGroup.Delete("/:match_id", matchHandler.Unmatch)
 }
