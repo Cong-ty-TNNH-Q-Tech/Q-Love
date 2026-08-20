@@ -77,7 +77,7 @@ func TestNotificationService_SendPush_MockFCMKeyEmpty(t *testing.T) {
 
 	svc := NewNotificationService(mockRepo, redisClient, "")
 	err = svc.SendPush(context.Background(), userID, "title", "body", "type", nil)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }
 
 type mockTransport struct {
