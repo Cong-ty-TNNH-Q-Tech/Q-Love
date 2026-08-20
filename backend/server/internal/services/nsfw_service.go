@@ -6,26 +6,83 @@ package services
 
 import (
 	"context"
+	"io"
 	"mime/multipart"
-	"strings"
+	"fmt"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/rekognition"
+	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
+	appconfig "github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
 )
 
 type NSFWService interface {
 	CheckNSFW(ctx context.Context, file *multipart.FileHeader) (isNSFW bool, skinRatio float64, err error)
 }
 
-type nsfwService struct{}
+type nsfwService struct {
+	client *rekognition.Client
+}
 
-func NewNSFWService() NSFWService {
-	return &nsfwService{}
+func NewNSFWService(cfg *appconfig.Config) NSFWService {
+	var client *rekognition.Client
+	
+	if cfg != nil && cfg.AWSAccessKeyID != "" {
+		awsCfg, err := config.LoadDefaultConfig(context.Background(),
+			config.WithRegion(cfg.AWSRegion),
+			config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(cfg.AWSAccessKeyID, cfg.AWSSecretAccessKey, "")),
+		)
+		if err == nil {
+			client = rekognition.NewFromConfig(awsCfg)
+		}
+	}
+
+	return &nsfwService{
+		client: client,
+	}
 }
 
 func (s *nsfwService) CheckNSFW(ctx context.Context, file *multipart.FileHeader) (bool, float64, error) {
-	// Mock Implementation for NSFW AI Check
-	// In a real environment, this would send the file to an AI service (e.g. AWS Rekognition, or internal Python gRPC)
-	// For testing, we mock it: if filename contains "nsfw", we flag it with a mock high skin ratio
-	if strings.Contains(strings.ToLower(file.Filename), "nsfw") {
-		return true, 0.45, nil // 45% skin ratio > 30%
+	if s.client == nil {
+		// Fallback to mock for local testing if no AWS credentials are provided
+		return false, 0.10, nil
 	}
-	return false, 0.10, nil // 10% skin ratio <= 30%
+
+	src, err := file.Open()
+	if err != nil {
+		return false, 0, fmt.Errorf("failed to open file: %w", err)
+	}
+	defer src.Close()
+
+	data, err := io.ReadAll(src)
+	if err != nil {
+		return false, 0, fmt.Errorf("failed to read file: %w", err)
+	}
+
+	resp, err := s.client.DetectModerationLabels(ctx, &rekognition.DetectModerationLabelsInput{
+		Image:         &types.Image{Bytes: data},
+		MinConfidence: aws.Float32(70),
+	})
+	if err != nil {
+		return false, 0, fmt.Errorf("failed to detect moderation labels: %w", err)
+	}
+
+	for _, label := range resp.ModerationLabels {
+		// AWS Rekognition uses top-level categories like "Explicit Nudity", "Suggestive", "Violence"
+		name := ""
+		if label.Name != nil {
+			name = *label.Name
+		}
+		if name == "Explicit Nudity" || name == "Suggestive" || name == "Adult" {
+			confidence := float64(0)
+			if label.Confidence != nil {
+				confidence = float64(*label.Confidence) / 100.0
+			}
+			return true, confidence, nil
+		}
+	}
+
+	return false, 0, nil
 }
