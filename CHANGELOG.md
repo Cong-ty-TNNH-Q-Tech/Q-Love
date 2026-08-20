@@ -41,7 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [docs/readme] Cập nhật toàn bộ README theo chuẩn Investor Ready và thêm logo mới.
 
 ### Fixed
-- [backend/server] Loại bỏ hardcoded default credentials trong config và yêu cầu thông qua biến môi trường (Issue #108).
+- [frontend/app] Khắc phục `ShameWallBloc` dùng mock data (Issue #119): Thêm `ShameRepository`, tách `ShameModel`, gọi API thực sự và thêm empty state UI.
+- [backend/server] Loại bỏ hardcoded credentials `admin/admin` cho Redis và Postgres, yêu cầu sử dụng Environment Variables (Issue #108).
 - [backend/server] Khắc phục vi phạm audit từ issue 74 (thiếu bản quyền, cập nhật CHANGELOG).
 - [backend/server/api] Sửa lỗi thiếu `JWTMiddleware` cho các API `/wingman` và `/upload`.
 - [backend/server/api] Sửa lỗi sử dụng dummy UUID thay cho JWT context tại `WingmanHandler`.
