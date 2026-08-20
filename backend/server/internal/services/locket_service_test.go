@@ -77,7 +77,7 @@ func TestLocketService_SendLocket(t *testing.T) {
 
 	var r2Client *storage.R2Client
 
-	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil, r2Client)
 
 	_, err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "test.jpg"})
 	if err != nil {
@@ -91,7 +91,7 @@ func TestLocketService_SendLocket_MatchNotFound(t *testing.T) {
 	violationRepo := &mockViolationRepo{}
 	nsfwService := &mockNSFWService{isNSFW: false}
 
-	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil, nil)
 
 	_, err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "test.jpg"})
 	if err == nil {
@@ -105,7 +105,7 @@ func TestLocketService_SendLocket_CreateError(t *testing.T) {
 	violationRepo := &mockViolationRepo{}
 	nsfwService := &mockNSFWService{isNSFW: false}
 
-	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil, nil)
 
 	_, err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "test.jpg"})
 	if err == nil {
@@ -119,7 +119,7 @@ func TestLocketService_SendLocket_NSFWDetected(t *testing.T) {
 	violationRepo := &mockViolationRepo{}
 	nsfwService := &mockNSFWService{isNSFW: true}
 
-	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil, nil)
 
 	_, err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "nsfw.jpg"})
 	if err == nil {
@@ -141,7 +141,7 @@ func TestLocketService_SendLocket_NSFWDetected_3Strikes(t *testing.T) {
 	violationRepo := &mockViolationRepo3Strikes{}
 	nsfwService := &mockNSFWService{isNSFW: true}
 
-	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil, nil)
 
 	_, err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "nsfw.jpg"})
 	if err == nil {
