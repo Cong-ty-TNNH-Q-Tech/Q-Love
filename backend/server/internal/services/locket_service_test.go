@@ -234,7 +234,12 @@ func createValidMultipartFile(t *testing.T) *multipart.FileHeader {
 		t.Fatal(err)
 	}
 
-	return form.File["file"][0]
+	fileHeader := form.File["file"][0]
+	if fileHeader.Header == nil {
+		fileHeader.Header = make(map[string][]string)
+	}
+	fileHeader.Header.Set("Content-Type", "image/jpeg")
+	return fileHeader
 }
 
 func TestLocketService_SendLocket_R2Error(t *testing.T) {
