@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [docs/readme] Cập nhật toàn bộ README theo chuẩn Investor Ready và thêm logo mới.
 
 ### Fixed
+- [backend/server] Loại bỏ hardcoded JWT secret, yêu cầu cấu hình qua biến môi trường (Issue #107).
 - [backend/server] Khắc phục vi phạm audit từ issue 74 (thiếu bản quyền, cập nhật CHANGELOG).
 - [backend/server/api] Sửa lỗi thiếu `JWTMiddleware` cho các API `/wingman` và `/upload`.
 - [backend/server/api] Sửa lỗi sử dụng dummy UUID thay cho JWT context tại `WingmanHandler`.
