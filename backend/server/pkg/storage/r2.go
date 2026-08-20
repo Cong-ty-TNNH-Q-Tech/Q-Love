@@ -17,8 +17,12 @@ import (
 	appConfig "github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
 )
 
+type S3API interface {
+	PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error)
+}
+
 type R2Client struct {
-	S3Client      *s3.Client
+	S3Client      S3API
 	BucketName    string
 	PresignClient *s3.PresignClient
 }
