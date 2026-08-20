@@ -6,6 +6,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"testing"
 	"time"
@@ -55,6 +56,7 @@ func (m *mockMatchRepoForExRating) FindByID(ctx context.Context, id uuid.UUID) (
 	}
 	return m.match, nil
 }
+func (m *mockMatchRepoForExRating) SoftDelete(ctx context.Context, id uuid.UUID) error { return nil }
 func (m *mockMatchRepoForExRating) FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error) {
 	return m.match, nil
 }
@@ -109,8 +111,8 @@ func TestExRatingService_SubmitRating_NotUnmatched(t *testing.T) {
 
 	svc := NewExRatingService(
 		&mockExRatingRepo{hasRated: false},
-		&mockTxManagerForExRating{},
 		&mockWalletRepoForExRating{balance: 100},
+		&mockTxManagerForExRating{},
 		&mockChatRepoForExRating{msgCount: 51},
 		&mockMatchRepoForExRating{match: match},
 	)
@@ -127,8 +129,8 @@ func TestExRatingService_SubmitRating_NotEnoughMessages(t *testing.T) {
 
 	svc := NewExRatingService(
 		&mockExRatingRepo{hasRated: false},
-		&mockTxManagerForExRating{},
 		&mockWalletRepoForExRating{balance: 100},
+		&mockTxManagerForExRating{},
 		&mockChatRepoForExRating{msgCount: 49}, // < 50
 		&mockMatchRepoForExRating{match: match},
 	)
@@ -144,8 +146,8 @@ func TestExRatingService_ViewRating_Success(t *testing.T) {
 
 	svc := NewExRatingService(
 		&mockExRatingRepo{avg: 4.5, total: 10, tags: map[string]int{"#green": 5}},
-		&mockTxManagerForExRating{},
 		&mockWalletRepoForExRating{balance: 100}, // > 50 xu
+		&mockTxManagerForExRating{},
 		nil,
 		nil,
 	)
@@ -163,8 +165,8 @@ func TestExRatingService_ViewRating_InsufficientFunds(t *testing.T) {
 
 	svc := NewExRatingService(
 		&mockExRatingRepo{},
-		&mockTxManagerForExRating{},
 		&mockWalletRepoForExRating{balance: 49}, // < 50 xu
+		&mockTxManagerForExRating{},
 		nil,
 		nil,
 	)
