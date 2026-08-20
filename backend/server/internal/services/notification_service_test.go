@@ -1,4 +1,9 @@
-// Copyright 2026 Q-Tech Team
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
+
+// Copyright 2026 Q-Tech Team
 // Licensed under the GNU AGPLv3 License.
 // See LICENSE file in the project root for full license information.
 
