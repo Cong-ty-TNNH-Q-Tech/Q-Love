@@ -1,3 +1,7 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package services
 
 import (
@@ -41,7 +45,11 @@ func (m *mockChatRepo) Create(ctx context.Context, message *models.ChatMessage) 
 }
 
 func (m *mockChatRepo) GetMessagesByMatchID(ctx context.Context, matchID uuid.UUID, limit int, before *time.Time) ([]models.ChatMessage, error) {
-	return nil, nil
+	return m.msgs, nil
+}
+
+func (m *mockChatRepo) CountMessagesByMatchID(ctx context.Context, matchID uuid.UUID) (int64, error) {
+	return int64(len(m.msgs)), nil
 }
 
 type mockViolationRepo struct{}
@@ -147,3 +155,4 @@ func TestLocketService_SendLocket_NSFWDetected_3Strikes(t *testing.T) {
 		t.Errorf("Expected ban message, got %v", err.Error())
 	}
 }
+
