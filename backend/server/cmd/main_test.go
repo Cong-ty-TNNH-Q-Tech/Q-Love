@@ -14,6 +14,7 @@ import (
 
 func TestMainServer(t *testing.T) {
 	// Setup app locally instead of using global
+	t.Setenv("JWT_SECRET", "test-secret")
 	cfg := config.LoadConfig()
 	
 	// Skip real db connection for tests

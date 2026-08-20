@@ -14,12 +14,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type mockMatchRepo struct {
+type mockMatchServiceRepo struct {
 	matches map[uuid.UUID]*models.Match
 	err     error
 }
 
-func (m *mockMatchRepo) FindByID(ctx context.Context, id uuid.UUID) (*models.Match, error) {
+func (m *mockMatchServiceRepo) FindByID(ctx context.Context, id uuid.UUID) (*models.Match, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -30,15 +30,19 @@ func (m *mockMatchRepo) FindByID(ctx context.Context, id uuid.UUID) (*models.Mat
 	return match, nil
 }
 
-func (m *mockMatchRepo) UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error {
+func (m *mockMatchServiceRepo) UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error {
 	return nil
 }
 
-func (m *mockMatchRepo) SoftDelete(ctx context.Context, id uuid.UUID) error {
+func (m *mockMatchServiceRepo) SoftDelete(ctx context.Context, id uuid.UUID) error {
 	if m.err != nil {
 		return m.err
 	}
 	delete(m.matches, id)
+	return nil
+}
+
+func (m *mockMatchServiceRepo) Create(ctx context.Context, match *models.Match) error {
 	return nil
 }
 
@@ -47,7 +51,7 @@ func TestMatchService_Unmatch(t *testing.T) {
 	userID := uuid.New()
 	otherUserID := uuid.New()
 
-	mockRepo := &mockMatchRepo{
+	mockRepo := &mockMatchServiceRepo{
 		matches: map[uuid.UUID]*models.Match{
 			matchID: {
 				ID:      matchID,
@@ -68,7 +72,7 @@ func TestMatchService_Unmatch_NotFound(t *testing.T) {
 	matchID := uuid.New()
 	userID := uuid.New()
 
-	mockRepo := &mockMatchRepo{
+	mockRepo := &mockMatchServiceRepo{
 		matches: map[uuid.UUID]*models.Match{},
 	}
 
@@ -84,7 +88,7 @@ func TestMatchService_Unmatch_Forbidden(t *testing.T) {
 	otherUserID := uuid.New()
 	randomUserID := uuid.New()
 
-	mockRepo := &mockMatchRepo{
+	mockRepo := &mockMatchServiceRepo{
 		matches: map[uuid.UUID]*models.Match{
 			matchID: {
 				ID:      matchID,
@@ -104,7 +108,7 @@ func TestMatchService_Unmatch_DBError(t *testing.T) {
 	matchID := uuid.New()
 	userID := uuid.New()
 
-	mockRepo := &mockMatchRepo{
+	mockRepo := &mockMatchServiceRepo{
 		err: errors.New("db error"),
 	}
 
