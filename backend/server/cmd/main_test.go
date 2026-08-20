@@ -14,14 +14,11 @@ import (
 
 func TestMainServer(t *testing.T) {
 	// Setup app locally instead of using global
-<<<<<<< HEAD
 	t.Setenv("DATABASE_DSN", "test")
 	t.Setenv("REVENUECAT_WEBHOOK_SECRET", "test")
 	t.Setenv("R2_ACCESS_KEY_ID", "test")
 	t.Setenv("R2_SECRET_ACCESS_KEY", "test")
-=======
 	t.Setenv("JWT_SECRET", "test-secret")
->>>>>>> origin/main
 	cfg := config.LoadConfig()
 	
 	// Skip real db connection for tests

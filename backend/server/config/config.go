@@ -63,12 +63,8 @@ func LoadConfig() *Config {
 		Environment:             getEnv("APP_ENV", "development"),
 		DatabaseDSN:             dbDSN,
 		RedisURL:                getEnv("REDIS_URL", "redis://localhost:6379/0"),
-<<<<<<< HEAD
 		RevenueCatWebhookSecret: rcSecret,
-=======
-		RevenueCatWebhookSecret: getEnv("REVENUECAT_WEBHOOK_SECRET", "secret123"),
 		JWTSecret:               jwtSecret,
->>>>>>> origin/main
 	}
 }
 
