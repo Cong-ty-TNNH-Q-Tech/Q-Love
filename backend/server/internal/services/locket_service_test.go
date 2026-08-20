@@ -1,3 +1,7 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package services
 
 import (
@@ -75,7 +79,7 @@ func TestLocketService_SendLocket(t *testing.T) {
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
 
-	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "test.jpg"})
+	_, err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "test.jpg"})
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -89,7 +93,7 @@ func TestLocketService_SendLocket_MatchNotFound(t *testing.T) {
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
 
-	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "test.jpg"})
+	_, err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "test.jpg"})
 	if err == nil {
 		t.Errorf("Expected error, got nil")
 	}
@@ -103,7 +107,7 @@ func TestLocketService_SendLocket_CreateError(t *testing.T) {
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
 
-	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "test.jpg"})
+	_, err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "test.jpg"})
 	if err == nil {
 		t.Errorf("Expected error, got nil")
 	}
@@ -117,7 +121,7 @@ func TestLocketService_SendLocket_NSFWDetected(t *testing.T) {
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
 
-	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "nsfw.jpg"})
+	_, err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "nsfw.jpg"})
 	if err == nil {
 		t.Errorf("Expected error for NSFW content, got nil")
 	}
@@ -139,7 +143,7 @@ func TestLocketService_SendLocket_NSFWDetected_3Strikes(t *testing.T) {
 
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
 
-	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "nsfw.jpg"})
+	_, err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), &multipart.FileHeader{Filename: "nsfw.jpg"})
 	if err == nil {
 		t.Errorf("Expected error for NSFW content, got nil")
 	}

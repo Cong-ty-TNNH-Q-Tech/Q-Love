@@ -95,7 +95,7 @@ func (s *locketService) SendLocket(ctx context.Context, matchID, senderID uuid.U
 	}
 
 	if err := s.chatRepo.Create(ctx, chatMessage); err != nil {
-		return err
+		return "", err
 	}
 
 	// Update last interaction
