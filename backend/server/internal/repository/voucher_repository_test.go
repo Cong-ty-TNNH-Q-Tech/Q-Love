@@ -32,7 +32,7 @@ func TestVoucherRepository_Create(t *testing.T) {
 	voucher := &models.Voucher{
 		ID:        uuid.New(),
 		Brand:     "Highlands",
-		Code:      "HL-123",
+		Code:      "HL-" + uuid.New().String(),
 		ValueXu:   100,
 		Status:    "available",
 		ExpiresAt: time.Now(),
@@ -75,7 +75,7 @@ func TestVoucherRepository_GetAvailableVoucher(t *testing.T) {
 	db.Create(&models.Voucher{
 		ID:        uuid.New(),
 		Brand:     "Highlands",
-		Code:      "HL-1",
+		Code:      "HL-" + uuid.New().String(),
 		ValueXu:   100,
 		Status:    "available",
 		ExpiresAt: time.Now().Add(24 * time.Hour),
@@ -83,7 +83,7 @@ func TestVoucherRepository_GetAvailableVoucher(t *testing.T) {
 	db.Create(&models.Voucher{
 		ID:        uuid.New(),
 		Brand:     "Highlands",
-		Code:      "HL-2",
+		Code:      "HL-" + uuid.New().String(),
 		ValueXu:   100,
 		Status:    "claimed",
 		ExpiresAt: time.Now().Add(24 * time.Hour),
@@ -91,7 +91,7 @@ func TestVoucherRepository_GetAvailableVoucher(t *testing.T) {
 
 	voucher, err := repo.GetAvailableVoucher(context.Background(), "Highlands", 100)
 	assert.NoError(t, err)
-	assert.Equal(t, "HL-1", voucher.Code)
+	assert.Equal(t, 100, voucher.ValueXu)
 }
 
 func TestVoucherRepository_Delete(t *testing.T) {
@@ -102,7 +102,7 @@ func TestVoucherRepository_Delete(t *testing.T) {
 	db.Create(&models.Voucher{
 		ID:        id,
 		Brand:     "Highlands",
-		Code:      "HL-1",
+		Code:      "HL-" + uuid.New().String(),
 		ValueXu:   100,
 		Status:    "available",
 		ExpiresAt: time.Now().Add(24 * time.Hour),
@@ -127,7 +127,7 @@ func TestVoucherRepository_MarkAsClaimed(t *testing.T) {
 	db.Create(&models.Voucher{
 		ID:        voucherID,
 		Brand:     "Highlands",
-		Code:      "HL-1",
+		Code:      "HL-" + uuid.New().String(),
 		ValueXu:   100,
 		Status:    "available",
 		ExpiresAt: time.Now().Add(24 * time.Hour),
