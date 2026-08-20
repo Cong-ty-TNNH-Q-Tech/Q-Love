@@ -80,6 +80,14 @@ func (m *mockMatchRepoForCourt) FindByID(ctx context.Context, id uuid.UUID) (*mo
 	return args.Get(0).(*models.Match), args.Error(1)
 }
 
+func (m *mockMatchRepoForCourt) FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.Match), args.Error(1)
+}
+
 func (m *mockMatchRepoForCourt) GetByUserIDs(ctx context.Context, u1, u2 uuid.UUID) (*models.Match, error) {
 	return nil, nil
 }

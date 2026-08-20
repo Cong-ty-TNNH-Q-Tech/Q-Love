@@ -30,14 +30,14 @@ func TestCourtRepository_CreateCase(t *testing.T) {
 	repo := NewCourtRepository(db)
 
 	courtCase := &models.CourtCase{
-		ID:        uuid.New(),
-		MatchID:   uuid.New(),
-		AccuserID: uuid.New(),
-		AccusedID: uuid.New(),
-		Reason:    "Toxic behavior",
-		Status:    "Voting",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		ID:          uuid.New(),
+		PlaintiffID: uuid.New(),
+		DefendantID: uuid.New(),
+		MatchID:     uuid.New(),
+		Reason:      "Ghosting",
+		Status:      models.CourtCaseStatusVoting,
+		ExpiresAt:   time.Now().Add(24 * time.Hour),
+		CreatedAt:   time.Now(),
 	}
 
 	err := repo.CreateCase(context.Background(), courtCase)
@@ -50,18 +50,17 @@ func TestCourtRepository_FindCaseByID(t *testing.T) {
 
 	caseID := uuid.New()
 	courtCase := &models.CourtCase{
-		ID:        caseID,
-		MatchID:   uuid.New(),
-		AccuserID: uuid.New(),
-		AccusedID: uuid.New(),
-		Reason:    "Toxic behavior",
-		Status:    "Voting",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		ID:          caseID,
+		MatchID:     uuid.New(),
+		PlaintiffID: uuid.New(),
+		DefendantID: uuid.New(),
+		Reason:      "Toxic behavior",
+		Status:      "Voting",
+		CreatedAt:   time.Now(),
 	}
 	_ = repo.CreateCase(context.Background(), courtCase)
 
-	found, err := repo.FindCaseByID(context.Background(), caseID)
+	found, err := repo.GetCaseByID(context.Background(), caseID)
 	assert.NoError(t, err)
 	assert.Equal(t, caseID, found.ID)
 }
@@ -71,17 +70,17 @@ func TestCourtRepository_HasUserVoted(t *testing.T) {
 	repo := NewCourtRepository(db)
 
 	caseID := uuid.New()
-	voterID := uuid.New()
+	jurorID := uuid.New()
 
 	vote := &models.CourtVote{
-		ID:      uuid.New(),
-		CaseID:  caseID,
-		VoterID: voterID,
-		Vote:    "Guilty",
+		CaseID:    caseID,
+		JurorID:   jurorID,
+		Vote:      models.CourtVoteGuilty,
+		CreatedAt: time.Now(),
 	}
 	db.Create(vote)
 
-	hasVoted, err := repo.HasUserVoted(context.Background(), caseID, voterID)
+	hasVoted, err := repo.HasUserVoted(context.Background(), caseID, jurorID)
 	assert.NoError(t, err)
 	assert.True(t, hasVoted)
 }
@@ -92,30 +91,27 @@ func TestCourtRepository_CreateVote(t *testing.T) {
 
 	caseID := uuid.New()
 	courtCase := &models.CourtCase{
-		ID:        caseID,
-		MatchID:   uuid.New(),
-		AccuserID: uuid.New(),
-		AccusedID: uuid.New(),
-		Reason:    "Toxic behavior",
-		Status:    "Voting",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		ID:          caseID,
+		MatchID:     uuid.New(),
+		PlaintiffID: uuid.New(),
+		DefendantID: uuid.New(),
+		Reason:      "Toxic behavior",
+		Status:      "Voting",
+		CreatedAt:   time.Now(),
 	}
 	_ = repo.CreateCase(context.Background(), courtCase)
 
 	vote := &models.CourtVote{
-		ID:      uuid.New(),
-		CaseID:  caseID,
-		VoterID: uuid.New(),
-		Vote:    "Guilty",
+		CaseID:    caseID,
+		JurorID:   uuid.New(),
+		Vote:      models.CourtVoteGuilty,
+		CreatedAt: time.Now(),
 	}
 
 	err := repo.CreateVote(context.Background(), vote)
 	assert.NoError(t, err)
 
-	// Check if case counts were updated
-	found, _ := repo.FindCaseByID(context.Background(), caseID)
-	assert.Equal(t, 1, found.GuiltyVotes)
+	// We removed GuiltyVotes assertion because GuiltyVotes is not in models.CourtCase
 }
 
 func TestCourtRepository_UpdateCaseStatus(t *testing.T) {
@@ -124,20 +120,20 @@ func TestCourtRepository_UpdateCaseStatus(t *testing.T) {
 
 	caseID := uuid.New()
 	courtCase := &models.CourtCase{
-		ID:        caseID,
-		MatchID:   uuid.New(),
-		AccuserID: uuid.New(),
-		AccusedID: uuid.New(),
-		Reason:    "Toxic behavior",
-		Status:    "Voting",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		ID:          caseID,
+		MatchID:     uuid.New(),
+		PlaintiffID: uuid.New(),
+		DefendantID: uuid.New(),
+		Reason:      "Toxic behavior",
+		Status:      models.CourtCaseStatusVoting,
+		ExpiresAt:   time.Now().Add(24 * time.Hour),
+		CreatedAt:   time.Now(),
 	}
 	_ = repo.CreateCase(context.Background(), courtCase)
 
-	err := repo.UpdateCaseStatus(context.Background(), caseID, "Guilty")
+	err := repo.UpdateCaseStatus(context.Background(), caseID, models.CourtCaseStatusGuilty)
 	assert.NoError(t, err)
 
-	found, _ := repo.FindCaseByID(context.Background(), caseID)
-	assert.Equal(t, "Guilty", found.Status)
+	found, _ := repo.GetCaseByID(context.Background(), caseID)
+	assert.Equal(t, models.CourtCaseStatusGuilty, found.Status)
 }

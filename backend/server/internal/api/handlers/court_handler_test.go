@@ -21,15 +21,25 @@ type mockCourtService struct {
 	err error
 }
 
-func (m *mockCourtService) FileCase(ctx context.Context, matchID, accuserID uuid.UUID, reason string) error {
+func (m *mockCourtService) FileLawsuit(ctx context.Context, plaintiffID, defendantID, matchID uuid.UUID, reason string) (*models.CourtCase, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	return &models.CourtCase{}, nil
+}
+
+func (m *mockCourtService) GetFeed(ctx context.Context, jurorID uuid.UUID, limit int) ([]models.CourtCase, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	return []models.CourtCase{}, nil
+}
+
+func (m *mockCourtService) VoteCase(ctx context.Context, caseID, jurorID uuid.UUID, voteType models.CourtVoteType) error {
 	return m.err
 }
 
-func (m *mockCourtService) VoteCase(ctx context.Context, caseID, voterID uuid.UUID, vote string) error {
-	return m.err
-}
-
-func (m *mockCourtService) WithdrawCase(ctx context.Context, caseID, accuserID uuid.UUID) error {
+func (m *mockCourtService) WithdrawCase(ctx context.Context, caseID, plaintiffID uuid.UUID) error {
 	return m.err
 }
 
@@ -37,15 +47,15 @@ func setupCourtHandlerApp(mockSvc *mockCourtService) *fiber.App {
 	app := fiber.New()
 	h := NewCourtHandler(mockSvc)
 	app.Post("/court/cases", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New())
-		return h.FileCase(c)
+		c.Locals("userID", uuid.New().String())
+		return h.FileLawsuit(c)
 	})
 	app.Post("/court/:case_id/vote", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New())
+		c.Locals("userID", uuid.New().String())
 		return h.VoteCase(c)
 	})
 	app.Post("/court/:case_id/withdraw", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New())
+		c.Locals("userID", uuid.New().String())
 		return h.WithdrawCase(c)
 	})
 	return app
@@ -55,6 +65,7 @@ func TestCourtHandler_FileCase_Success(t *testing.T) {
 	app := setupCourtHandlerApp(&mockCourtService{})
 	
 	body := map[string]interface{}{
+		"defendant_id": uuid.New().String(),
 		"match_id": uuid.New().String(),
 		"reason": "Test reason",
 	}
@@ -78,6 +89,7 @@ func TestCourtHandler_FileCase_BadRequest(t *testing.T) {
 func TestCourtHandler_FileCase_ServiceErr(t *testing.T) {
 	app := setupCourtHandlerApp(&mockCourtService{err: errors.New("cannot file case")})
 	body := map[string]interface{}{
+		"defendant_id": uuid.New().String(),
 		"match_id": uuid.New().String(),
 		"reason": "Test reason",
 	}
