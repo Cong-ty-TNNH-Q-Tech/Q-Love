@@ -69,6 +69,21 @@ func (m *mockTxManager) WithTransaction(ctx context.Context, fn func(ctx context
 	return fn(ctx)
 }
 
+type mockWingmanMatchRepo struct {
+	createFn func(ctx context.Context, match *models.Match) error
+}
+
+func (m *mockWingmanMatchRepo) Create(ctx context.Context, match *models.Match) error {
+	if m.createFn != nil {
+		return m.createFn(ctx, match)
+	}
+	return nil
+}
+func (m *mockWingmanMatchRepo) FindByID(ctx context.Context, id uuid.UUID) (*models.Match, error) { return nil, nil }
+func (m *mockWingmanMatchRepo) FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error) { return nil, nil }
+func (m *mockWingmanMatchRepo) SoftDelete(ctx context.Context, id uuid.UUID) error { return nil }
+func (m *mockWingmanMatchRepo) UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error { return nil }
+
 // --- Tests ---
 
 func TestWingmanService_CreateReferral(t *testing.T) {
@@ -77,7 +92,7 @@ func TestWingmanService_CreateReferral(t *testing.T) {
 			return nil
 		},
 	}
-	service := NewWingmanService(wingmanRepo, nil, nil)
+	service := NewWingmanService(wingmanRepo, nil, nil, &mockWingmanMatchRepo{})
 
 	wingmanID := uuid.New()
 	target1ID := uuid.New()
@@ -113,7 +128,7 @@ func TestWingmanService_AcceptReferral_Success(t *testing.T) {
 			return nil
 		},
 	}
-	service := NewWingmanService(wingmanRepo, nil, &mockTxManager{})
+	service := NewWingmanService(wingmanRepo, nil, &mockTxManager{}, &mockWingmanMatchRepo{})
 
 	referral, err := service.AcceptReferral(context.Background(), refID, target1ID)
 	if err != nil {
@@ -148,7 +163,7 @@ func TestWingmanService_ProcessCommission_Success(t *testing.T) {
 			return nil
 		},
 	}
-	service := NewWingmanService(wingmanRepo, walletRepo, &mockTxManager{})
+	service := NewWingmanService(wingmanRepo, walletRepo, &mockTxManager{}, &mockWingmanMatchRepo{})
 
 	err := service.ProcessCommission(context.Background(), refID)
 	if err != nil {
@@ -166,7 +181,7 @@ func TestWingmanService_AcceptReferral_Errors(t *testing.T) {
 			return nil, errors.New("not found")
 		},
 	}
-	service := NewWingmanService(wingmanRepo, nil, &mockTxManager{})
+	service := NewWingmanService(wingmanRepo, nil, &mockTxManager{}, &mockWingmanMatchRepo{})
 
 	// 1. Referral not found
 	_, err := service.AcceptReferral(context.Background(), refID, target1ID)
@@ -213,6 +228,22 @@ func TestWingmanService_AcceptReferral_Errors(t *testing.T) {
 	if err == nil || err.Error() != "user is not part of this referral" {
 		t.Errorf("Expected user is not part of this referral error, got %v", err)
 	}
+
+	// 5. Wingman refers themselves
+	wingmanRepo.getReferralByIDFn = func(ctx context.Context, referralID uuid.UUID) (*models.WingmanReferral, error) {
+		return &models.WingmanReferral{
+			ID:        refID,
+			Status:    "pending",
+			ExpiresAt: time.Now().Add(1 * time.Hour),
+			Target1ID: target1ID,
+			Target2ID: uuid.New(),
+			WingmanID: target1ID, // Wingman refers themselves
+		}, nil
+	}
+	_, err = service.AcceptReferral(context.Background(), refID, target1ID)
+	if err == nil || err.Error() != "wingman cannot refer themselves" {
+		t.Errorf("Expected wingman cannot refer themselves error, got %v", err)
+	}
 }
 
 func TestWingmanService_ProcessCommission_Errors(t *testing.T) {
@@ -228,7 +259,7 @@ func TestWingmanService_ProcessCommission_Errors(t *testing.T) {
 			}, nil
 		},
 	}
-	service := NewWingmanService(wingmanRepo, nil, &mockTxManager{})
+	service := NewWingmanService(wingmanRepo, nil, &mockTxManager{}, &mockWingmanMatchRepo{})
 
 	// 1. Invalid status
 	err := service.ProcessCommission(context.Background(), refID)
@@ -243,7 +274,7 @@ func TestWingmanService_CreateReferral_Errors(t *testing.T) {
 			return errors.New("db error")
 		},
 	}
-	service := NewWingmanService(wingmanRepo, nil, nil)
+	service := NewWingmanService(wingmanRepo, nil, nil, &mockWingmanMatchRepo{})
 	
 	_, err := service.CreateReferral(context.Background(), uuid.New(), uuid.New(), uuid.New())
 	if err == nil || err.Error() != "db error" {
@@ -269,7 +300,7 @@ func TestWingmanService_AcceptReferral_UpdateError(t *testing.T) {
 			return errors.New("update error")
 		},
 	}
-	service := NewWingmanService(wingmanRepo, nil, &mockTxManager{})
+	service := NewWingmanService(wingmanRepo, nil, &mockTxManager{}, &mockWingmanMatchRepo{})
 
 	_, err := service.AcceptReferral(context.Background(), refID, target1ID)
 	if err == nil || err.Error() != "update error" {
@@ -296,7 +327,7 @@ func TestWingmanService_ProcessCommission_DBErrors(t *testing.T) {
 			return errors.New("add commission error")
 		},
 	}
-	service1 := NewWingmanService(wingmanRepo1, walletRepo1, &mockTxManager{})
+	service1 := NewWingmanService(wingmanRepo1, walletRepo1, &mockTxManager{}, &mockWingmanMatchRepo{})
 	if err := service1.ProcessCommission(context.Background(), refID); err == nil || err.Error() != "add commission error" {
 		t.Errorf("Expected add commission error, got %v", err)
 	}
@@ -308,7 +339,7 @@ func TestWingmanService_ProcessCommission_DBErrors(t *testing.T) {
 			return errors.New("create txn error")
 		},
 	}
-	service2 := NewWingmanService(wingmanRepo1, walletRepo2, &mockTxManager{})
+	service2 := NewWingmanService(wingmanRepo1, walletRepo2, &mockTxManager{}, &mockWingmanMatchRepo{})
 	if err := service2.ProcessCommission(context.Background(), refID); err == nil || err.Error() != "create txn error" {
 		t.Errorf("Expected create txn error, got %v", err)
 	}
@@ -326,7 +357,7 @@ func TestWingmanService_ProcessCommission_DBErrors(t *testing.T) {
 		addCommissionFn: func(ctx context.Context, userID uuid.UUID, amount float64) error { return nil },
 		createTransactionFn: func(ctx context.Context, txn *models.WalletTransaction) error { return nil },
 	}
-	service3 := NewWingmanService(wingmanRepo3, walletRepo3, &mockTxManager{})
+	service3 := NewWingmanService(wingmanRepo3, walletRepo3, &mockTxManager{}, &mockWingmanMatchRepo{})
 	if err := service3.ProcessCommission(context.Background(), refID); err == nil || err.Error() != "update ref error" {
 		t.Errorf("Expected update ref error, got %v", err)
 	}

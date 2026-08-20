@@ -52,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - [frontend/app] Khắc phục `ShameWallBloc` dùng mock data (Issue #119): Thêm `ShameRepository`, tách `ShameModel`, gọi API thực sự và thêm empty state UI.
+- [backend/server/services] Sửa lỗi logic `WingmanService.AcceptReferral` (Issue #117): Thực sự tạo `Match` trong database, cập nhật trạng thái `referral`, và phân phối hoa hồng một cách chính xác thay vì chỉ trả về dummy `MatchID`.
 - [backend/server/security] Implement actual NSFW detection using AWS Rekognition in `NSFWService` (Issue #116): Fixes the mock implementation to perform real image content moderation.
 - [backend/server/services] Sửa lỗi kiểu dữ liệu LocketRateLimiter (`uint64` sang `int64`) gây panic khi so sánh (Issue #110).
 - [backend/server/architecture] Khắc phục vi phạm DIP và Repository pattern ở `AuctionHandler` và `AuctionService` (Issue #113): Thêm `GetActiveAuctions` vào `AuctionService`, tạo `ChatLockRepository`, loại bỏ sử dụng trực tiếp `auctionRepo` trong Handler và `*gorm.DB` trong Service.
