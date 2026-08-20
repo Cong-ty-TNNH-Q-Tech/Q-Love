@@ -62,3 +62,12 @@ func (r *R2Client) GeneratePresignedURL(ctx context.Context, objectKey string, c
 	}
 	return request.URL, nil
 }
+
+// DeleteObject deletes an object from R2 bucket
+func (r *R2Client) DeleteObject(ctx context.Context, objectKey string) error {
+	_, err := r.S3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: aws.String(r.BucketName),
+		Key:    aws.String(objectKey),
+	})
+	return err
+}
