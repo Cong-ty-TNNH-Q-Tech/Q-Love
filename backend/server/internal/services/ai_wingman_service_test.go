@@ -6,6 +6,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -50,3 +51,30 @@ func TestAIWingmanService_SuggestReplies_Mock(t *testing.T) {
 	assert.Len(t, replies, 3)
 	assert.Contains(t, replies[0], "Gợi ý 1 (Mock)")
 }
+
+func TestAIWingmanService_SuggestReplies_Error(t *testing.T) {
+	mockRepo := &mockChatRepoForAI{
+		GetMessagesByMatchIDFn: func(ctx context.Context, matchID uuid.UUID, limit int) ([]models.ChatMessage, error) {
+			return nil, errors.New("db error")
+		},
+	}
+	svc := NewAIWingmanService(mockRepo, "fake-api-key")
+
+	_, err := svc.SuggestReplies(context.Background(), uuid.New())
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "db error")
+}
+
+func TestAIWingmanService_SuggestReplies_NoMessages(t *testing.T) {
+	mockRepo := &mockChatRepoForAI{
+		GetMessagesByMatchIDFn: func(ctx context.Context, matchID uuid.UUID, limit int) ([]models.ChatMessage, error) {
+			return []models.ChatMessage{}, nil
+		},
+	}
+	svc := NewAIWingmanService(mockRepo, "fake-api-key")
+
+	_, err := svc.SuggestReplies(context.Background(), uuid.New())
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "không có tin nhắn nào để gợi ý")
+}
+
