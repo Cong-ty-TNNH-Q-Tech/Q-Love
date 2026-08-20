@@ -12,7 +12,7 @@ func TestLocketRateLimiter_Bypass(t *testing.T) {
 	app := fiber.New()
 	
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		c.Locals("is_premium", true) // Premium user
 		return c.Next()
 	})
@@ -34,7 +34,7 @@ func TestLocketRateLimiter_Bypass(t *testing.T) {
 func TestLocketRateLimiter_Limit(t *testing.T) {
 	app := fiber.New()
 	
-	userID := uuid.New().String()
+	userID := uuid.New()
 	
 	app.Use(func(c *fiber.Ctx) error {
 		c.Locals("user_id", userID)
