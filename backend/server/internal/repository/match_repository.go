@@ -10,6 +10,7 @@ import (
 )
 
 type MatchRepository interface {
+	Create(ctx context.Context, match *models.Match) error
 	FindByID(ctx context.Context, id uuid.UUID) (*models.Match, error)
 	UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error
 }
@@ -20,6 +21,10 @@ type matchRepository struct {
 
 func NewMatchRepository(db *gorm.DB) MatchRepository {
 	return &matchRepository{db: db}
+}
+
+func (r *matchRepository) Create(ctx context.Context, match *models.Match) error {
+	return GetDB(ctx, r.db).Create(match).Error
 }
 
 func (r *matchRepository) FindByID(ctx context.Context, id uuid.UUID) (*models.Match, error) {
