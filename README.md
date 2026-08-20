@@ -51,6 +51,38 @@ Dự án sở hữu 3 "Đột phá lõi" được thiết kế đặc biệt đ�
 
 ---
 
+## 🛠 Hướng Dẫn Cài Đặt (Local Development)
+
+### 1. Yêu cầu hệ thống
+- **Go** >= 1.21
+- **Flutter** >= 3.22 (Tùy chọn nếu chỉ chạy Backend)
+- **PostgreSQL** >= 14 (Có hỗ trợ PostGIS)
+- **Redis** >= 6.0
+- **golang-migrate** (Công cụ chạy migration: `go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest`)
+
+### 2. Thiết lập Backend (Golang)
+
+1. Sao chép cấu hình môi trường:
+   ```bash
+   cd backend/server
+   cp .env.example .env
+   # Sửa các giá trị trong .env (DATABASE_DSN, JWT_SECRET, Redis, Sentry...)
+   ```
+
+2. Chạy Database Migrations:
+   ```bash
+   make migrate-up
+   # Để rollback, dùng lệnh: make migrate-down
+   ```
+
+3. Khởi chạy Server:
+   ```bash
+   make run
+   # Server sẽ chạy tại http://localhost:3000
+   ```
+
+---
+
 ## 🔬 Động Cơ Kỹ Thuật Độc Quyền (Proprietary Tech Engine)
 
 Kiến trúc của Q-Love được xây dựng chuẩn mực cho K8s Scaling, đáp ứng hàng triệu người dùng đồng thời (CCU):
