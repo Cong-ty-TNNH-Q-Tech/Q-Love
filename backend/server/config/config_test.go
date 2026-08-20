@@ -18,6 +18,7 @@ func TestLoadConfigPanics(t *testing.T) {
 		{"Missing RC", func() { os.Clearenv(); os.Setenv("DATABASE_DSN", "x") }},
 		{"Missing R2 Access", func() { os.Clearenv(); os.Setenv("DATABASE_DSN", "x"); os.Setenv("REVENUECAT_WEBHOOK_SECRET", "x") }},
 		{"Missing R2 Secret", func() { os.Clearenv(); os.Setenv("DATABASE_DSN", "x"); os.Setenv("REVENUECAT_WEBHOOK_SECRET", "x"); os.Setenv("R2_ACCESS_KEY_ID", "x") }},
+		{"Missing JWT Secret", func() { os.Clearenv(); os.Setenv("DATABASE_DSN", "x"); os.Setenv("REVENUECAT_WEBHOOK_SECRET", "x"); os.Setenv("R2_ACCESS_KEY_ID", "x"); os.Setenv("R2_SECRET_ACCESS_KEY", "x") }},
 	}
 	
 	for _, tt := range tests {
@@ -40,6 +41,7 @@ func TestLoadConfig(t *testing.T) {
 	os.Setenv("REVENUECAT_WEBHOOK_SECRET", "test")
 	os.Setenv("R2_ACCESS_KEY_ID", "test")
 	os.Setenv("R2_SECRET_ACCESS_KEY", "test")
+	os.Setenv("JWT_SECRET", "test-secret")
 	defer os.Clearenv()
 
 	cfg := LoadConfig()

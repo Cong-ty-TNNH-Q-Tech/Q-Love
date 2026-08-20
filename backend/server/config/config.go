@@ -22,6 +22,7 @@ type Config struct {
 	DatabaseDSN             string
 	RedisURL                string
 	RevenueCatWebhookSecret string
+	JWTSecret               string
 }
 
 func LoadConfig() *Config {
@@ -47,6 +48,11 @@ func LoadConfig() *Config {
 		log.Panic("R2_SECRET_ACCESS_KEY is required")
 	}
 
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Panic("JWT_SECRET is required")
+	}
+
 	return &Config{
 		R2AccountID:             getEnv("R2_ACCOUNT_ID", ""),
 		R2AccessKeyID:           r2AccessKey,
@@ -57,7 +63,12 @@ func LoadConfig() *Config {
 		Environment:             getEnv("APP_ENV", "development"),
 		DatabaseDSN:             dbDSN,
 		RedisURL:                getEnv("REDIS_URL", "redis://localhost:6379/0"),
+<<<<<<< HEAD
 		RevenueCatWebhookSecret: rcSecret,
+=======
+		RevenueCatWebhookSecret: getEnv("REVENUECAT_WEBHOOK_SECRET", "secret123"),
+		JWTSecret:               jwtSecret,
+>>>>>>> origin/main
 	}
 }
 
