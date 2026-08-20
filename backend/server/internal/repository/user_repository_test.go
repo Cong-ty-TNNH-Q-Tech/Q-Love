@@ -4,15 +4,12 @@ import (
 	"context"
 	"regexp"
 	"testing"
-	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-
-	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 )
 
 func setupUserRepoMock(t *testing.T) (UserRepository, sqlmock.Sqlmock) {
