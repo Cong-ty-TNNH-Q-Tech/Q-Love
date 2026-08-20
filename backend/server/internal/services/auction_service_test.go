@@ -377,3 +377,18 @@ func TestAuctionService_FinalizeAuctions_ChatLock_DB_Error(t *testing.T) {
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err)
 }
+
+func TestAuctionService_GetActiveAuctions(t *testing.T) {
+	auctionID := uuid.New()
+	auction := &models.BlindAuction{
+		ID:           auctionID,
+		Status:       "active",
+	}
+	auctionRepo := &mockAuctionRepo{auction: auction}
+	service := NewAuctionService(auctionRepo, nil, nil, nil)
+	
+	auctions, err := service.GetActiveAuctions(context.Background())
+	assert.NoError(t, err)
+	assert.Len(t, auctions, 1)
+	assert.Equal(t, auctionID, auctions[0].ID)
+}
