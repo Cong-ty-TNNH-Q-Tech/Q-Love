@@ -139,4 +139,20 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	// Match API
 	matchGroup := v1.Group("/matches", middleware.JWTMiddleware(cfg.JWTSecret))
 	matchGroup.Delete("/:match_id", matchHandler.Unmatch)
+
+	// Vouchers
+	voucherRepo := repository.NewVoucherRepository(db)
+	voucherService := services.NewVoucherService(voucherRepo, walletRepo, txManager)
+	voucherHandler := handlers.NewVoucherHandler(voucherService)
+	adminVoucherHandler := handlers.NewAdminVoucherHandler(voucherService)
+
+	voucherGroup := v1.Group("/vouchers", middleware.JWTMiddleware(cfg.JWTSecret))
+	voucherGroup.Get("/", voucherHandler.GetAvailableVouchers)
+	voucherGroup.Post("/redeem", voucherHandler.RedeemVoucher)
+
+	// Admin
+	adminGroup := app.Group("/admin/v1", middleware.JWTMiddleware(cfg.JWTSecret))
+	adminGroup.Get("/vouchers", adminVoucherHandler.GetVouchers)
+	adminGroup.Post("/vouchers", adminVoucherHandler.CreateVoucher)
+	adminGroup.Delete("/vouchers/:id", adminVoucherHandler.DeleteVoucher)
 }
