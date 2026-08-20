@@ -1,3 +1,7 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package services
 
 import (
@@ -13,6 +17,7 @@ import (
 type MockChatRepository struct {
 	CreateFunc               func(ctx context.Context, msg *models.ChatMessage) error
 	GetMessagesByMatchIDFunc func(ctx context.Context, matchID uuid.UUID, limit int, before *time.Time) ([]models.ChatMessage, error)
+	CountMessagesByMatchIDFunc func(ctx context.Context, matchID uuid.UUID) (int64, error)
 }
 
 func (m *MockChatRepository) Create(ctx context.Context, msg *models.ChatMessage) error {
@@ -27,6 +32,13 @@ func (m *MockChatRepository) GetMessagesByMatchID(ctx context.Context, matchID u
 		return m.GetMessagesByMatchIDFunc(ctx, matchID, limit, before)
 	}
 	return []models.ChatMessage{}, nil
+}
+
+func (m *MockChatRepository) CountMessagesByMatchID(ctx context.Context, matchID uuid.UUID) (int64, error) {
+	if m.CountMessagesByMatchIDFunc != nil {
+		return m.CountMessagesByMatchIDFunc(ctx, matchID)
+	}
+	return 0, nil
 }
 
 func TestChatService_SaveMessage(t *testing.T) {
@@ -71,3 +83,4 @@ func TestChatService_GetMessages(t *testing.T) {
 		t.Errorf("expected 1 message, got %d", len(messages))
 	}
 }
+
