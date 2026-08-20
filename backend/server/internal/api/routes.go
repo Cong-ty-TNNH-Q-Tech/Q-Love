@@ -92,8 +92,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	
 	// Auction routes
 	auctionRepo := repository.NewAuctionRepository(db)
-	auctionService := services.NewAuctionService(auctionRepo, walletRepo, txManager, db)
-	auctionHandler := handlers.NewAuctionHandler(auctionService, auctionRepo)
+	chatLockRepo := repository.NewChatLockRepository(db)
+	auctionService := services.NewAuctionService(auctionRepo, walletRepo, txManager, chatLockRepo)
+	auctionHandler := handlers.NewAuctionHandler(auctionService)
 	auctionGroup := v1.Group("/auctions", middleware.JWTMiddleware(""))
 	auctionGroup.Get("/active", auctionHandler.GetActiveAuctions)
 	auctionGroup.Post("/:id/bid", auctionHandler.PlaceBid)
