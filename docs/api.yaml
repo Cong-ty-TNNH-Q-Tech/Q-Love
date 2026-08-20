@@ -623,6 +623,36 @@ paths:
                   $ref: '#/components/schemas/FeedUserResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /devices/token:
+    post:
+      summary: Đăng ký FCM Token
+      description: Nhận và lưu trữ FCM Token của user vào Redis để gửi push notification
+      tags:
+        - Devices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fcm_token
+                - device_id
+              properties:
+                fcm_token:
+                  type: string
+                  description: FCM Token nhận được từ Firebase SDK
+                device_id:
+                  type: string
+                  description: Device ID định danh thiết bị
+      responses:
+        '200':
+          description: Đăng ký token thành công
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /matches/swipe:
     post:
       summary: Quẹt thẻ (Like/Pass)
@@ -1901,3 +1931,93 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /vouchers:
+    get:
+      summary: Danh sách Voucher khả dụng
+      tags:
+        - Vouchers
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: OK
+  /vouchers/redeem:
+    post:
+      summary: Đổi Xu lấy Voucher
+      tags:
+        - Vouchers
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                brand:
+                  type: string
+                  example: Highlands
+                value_xu:
+                  type: integer
+                  example: 100
+      responses:
+        '201':
+          description: Đổi thành công
+        '400':
+          description: Không đủ điểm hoặc hết hàng
+  /admin/v1/vouchers:
+    get:
+      summary: (Admin) Danh sách tất cả Voucher
+      tags:
+        - Admin
+        - Vouchers
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: (Admin) Thêm mã Voucher mới
+      tags:
+        - Admin
+        - Vouchers
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                brand:
+                  type: string
+                code:
+                  type: string
+                value_xu:
+                  type: integer
+                expires_at:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Created
+  /admin/v1/vouchers/{id}:
+    delete:
+      summary: (Admin) Xóa/Thu hồi Voucher chưa dùng
+      tags:
+        - Admin
+        - Vouchers
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK

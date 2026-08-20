@@ -24,6 +24,7 @@ type locketService struct {
 	matchRepo     repository.MatchRepository
 	violationRepo repository.UserViolationRepository
 	nsfwService   NSFWService
+	notifService  NotificationService
 	r2Client      *storage.R2Client
 }
 
@@ -32,6 +33,7 @@ func NewLocketService(
 	matchRepo repository.MatchRepository,
 	violationRepo repository.UserViolationRepository,
 	nsfwService NSFWService,
+	notifService NotificationService,
 	r2Client *storage.R2Client,
 ) LocketService {
 	return &locketService{
@@ -39,13 +41,14 @@ func NewLocketService(
 		matchRepo:     matchRepo,
 		violationRepo: violationRepo,
 		nsfwService:   nsfwService,
+		notifService:  notifService,
 		r2Client:      r2Client,
 	}
 }
 
 func (s *locketService) SendLocket(ctx context.Context, senderID uuid.UUID, matchID uuid.UUID, file *multipart.FileHeader) error {
 	// Verify match exists
-	_, err := s.matchRepo.FindByID(ctx, matchID)
+	match, err := s.matchRepo.FindByID(ctx, matchID)
 	if err != nil {
 		return errors.New("match not found")
 	}
@@ -120,8 +123,24 @@ func (s *locketService) SendLocket(ctx context.Context, senderID uuid.UUID, matc
 	// We ignore the error here as it's not critical for the locket send success
 	_ = s.matchRepo.UpdateLastInteraction(ctx, matchID, chatMessage.CreatedAt)
 
-	// Trigger silent push (In a real app, send to FCM/APNs)
-	// s.notificationService.SendSilentPush(...)
+	// Determine the target user ID for notification
+	var targetUserID uuid.UUID
+	if match.User1ID == senderID {
+		targetUserID = match.User2ID
+	} else {
+		targetUserID = match.User1ID
+	}
+
+	// Trigger silent push (FCM/APNs)
+	if s.notifService != nil {
+		_ = s.notifService.SendSilentPush(ctx, targetUserID, map[string]string{
+			"type":       "locket",
+			"match_id":   matchID.String(),
+			"image_url":  imageURL,
+			"blur_url":   blurURL,
+			"message_id": chatMessage.ID.String(),
+		})
+	}
 
 	return nil
 }

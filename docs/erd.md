@@ -30,6 +30,8 @@ erDiagram
     USERS ||--o{ COURT_VOTES : "votes"
     USERS ||--o{ NOTIFICATIONS : "receives"
     USERS ||--o{ USER_VIOLATIONS : "has"
+    USERS ||--o{ USER_VOUCHERS : "claims"
+    VOUCHERS ||--o{ USER_VOUCHERS : "claimed as"
 
     USERS {
         uuid id PK
@@ -47,6 +49,20 @@ erDiagram
         timestamp expires_at
         timestamp created_at
         timestamp updated_at
+    }
+    VOUCHERS {
+        uuid id PK
+        varchar brand "Highlands, CGV"
+        varchar code
+        int value_xu
+        varchar status "available, claimed, expired"
+        timestamp expires_at
+    }
+    USER_VOUCHERS {
+        uuid id PK
+        uuid user_id FK
+        uuid voucher_id FK
+        timestamp claimed_at
     }
     MATCHES {
         uuid id PK
@@ -151,6 +167,25 @@ erDiagram
 | `is_active` | BOOLEAN | Default false | Có đang dùng Premium không |
 | `expires_at`| TIMESTAMP | | Hạn sử dụng gói |
 | `free_cancel_left`| INT | Default 1 | Số lần được miễn trừ hủy cọc Date/tháng |
+
+**Bảng `vouchers`** (Kho mã giảm giá)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `brand` | VARCHAR(50) | | Tên thương hiệu (VD: Highlands, CGV) |
+| `code` | VARCHAR(50) | Unique | Mã Voucher thực tế |
+| `value_xu` | INT | | Giá trị quy đổi bằng Xu |
+| `status` | VARCHAR(20) | Default 'available' | `available`, `claimed`, `expired` |
+| `expires_at`| TIMESTAMP | | Hạn dùng của mã |
+| `created_at`| TIMESTAMP | Default NOW() | |
+
+**Bảng `user_vouchers`** (Voucher user đã đổi)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `user_id` | UUID | FK(users.id) | |
+| `voucher_id`| UUID | FK(vouchers.id) | Unique để tránh 1 mã gán 2 người |
+| `claimed_at`| TIMESTAMP | Default NOW() | |
 
 ---
 
