@@ -23,6 +23,7 @@ func TestRegisterRoutes(t *testing.T) {
 		R2AccessKeyID:     "dummy",
 		R2SecretAccessKey: "dummy",
 		R2BucketName:      "dummy",
+		JWTSecret:         "dummy",
 	}
 	r2Client, _ := storage.NewR2Client(cfg)
 	var db *gorm.DB
