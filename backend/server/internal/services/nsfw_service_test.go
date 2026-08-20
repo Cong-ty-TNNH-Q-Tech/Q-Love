@@ -10,6 +10,7 @@ import (
 	"testing"
 	"bytes"
 	"os"
+	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition"
@@ -142,5 +143,23 @@ func TestNSFWService_CheckNSFW_Safe(t *testing.T) {
 	}
 	if ratio != 0 {
 		t.Errorf("Expected ratio=0, got %v", ratio)
+	}
+}
+
+func TestNSFWService_CheckNSFW_OpenError(t *testing.T) {
+	service := &nsfwService{client: &mockRekognitionClient{}}
+	// createDummyFile has no content, so Open() will fail
+	_, _, err := service.CheckNSFW(context.Background(), createDummyFile(1024))
+	if err == nil {
+		t.Errorf("Expected open error, got nil")
+	}
+func TestNSFWService_CheckNSFW_RekognitionError(t *testing.T) {
+	importErr := &nsfwService{client: &mockRekognitionClient{err: errors.New("rekognition err")}}
+	
+	file := createTestFile(t, []byte("fake safe image data"))
+
+	_, _, err := importErr.CheckNSFW(context.Background(), file)
+	if err == nil {
+		t.Errorf("Expected rekognition error, got nil")
 	}
 }
