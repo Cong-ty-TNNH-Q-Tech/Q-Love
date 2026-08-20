@@ -22,8 +22,12 @@ type NSFWService interface {
 	CheckNSFW(ctx context.Context, file *multipart.FileHeader) (isNSFW bool, skinRatio float64, err error)
 }
 
+type RekognitionAPI interface {
+	DetectModerationLabels(ctx context.Context, params *rekognition.DetectModerationLabelsInput, optFns ...func(*rekognition.Options)) (*rekognition.DetectModerationLabelsOutput, error)
+}
+
 type nsfwService struct {
-	client *rekognition.Client
+	client RekognitionAPI
 }
 
 func NewNSFWService(cfg *appconfig.Config) NSFWService {
@@ -48,6 +52,10 @@ func (s *nsfwService) CheckNSFW(ctx context.Context, file *multipart.FileHeader)
 	if s.client == nil {
 		// Fallback to mock for local testing if no AWS credentials are provided
 		return false, 0.10, nil
+	}
+
+	if file.Size > 5*1024*1024 {
+		return false, 0, fmt.Errorf("file too large, max size is 5MB")
 	}
 
 	src, err := file.Open()
