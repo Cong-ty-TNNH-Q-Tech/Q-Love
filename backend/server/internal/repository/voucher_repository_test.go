@@ -68,7 +68,7 @@ func TestVoucherRepository_FindAll(t *testing.T) {
 	assert.Len(t, vouchers, 3)
 }
 
-func TestVoucherRepository_FindAvailable(t *testing.T) {
+func TestVoucherRepository_GetAvailableVoucher(t *testing.T) {
 	db := setupVoucherTestDB(t)
 	repo := NewVoucherRepository(db)
 
@@ -89,13 +89,12 @@ func TestVoucherRepository_FindAvailable(t *testing.T) {
 		ExpiresAt: time.Now().Add(24 * time.Hour),
 	})
 
-	vouchers, err := repo.FindAvailable(context.Background(), 10, 0)
+	voucher, err := repo.GetAvailableVoucher(context.Background(), "Highlands", 100)
 	assert.NoError(t, err)
-	assert.Len(t, vouchers, 1)
-	assert.Equal(t, "HL-1", vouchers[0].Code)
+	assert.Equal(t, "HL-1", voucher.Code)
 }
 
-func TestVoucherRepository_FindByID(t *testing.T) {
+func TestVoucherRepository_Delete(t *testing.T) {
 	db := setupVoucherTestDB(t)
 	repo := NewVoucherRepository(db)
 
@@ -109,12 +108,16 @@ func TestVoucherRepository_FindByID(t *testing.T) {
 		ExpiresAt: time.Now().Add(24 * time.Hour),
 	})
 
-	voucher, err := repo.FindByID(context.Background(), id)
+	err := repo.Delete(context.Background(), id)
 	assert.NoError(t, err)
-	assert.Equal(t, id, voucher.ID)
+	
+	// Check if deleted
+	var count int64
+	db.Model(&models.Voucher{}).Where("id = ?", id).Count(&count)
+	assert.Equal(t, int64(0), count)
 }
 
-func TestVoucherRepository_Claim(t *testing.T) {
+func TestVoucherRepository_MarkAsClaimed(t *testing.T) {
 	db := setupVoucherTestDB(t)
 	repo := NewVoucherRepository(db)
 
@@ -130,7 +133,7 @@ func TestVoucherRepository_Claim(t *testing.T) {
 		ExpiresAt: time.Now().Add(24 * time.Hour),
 	})
 
-	err := repo.Claim(context.Background(), userID, voucherID)
+	err := repo.MarkAsClaimed(context.Background(), voucherID, userID)
 	assert.NoError(t, err)
 
 	// Verify status updated
@@ -144,34 +147,7 @@ func TestVoucherRepository_Claim(t *testing.T) {
 	assert.Equal(t, userID, uv.UserID)
 }
 
-func TestVoucherRepository_FindUserVouchers(t *testing.T) {
-	db := setupVoucherTestDB(t)
-	repo := NewVoucherRepository(db)
-
-	userID := uuid.New()
-	voucherID := uuid.New()
-
-	db.Create(&models.Voucher{
-		ID:        voucherID,
-		Brand:     "Highlands",
-		Code:      "HL-1",
-		ValueXu:   100,
-		Status:    "claimed",
-		ExpiresAt: time.Now().Add(24 * time.Hour),
-	})
-
-	db.Create(&models.UserVoucher{
-		ID:        uuid.New(),
-		UserID:    userID,
-		VoucherID: voucherID,
-		ClaimedAt: time.Now(),
-	})
-
-	vouchers, err := repo.FindUserVouchers(context.Background(), userID)
-	assert.NoError(t, err)
-	assert.Len(t, vouchers, 1)
-	assert.Equal(t, voucherID, vouchers[0].VoucherID)
-}
+// Removed TestVoucherRepository_FindUserVouchers
 
 func TestVoucherRepository_Errors(t *testing.T) {
 	db := setupVoucherTestDB(t)
@@ -187,15 +163,12 @@ func TestVoucherRepository_Errors(t *testing.T) {
 	_, err = repo.FindAll(context.Background(), 10, 0)
 	assert.Error(t, err)
 	
-	_, err = repo.FindAvailable(context.Background(), 10, 0)
+	_, err = repo.GetAvailableVoucher(context.Background(), "Highlands", 100)
 	assert.Error(t, err)
 	
-	_, err = repo.FindByID(context.Background(), uuid.New())
+	err = repo.Delete(context.Background(), uuid.New())
 	assert.Error(t, err)
 	
-	err = repo.Claim(context.Background(), uuid.New(), uuid.New())
-	assert.Error(t, err)
-	
-	_, err = repo.FindUserVouchers(context.Background(), uuid.New())
+	err = repo.MarkAsClaimed(context.Background(), uuid.New(), uuid.New())
 	assert.Error(t, err)
 }
