@@ -41,8 +41,8 @@ func TestAuctionRepository_GetActiveAuctions(t *testing.T) {
 	assert.NoError(t, err)
 
 	repo := NewAuctionRepository(db)
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "blind_auctions" WHERE status = $1`)).
-		WithArgs("active").
+	mock.ExpectQuery(`(?i)SELECT \* FROM "blind_auctions" WHERE status = \$1`).
+		WithArgs("active", sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "status"}).AddRow(uuid.New(), "active"))
 
 	auctions, err := repo.GetActiveAuctions(context.Background(), 0, 100)
