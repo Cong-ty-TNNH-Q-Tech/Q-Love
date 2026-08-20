@@ -73,6 +73,12 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	shameGroup.Get("/", shameHandler.GetActiveShames)
 	shameGroup.Post("/:id/tomato", shameHandler.ThrowTomato)
 
+	// AI Wingman routes
+	aiService := services.NewAIWingmanService(chatRepo, cfg.OpenAIAPIKey)
+	aiHandler := handlers.NewAIWingmanHandler(aiService)
+	aiGroup := v1.Group("/ai", middleware.JWTMiddleware(cfg.JWTSecret))
+	aiGroup.Post("/suggest", aiHandler.SuggestReplies)
+
 	// Ex-Rating routes
 	exRatingRepo := repository.NewExRatingRepository(db)
 	exRatingService := services.NewExRatingService(exRatingRepo, walletRepo, txManager, chatRepo, matchRepo)
