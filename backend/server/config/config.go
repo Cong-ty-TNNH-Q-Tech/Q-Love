@@ -35,25 +35,45 @@ type Config struct {
 func LoadConfig() *Config {
 	_ = godotenv.Load()
 
+	dbDSN := os.Getenv("DATABASE_DSN")
+	if dbDSN == "" {
+		log.Panic("DATABASE_DSN is required")
+	}
+
+	rcSecret := os.Getenv("REVENUECAT_WEBHOOK_SECRET")
+	if rcSecret == "" {
+		log.Panic("REVENUECAT_WEBHOOK_SECRET is required")
+	}
+
+	r2AccessKey := os.Getenv("R2_ACCESS_KEY_ID")
+	if r2AccessKey == "" {
+		log.Panic("R2_ACCESS_KEY_ID is required")
+	}
+
+	r2SecretKey := os.Getenv("R2_SECRET_ACCESS_KEY")
+	if r2SecretKey == "" {
+		log.Panic("R2_SECRET_ACCESS_KEY is required")
+	}
+
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
-		log.Fatal("JWT_SECRET environment variable is required")
+		log.Panic("JWT_SECRET is required")
 	}
 
 	return &Config{
-		R2AccountID:             getEnv("R2_ACCOUNT_ID", "default_account_id"),
-		R2AccessKeyID:           getEnv("R2_ACCESS_KEY_ID", "default_access_key"),
-		R2SecretAccessKey:       getEnv("R2_SECRET_ACCESS_KEY", "default_secret_key"),
-		R2BucketName:            getEnv("R2_BUCKET_NAME", "qlove-bucket"),
+		R2AccountID:             getEnv("R2_ACCOUNT_ID", ""),
+		R2AccessKeyID:           r2AccessKey,
+		R2SecretAccessKey:       r2SecretKey,
+		R2BucketName:            getEnv("R2_BUCKET_NAME", ""),
 		Port:                    getEnv("PORT", "3000"),
 		SentryDSN:               getEnv("SENTRY_DSN", ""),
 		Environment:             getEnv("APP_ENV", "development"),
-		DatabaseDSN:             getEnv("DATABASE_DSN", "host=localhost user=postgres password=postgres dbname=qlove port=5432 sslmode=disable"),
+		DatabaseDSN:             dbDSN,
 		RedisURL:                getEnv("REDIS_URL", "redis://localhost:6379/0"),
-		RevenueCatWebhookSecret: getEnv("REVENUECAT_WEBHOOK_SECRET", "secret123"),
-		AWSRegion:               getEnv("AWS_REGION", "ap-southeast-1"),
-		AWSAccessKeyID:          getEnv("AWS_ACCESS_KEY_ID", "default_aws_access_key"),
-		AWSSecretAccessKey:      getEnv("AWS_SECRET_KEY", "default_aws_secret_key"),
+		RevenueCatWebhookSecret: rcSecret,
+		AWSRegion:               getEnv("AWS_REGION", "us-east-1"),
+		AWSAccessKeyID:          getEnv("AWS_ACCESS_KEY_ID", ""),
+		AWSSecretAccessKey:      getEnv("AWS_SECRET_ACCESS_KEY", ""),
 		JWTSecret:               jwtSecret,
 		OpenAIAPIKey:            getEnv("OPENAI_API_KEY", ""),
 		FCMKey:                  getEnv("FCM_KEY", ""),
