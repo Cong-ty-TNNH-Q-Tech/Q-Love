@@ -2,14 +2,26 @@ package repository
 
 import (
 	"context"
+	"regexp"
 	"testing"
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+func setupMatchRepoMock(t *testing.T) (MatchRepository, sqlmock.Sqlmock) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+	gormDB, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: db,
+	}), &gorm.Config{})
+	assert.NoError(t, err)
+	return NewMatchRepository(gormDB), mock
+}
 
 func TestMatchRepository_FindByID(t *testing.T) {
 	db, mock, err := sqlmock.New()
