@@ -153,6 +153,8 @@ func TestNSFWService_CheckNSFW_OpenError(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected open error, got nil")
 	}
+}
+
 func TestNSFWService_CheckNSFW_RekognitionError(t *testing.T) {
 	importErr := &nsfwService{client: &mockRekognitionClient{err: errors.New("rekognition err")}}
 	
