@@ -13,6 +13,7 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 type mockExRatingRepo struct {
@@ -54,17 +55,29 @@ func (m *mockMatchRepoForExRating) FindByID(ctx context.Context, id uuid.UUID) (
 	}
 	return m.match, nil
 }
+func (m *mockMatchRepoForExRating) FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error) {
+	return m.match, nil
+}
 func (m *mockMatchRepoForExRating) Create(ctx context.Context, match *models.Match) error { return nil }
 func (m *mockMatchRepoForExRating) UpdateLastInteraction(ctx context.Context, matchID uuid.UUID, t time.Time) error { return nil }
 
 type mockWalletRepoForExRating struct {
-	balance int
+	balance float64
 }
-func (m *mockWalletRepoForExRating) GetBalance(ctx context.Context, userID uuid.UUID) (*models.Wallet, error) {
-	return &models.Wallet{Balance: m.balance}, nil
+func (m *mockWalletRepoForExRating) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
+	return &models.UserWallet{Balance: m.balance}, nil
 }
-func (m *mockWalletRepoForExRating) UpdateBalance(ctx context.Context, userID uuid.UUID, amount int, typ, ref string) error {
+func (m *mockWalletRepoForExRating) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error {
 	return nil
+}
+func (m *mockWalletRepoForExRating) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error {
+	return nil
+}
+func (m *mockWalletRepoForExRating) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error {
+	return nil
+}
+func (m *mockWalletRepoForExRating) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) {
+	return false, nil
 }
 
 type mockTxManager struct{}
@@ -75,7 +88,7 @@ func (m *mockTxManager) WithTransaction(ctx context.Context, fn func(txCtx conte
 func TestExRatingService_SubmitRating_Success(t *testing.T) {
 	targetUserID := uuid.New()
 	matchID := uuid.New()
-	match := &models.Match{ID: matchID, User1ID: uuid.New(), User2ID: targetUserID, Status: "unmatched"}
+	match := &models.Match{ID: matchID, User1ID: uuid.New(), User2ID: targetUserID, DeletedAt: gorm.DeletedAt{Time: time.Now(), Valid: true}}
 
 	svc := NewExRatingService(
 		&mockExRatingRepo{hasRated: false},
@@ -92,7 +105,7 @@ func TestExRatingService_SubmitRating_Success(t *testing.T) {
 func TestExRatingService_SubmitRating_NotUnmatched(t *testing.T) {
 	targetUserID := uuid.New()
 	matchID := uuid.New()
-	match := &models.Match{ID: matchID, User1ID: uuid.New(), User2ID: targetUserID, Status: "active"}
+	match := &models.Match{ID: matchID, User1ID: uuid.New(), User2ID: targetUserID, DeletedAt: gorm.DeletedAt{Valid: false}}
 
 	svc := NewExRatingService(
 		&mockExRatingRepo{hasRated: false},
@@ -110,7 +123,7 @@ func TestExRatingService_SubmitRating_NotUnmatched(t *testing.T) {
 func TestExRatingService_SubmitRating_NotEnoughMessages(t *testing.T) {
 	targetUserID := uuid.New()
 	matchID := uuid.New()
-	match := &models.Match{ID: matchID, User1ID: uuid.New(), User2ID: targetUserID, Status: "unmatched"}
+	match := &models.Match{ID: matchID, User1ID: uuid.New(), User2ID: targetUserID, DeletedAt: gorm.DeletedAt{Time: time.Now(), Valid: true}}
 
 	svc := NewExRatingService(
 		&mockExRatingRepo{hasRated: false},

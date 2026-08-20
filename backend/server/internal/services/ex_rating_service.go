@@ -45,12 +45,12 @@ func NewExRatingService(
 
 func (s *exRatingService) SubmitRating(ctx context.Context, targetUserID, matchID uuid.UUID, score int, tags []string) error {
 	// Verify match exists and is inactive/unmatched
-	match, err := s.matchRepo.FindByID(ctx, matchID)
+	match, err := s.matchRepo.FindByIDUnscoped(ctx, matchID)
 	if err != nil {
 		return errors.New("match not found")
 	}
 
-	if match.Status != "unmatched" {
+	if !match.DeletedAt.Valid {
 		return errors.New("chỉ được đánh giá sau khi đã unmatch")
 	}
 
@@ -92,7 +92,7 @@ func (s *exRatingService) SubmitRating(ctx context.Context, targetUserID, matchI
 func (s *exRatingService) ViewRating(ctx context.Context, viewerID, targetUserID uuid.UUID) (float64, int64, map[string]int, error) {
 	// Transaction to deduct 50 Xu
 	err := s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
-		wallet, err := s.walletRepo.GetBalance(txCtx, viewerID)
+		wallet, err := s.walletRepo.GetWalletForUpdate(txCtx, viewerID)
 		if err != nil {
 			return errors.New("lỗi truy xuất ví")
 		}
@@ -102,9 +102,22 @@ func (s *exRatingService) ViewRating(ctx context.Context, viewerID, targetUserID
 		}
 
 		// Deduct Xu
-		err = s.walletRepo.UpdateBalance(txCtx, viewerID, -50, "deduct", "Phí tra cứu CV Tình trường")
+		err = s.walletRepo.UpdateBalance(txCtx, viewerID, -50)
 		if err != nil {
 			return errors.New("lỗi trừ xu")
+		}
+
+		// Create Transaction
+		err = s.walletRepo.CreateTransaction(txCtx, &models.WalletTransaction{
+			ID:          uuid.New(),
+			UserID:      viewerID,
+			Amount:      -50,
+			Type:        "deduct",
+			Reference:   "Phí tra cứu CV Tình trường",
+			CreatedAt:   time.Now(),
+		})
+		if err != nil {
+			return errors.New("lỗi ghi log giao dịch")
 		}
 
 		return nil
