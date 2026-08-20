@@ -100,7 +100,7 @@ func TestAIWingmanService_SuggestReplies_APIError(t *testing.T) {
 
 	_, err := svc.SuggestReplies(context.Background(), uuid.New())
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "API returned status: 500")
+	assert.Contains(t, err.Error(), "OpenAI API error:")
 }
 
 func TestAIWingmanService_SuggestReplies_HTTPError(t *testing.T) {
