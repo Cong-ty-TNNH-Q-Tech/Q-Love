@@ -1983,3 +1983,93 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /vouchers:
+    get:
+      summary: Danh sách Voucher khả dụng
+      tags:
+        - Vouchers
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: OK
+  /vouchers/redeem:
+    post:
+      summary: Đổi Xu lấy Voucher
+      tags:
+        - Vouchers
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                brand:
+                  type: string
+                  example: Highlands
+                value_xu:
+                  type: integer
+                  example: 100
+      responses:
+        '201':
+          description: Đổi thành công
+        '400':
+          description: Không đủ điểm hoặc hết hàng
+  /admin/v1/vouchers:
+    get:
+      summary: (Admin) Danh sách tất cả Voucher
+      tags:
+        - Admin
+        - Vouchers
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: (Admin) Thêm mã Voucher mới
+      tags:
+        - Admin
+        - Vouchers
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                brand:
+                  type: string
+                code:
+                  type: string
+                value_xu:
+                  type: integer
+                expires_at:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Created
+  /admin/v1/vouchers/{id}:
+    delete:
+      summary: (Admin) Xóa/Thu hồi Voucher chưa dùng
+      tags:
+        - Admin
+        - Vouchers
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK

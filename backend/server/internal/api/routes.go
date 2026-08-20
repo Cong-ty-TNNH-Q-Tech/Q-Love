@@ -146,9 +146,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	courtService := services.NewCourtService(courtRepo, matchRepo, redisClient)
 	courtHandler := handlers.NewCourtHandler(courtService)
 
-	courtGroup := v1.Group("/court/cases", middleware.JWTMiddleware(cfg.JWTSecret))
-	courtGroup.Post("/", courtHandler.FileLawsuit)
-	courtGroup.Get("/", courtHandler.GetFeed)
+	courtGroup := v1.Group("/court", middleware.JWTMiddleware(cfg.JWTSecret))
+	courtGroup.Post("/cases", courtHandler.FileLawsuit)
+	courtGroup.Get("/feed", courtHandler.GetFeed)
 	courtGroup.Post("/:case_id/vote", courtHandler.VoteCase)
 	courtGroup.Post("/:case_id/withdraw", courtHandler.WithdrawCase)
 
@@ -157,4 +157,20 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 		courtWorker := services.NewCourtWorker(courtRepo, violationRepo, redisClient, logger.Log)
 		courtWorker.Start(context.Background())
 	}
+
+	// Vouchers
+	voucherRepo := repository.NewVoucherRepository(db)
+	voucherService := services.NewVoucherService(voucherRepo, walletRepo, txManager)
+	voucherHandler := handlers.NewVoucherHandler(voucherService)
+	adminVoucherHandler := handlers.NewAdminVoucherHandler(voucherService)
+
+	voucherGroup := v1.Group("/vouchers", middleware.JWTMiddleware(cfg.JWTSecret))
+	voucherGroup.Get("/", voucherHandler.GetAvailableVouchers)
+	voucherGroup.Post("/redeem", voucherHandler.RedeemVoucher)
+
+	// Admin
+	adminGroup := app.Group("/admin/v1", middleware.JWTMiddleware(cfg.JWTSecret))
+	adminGroup.Get("/vouchers", adminVoucherHandler.GetVouchers)
+	adminGroup.Post("/vouchers", adminVoucherHandler.CreateVoucher)
+	adminGroup.Delete("/vouchers/:id", adminVoucherHandler.DeleteVoucher)
 }
