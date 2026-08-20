@@ -415,10 +415,49 @@ paths:
                     type: string
                   expires_in:
                     type: integer
-        '400':
-          $ref: '#/components/responses/UnprocessableEntity'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+        "400":
+          $ref: '#/components/responses/BadRequestError'
+        "500":
+          $ref: '#/components/responses/InternalError'
+
+  /ai/suggest:
+    post:
+      summary: Nhận gợi ý tin nhắn từ AI Mỏ Hỗn
+      description: Gửi match_id để AI tự động phân tích 5 tin nhắn gần nhất và đưa ra 3 gợi ý phản hồi (Đã che thông tin cá nhân).
+      tags:
+        - AI Wingman
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - match_id
+              properties:
+                match_id:
+                  type: string
+                  format: uuid
+      responses:
+        "200":
+          description: Danh sách gợi ý tin nhắn
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  replies:
+                    type: array
+                    items:
+                      type: string
+        "400":
+          $ref: '#/components/responses/BadRequestError'
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
+        "500":
+          $ref: '#/components/responses/InternalError'
   /users/me:
     get:
       summary: Lấy thông tin profile của bản thân

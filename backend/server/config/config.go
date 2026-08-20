@@ -22,7 +22,11 @@ type Config struct {
 	DatabaseDSN             string
 	RedisURL                string
 	RevenueCatWebhookSecret string
+	AWSRegion               string
+	AWSAccessKeyID          string
+	AWSSecretAccessKey      string
 	JWTSecret               string
+	OpenAIAPIKey            string
 }
 
 func LoadConfig() *Config {
@@ -44,7 +48,11 @@ func LoadConfig() *Config {
 		DatabaseDSN:             getEnv("DATABASE_DSN", "host=localhost user=postgres password=postgres dbname=qlove port=5432 sslmode=disable"),
 		RedisURL:                getEnv("REDIS_URL", "redis://localhost:6379/0"),
 		RevenueCatWebhookSecret: getEnv("REVENUECAT_WEBHOOK_SECRET", "secret123"),
+		AWSRegion:               getEnv("AWS_REGION", "ap-southeast-1"),
+		AWSAccessKeyID:          getEnv("AWS_ACCESS_KEY_ID", "default_aws_access_key"),
+		AWSSecretAccessKey:      getEnv("AWS_SECRET_KEY", "default_aws_secret_key"),
 		JWTSecret:               jwtSecret,
+		OpenAIAPIKey:            getEnv("OPENAI_API_KEY", ""),
 	}
 }
 

@@ -1,5 +1,6 @@
-// Copyright (c) 2026 Q-Tech. All rights reserved.
+// Copyright 2026 Q-Tech Team
 // Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
 
 package handlers
 
@@ -42,3 +43,4 @@ func (h *MatchHandler) Unmatch(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"message": "Unmatched successfully"})
 }
+
