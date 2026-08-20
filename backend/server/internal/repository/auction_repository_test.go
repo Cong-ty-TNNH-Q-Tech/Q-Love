@@ -50,6 +50,20 @@ func TestAuctionRepository_GetActiveAuctions(t *testing.T) {
 	assert.Len(t, auctions, 1)
 }
 
+func TestAuctionRepository_GetActiveAuctions_Error(t *testing.T) {
+	db, mock, err := setupTestDB()
+	assert.NoError(t, err)
+
+	repo := NewAuctionRepository(db)
+	mock.ExpectQuery(`(?i)SELECT \* FROM "blind_auctions" WHERE status = \$1`).
+		WithArgs("active", 100).
+		WillReturnError(assert.AnError)
+
+	auctions, err := repo.GetActiveAuctions(context.Background(), 0, 100)
+	assert.Error(t, err)
+	assert.Nil(t, auctions)
+}
+
 func TestAuctionRepository_GetBidsForAuctions(t *testing.T) {
 	db, mock, err := setupTestDB()
 	assert.NoError(t, err)
