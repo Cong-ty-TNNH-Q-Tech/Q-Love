@@ -30,6 +30,5 @@ type UserVoucher struct {
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 
 	// Associations
-	User    *User    `json:"user,omitempty" gorm:"foreignKey:UserID"`
 	Voucher *Voucher `json:"voucher,omitempty" gorm:"foreignKey:VoucherID"`
 }
