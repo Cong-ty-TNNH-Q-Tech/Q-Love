@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [backend/server/api] Implement Ex-Rating system and Ex-Rating APIs (Issue #27).
 - [backend/server/ai] Tích hợp AI xử lý làm mờ ảnh (Gaussian Blur) dựa trên số nguyên âm bằng Go `image/draw` (Issue #21).
 - [frontend/app] Tạo thư mục native (android/ và ios/) cho Flutter app, cấu hình Bundle ID, Permissions và Deep Links (Issue #111).
 - [backend/server/api] Thêm API Unmatch (Issue #42).
