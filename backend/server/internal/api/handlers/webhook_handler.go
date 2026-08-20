@@ -1,3 +1,6 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
 package handlers
 
 import (
@@ -48,3 +51,4 @@ func (h *WebhookHandler) HandleRevenueCat(c *fiber.Ctx) error {
 	// Always return 200 OK so RevenueCat marks webhook as successful
 	return c.SendStatus(fiber.StatusOK)
 }
+
