@@ -246,27 +246,69 @@ func createValidMultipartFile(t *testing.T) *multipart.FileHeader {
 	return fileHeader
 }
 
+func createInvalidMultipartFile(t *testing.T) *multipart.FileHeader {
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("file", "test.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	part.Write([]byte("this is not a valid image file"))
+	writer.Close()
+
+	req := &http.Request{
+		Header: make(http.Header),
+		Body:   io.NopCloser(body),
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	reader, err := req.MultipartReader()
+	if err != nil {
+		t.Fatal(err)
+	}
+	form, err := reader.ReadForm(1024 * 1024)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fileHeader := form.File["file"][0]
+	fileHeader.Header.Set("Content-Type", "image/jpeg")
+	return fileHeader
+}
+
+func TestLocketService_SendLocket_DecodeError(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{}}
+	chatRepo := &mockChatRepo{}
+	violationRepo := &mockViolationRepo{}
+	nsfwService := &mockNSFWService{isNSFW: false}
+
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
+
+	fileHeader := createInvalidMultipartFile(t)
+	
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
+	if err == nil || err.Error() != "failed to decode image" {
+		t.Errorf("Expected failed to decode image error, got %v", err)
+	}
+}
+
 func TestLocketService_SendLocket_R2Error(t *testing.T) {
 	matchRepo := &mockMatchRepo{match: &models.Match{}}
 	chatRepo := &mockChatRepo{}
 	violationRepo := &mockViolationRepo{}
 	nsfwService := &mockNSFWService{isNSFW: false}
 
-	// For R2Client to be tested without file.Open() panicking, we rely on file.Open() returning an error
-	// because it's a dummy file header!
 	r2Client := &storage.R2Client{
 		BucketName: "test-bucket",
-		// S3Client: &mockS3API{err: errors.New("s3 err")}, // Don't even need this if file.Open fails!
 	}
-
+	// We can't mock R2Client easily here without refactoring, but we can cause a panic or network error.
+	// Since r2Client uses uninitialized AWS config, it will return an error during upload.
 	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
 
-	fileHeader := &multipart.FileHeader{Filename: "test.jpg", Size: 1024, Header: make(map[string][]string)}
-	fileHeader.Header.Set("Content-Type", "image/jpeg")
+	fileHeader := createValidMultipartFile(t)
 	
 	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
 	if err == nil {
-		t.Errorf("Expected error from file.Open or R2 upload, got nil")
+		t.Errorf("Expected error from R2 upload, got nil")
 	}
 }
 
