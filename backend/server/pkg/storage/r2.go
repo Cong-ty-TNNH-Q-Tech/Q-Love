@@ -7,6 +7,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -61,4 +62,18 @@ func (r *R2Client) GeneratePresignedURL(ctx context.Context, objectKey string, c
 		return "", fmt.Errorf("couldn't get a presigned request: %v", err)
 	}
 	return request.URL, nil
+}
+
+func (r *R2Client) UploadFile(ctx context.Context, objectKey string, file io.Reader, contentType string) (string, error) {
+	_, err := r.S3Client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket:      aws.String(r.BucketName),
+		Key:         aws.String(objectKey),
+		Body:        file,
+		ContentType: aws.String(contentType),
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to upload object: %v", err)
+	}
+
+	return fmt.Sprintf("https://r2.qlove.com/%s", objectKey), nil
 }
