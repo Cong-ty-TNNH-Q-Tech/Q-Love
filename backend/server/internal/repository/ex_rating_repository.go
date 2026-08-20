@@ -6,7 +6,6 @@ package repository
 
 import (
 	"context"
-	"strings"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/google/uuid"
