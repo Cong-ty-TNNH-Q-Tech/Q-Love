@@ -4,10 +4,6 @@
 package services
 
 import (
-	"github.com/DATA-DOG/go-sqlmock"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-
 	"context"
 	"testing"
 	"time"
@@ -377,11 +373,6 @@ func TestAuctionService_FinalizeAuctions_ChatLock_DB_Error(t *testing.T) {
 	walletRepo := &mockAuctionWalletRepo{}
 	txManager := &mockTxManager{}
 	
-	// mock DB to return error on Create
-	db, mock, _ := sqlmock.New()
-	gormDB, _ := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{})
-	mock.ExpectQuery("INSERT INTO .*chat_locks.*").WillReturnError(assert.AnError)
-
 	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockChatLockRepo{err: assert.AnError})
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err)
