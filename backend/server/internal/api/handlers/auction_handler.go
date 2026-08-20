@@ -6,19 +6,16 @@ package handlers
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
 )
 
 type AuctionHandler struct {
 	auctionService services.AuctionService
-	auctionRepo    repository.AuctionRepository
 }
 
-func NewAuctionHandler(auctionService services.AuctionService, auctionRepo repository.AuctionRepository) *AuctionHandler {
+func NewAuctionHandler(auctionService services.AuctionService) *AuctionHandler {
 	return &AuctionHandler{
 		auctionService: auctionService,
-		auctionRepo:    auctionRepo,
 	}
 }
 
@@ -28,7 +25,7 @@ type BidRequest struct {
 
 func (h *AuctionHandler) GetActiveAuctions(c *fiber.Ctx) error {
 	ctx := c.Context()
-	auctions, err := h.auctionRepo.GetActiveAuctions(ctx)
+	auctions, err := h.auctionService.GetActiveAuctions(ctx)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}

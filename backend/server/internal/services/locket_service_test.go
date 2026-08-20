@@ -30,6 +30,10 @@ func (m *mockMatchRepo) UpdateLastInteraction(ctx context.Context, id uuid.UUID,
 	return nil
 }
 
+func (m *mockMatchRepo) Create(ctx context.Context, match *models.Match) error {
+	return m.err
+}
+
 type mockChatRepo struct {
 	err error
 }
