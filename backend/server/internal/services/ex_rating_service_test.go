@@ -67,19 +67,25 @@ func (m *mockMatchRepoForExRating) Create(ctx context.Context, match *models.Mat
 func (m *mockMatchRepoForExRating) UpdateLastInteraction(ctx context.Context, matchID uuid.UUID, t time.Time) error { return nil }
 
 type mockWalletRepoForExRating struct {
-	balance float64
+	balance   float64
+	getErr    error
+	updateErr error
+	txnErr    error
 }
 func (m *mockWalletRepoForExRating) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) {
+	if m.getErr != nil {
+		return nil, m.getErr
+	}
 	return &models.UserWallet{Balance: m.balance}, nil
 }
 func (m *mockWalletRepoForExRating) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error {
-	return nil
+	return m.updateErr
 }
 func (m *mockWalletRepoForExRating) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error {
 	return nil
 }
 func (m *mockWalletRepoForExRating) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error {
-	return nil
+	return m.txnErr
 }
 func (m *mockWalletRepoForExRating) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) {
 	return false, nil
@@ -244,5 +250,44 @@ func TestExRatingService_ViewRating_WalletError(t *testing.T) {
 	)
 
 	_, _, _, err := svc.ViewRating(context.Background(), viewerID, targetID)
+	assert.Error(t, err)
+}
+
+func TestExRatingService_ViewRating_GetWalletErr(t *testing.T) {
+	svc := NewExRatingService(
+		&mockExRatingRepo{},
+		&mockWalletRepoForExRating{balance: 100, getErr: errors.New("err")}, 
+		&mockTxManagerForExRating{},
+		nil,
+		nil,
+	)
+
+	_, _, _, err := svc.ViewRating(context.Background(), uuid.New(), uuid.New())
+	assert.Error(t, err)
+}
+
+func TestExRatingService_ViewRating_UpdateBalanceErr(t *testing.T) {
+	svc := NewExRatingService(
+		&mockExRatingRepo{},
+		&mockWalletRepoForExRating{balance: 100, updateErr: errors.New("err")}, 
+		&mockTxManagerForExRating{},
+		nil,
+		nil,
+	)
+
+	_, _, _, err := svc.ViewRating(context.Background(), uuid.New(), uuid.New())
+	assert.Error(t, err)
+}
+
+func TestExRatingService_ViewRating_TxnErr(t *testing.T) {
+	svc := NewExRatingService(
+		&mockExRatingRepo{},
+		&mockWalletRepoForExRating{balance: 100, txnErr: errors.New("err")}, 
+		&mockTxManagerForExRating{},
+		nil,
+		nil,
+	)
+
+	_, _, _, err := svc.ViewRating(context.Background(), uuid.New(), uuid.New())
 	assert.Error(t, err)
 }
