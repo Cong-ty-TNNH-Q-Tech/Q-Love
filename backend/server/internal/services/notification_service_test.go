@@ -74,6 +74,11 @@ func TestNotificationService_SendPush_MockFCMKeyEmpty(t *testing.T) {
 		},
 	}
 
+	svc := NewNotificationService(mockRepo, redisClient, "")
+	err = svc.SendPush(context.Background(), userID, "title", "body", "type", nil)
+	assert.Error(t, err)
+}
+
 type mockTransport struct {
 	roundTripFn func(req *http.Request) (*http.Response, error)
 }
