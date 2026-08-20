@@ -48,7 +48,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	userPremRepo := repository.NewUserPremiumRepository(db)
 	
 	violationRepo := repository.NewUserViolationRepository(db)
-	nsfwService := services.NewNSFWService()
+	nsfwService := services.NewNSFWService(cfg)
 	
 	notificationRepo := repository.NewNotificationRepository(db)
 	// We pass an empty string for fcmKey in this initialization, should be cfg.FCMKey in real setup
@@ -81,6 +81,13 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	shameGroup.Get("/", shameHandler.GetActiveShames)
 	shameGroup.Post("/:id/tomato", shameHandler.ThrowTomato)
 
+	// Ex-Rating routes
+	exRatingRepo := repository.NewExRatingRepository(db)
+	exRatingService := services.NewExRatingService(exRatingRepo, walletRepo, txManager, chatRepo, matchRepo)
+	exRatingHandler := handlers.NewExRatingHandler(exRatingService)
+	v1.Post("/ex-ratings", middleware.JWTMiddleware(cfg.JWTSecret), exRatingHandler.SubmitRating)
+	v1.Get("/users/:user_id/ex-rating", middleware.JWTMiddleware(cfg.JWTSecret), exRatingHandler.ViewRating)
+
 	// Upload routes
 	uploadHandler := handlers.NewUploadHandler(r2Client)
 	uploadGroup := v1.Group("/upload", middleware.JWTMiddleware(cfg.JWTSecret))
@@ -92,7 +99,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 
 	// Chat routes
 	chatGroup := v1.Group("/chat")
-	chatGroup.Get("/ws", chatHandler.Upgrade, websocket.New(chatHandler.WSHandler))
+	chatGroup.Get("/ws", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.Upgrade, websocket.New(chatHandler.WSHandler))
 	chatGroup.Post("/messages", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.SendMessage)
 	chatGroup.Get("/messages/:match_id", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.GetMessages)
 

@@ -1,5 +1,7 @@
-// Copyright (c) 2026 Q-Tech. All rights reserved.
+// Copyright 2026 Q-Tech Team
 // Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 
 package services
 
@@ -45,3 +47,4 @@ func (s *matchService) Unmatch(ctx context.Context, matchID, userID uuid.UUID) e
 	// TODO: Trigger luồng cho phép đánh giá CV Tình trường (Ex-Rating)
 	return nil
 }
+

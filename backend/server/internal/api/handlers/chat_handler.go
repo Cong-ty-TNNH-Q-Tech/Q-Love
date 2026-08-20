@@ -37,10 +37,8 @@ func (h *ChatHandler) Upgrade(c *fiber.Ctx) error {
 
 // WSHandler handles the actual websocket connection
 func (h *ChatHandler) WSHandler(c *websocket.Conn) {
-	// user_id is set by JWT middleware typically, but here we can extract from locals or query for simplicity
-	userIDStr := c.Query("user_id") // Simplified for this example. In reality, get from Context / JWT
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
+	userID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
 		c.Close()
 		return
 	}
@@ -61,10 +59,8 @@ func (h *ChatHandler) WSHandler(c *websocket.Conn) {
 
 // SendMessage API allows sending a message via HTTP which then gets broadcasted via Redis and WS
 func (h *ChatHandler) SendMessage(c *fiber.Ctx) error {
-	// Extract from JWT in real app, we mock it via headers/query for now
-	userIDStr := c.Get("X-User-ID")
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
+	userID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
