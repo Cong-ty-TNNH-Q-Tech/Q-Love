@@ -24,12 +24,10 @@ void main() {
           .thenAnswer((_) async => Response(
                 requestOptions: RequestOptions(path: '/users/feed'),
                 statusCode: 200,
-                data: {
-                  'data': [
-                    {'id': '1', 'name': 'Test User 1'},
-                    {'id': '2', 'name': 'Test User 2'},
-                  ]
-                },
+                data: [
+                  {'id': '1', 'name': 'Test User 1'},
+                  {'id': '2', 'name': 'Test User 2'},
+                ],
               ));
 
       final result = await repository.getFeed();
@@ -52,9 +50,7 @@ void main() {
                 requestOptions: RequestOptions(path: '/matches/swipe'),
                 statusCode: 200,
                 data: {
-                  'data': {
-                    'is_match': true,
-                  }
+                  'is_match': true,
                 },
               ));
 
