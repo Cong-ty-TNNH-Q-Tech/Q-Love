@@ -657,7 +657,7 @@ paths:
               properties:
                 vote:
                   type: string
-                  enum: [Guilty, Innocent]
+                  enum: [guilty, not_guilty]
       responses:
         '200':
           description: Bỏ phiếu thành công
