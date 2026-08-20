@@ -24,7 +24,10 @@ type redeemRequest struct {
 }
 
 func (h *VoucherHandler) RedeemVoucher(c *fiber.Ctx) error {
-	userIDStr := c.Locals("userID").(string)
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid user ID"})
