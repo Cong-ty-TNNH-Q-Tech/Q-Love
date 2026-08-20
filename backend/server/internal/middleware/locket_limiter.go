@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/google/uuid"
 )
 
 // LocketRateLimiter creates a middleware to limit Locket sends to 10 per hour.
@@ -19,12 +20,15 @@ func LocketRateLimiter() fiber.Handler {
 		KeyGenerator: func(c *fiber.Ctx) string {
 			// Rate limit based on user ID and match ID.
 			// Assuming User ID is in locals (from JWT middleware) and Match ID is in the form or body
-			userID, _ := c.Locals("user_id").(string)
+			userID, ok := c.Locals("user_id").(uuid.UUID)
+			if !ok {
+				return ""
+			}
 			matchID := c.FormValue("match_id")
 			if matchID == "" {
 				matchID = "unknown_match" // Fallback, though validation should catch it
 			}
-			return "locket_" + userID + "_" + matchID
+			return "locket_" + userID.String() + "_" + matchID
 		},
 		LimitReached: func(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
