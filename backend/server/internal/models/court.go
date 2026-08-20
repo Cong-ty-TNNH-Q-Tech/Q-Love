@@ -21,7 +21,7 @@ const (
 )
 
 type CourtCase struct {
-	ID          uuid.UUID       `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
+	ID          uuid.UUID       `gorm:"type:uuid;primaryKey" json:"id"`
 	PlaintiffID uuid.UUID       `gorm:"type:uuid;not null;index" json:"plaintiff_id"`
 	DefendantID uuid.UUID       `gorm:"type:uuid;not null;index" json:"defendant_id"`
 	MatchID     uuid.UUID       `gorm:"type:uuid;not null;index" json:"match_id"`
@@ -44,4 +44,11 @@ type CourtVote struct {
 	JurorID   uuid.UUID     `gorm:"type:uuid;primaryKey" json:"juror_id"`
 	Vote      CourtVoteType `gorm:"type:varchar(20);not null" json:"vote"`
 	CreatedAt time.Time     `json:"created_at"`
+}
+
+func (c *CourtCase) BeforeCreate(tx *gorm.DB) (err error) {
+	if c.ID == uuid.Nil {
+		c.ID = uuid.New()
+	}
+	return
 }

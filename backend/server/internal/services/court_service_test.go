@@ -88,6 +88,11 @@ func (m *mockMatchRepoForCourt) FindByIDUnscoped(ctx context.Context, id uuid.UU
 	return args.Get(0).(*models.Match), args.Error(1)
 }
 
+func (m *mockMatchRepoForCourt) SoftDelete(ctx context.Context, matchID uuid.UUID) error {
+	args := m.Called(ctx, matchID)
+	return args.Error(0)
+}
+
 func (m *mockMatchRepoForCourt) GetByUserIDs(ctx context.Context, u1, u2 uuid.UUID) (*models.Match, error) {
 	return nil, nil
 }
