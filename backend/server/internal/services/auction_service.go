@@ -12,34 +12,38 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type AuctionService interface {
 	StartDailyAuctions(ctx context.Context) error
 	PlaceBid(ctx context.Context, auctionID, bidderID uuid.UUID, amount float64) error
 	FinalizeAuctions(ctx context.Context) error
+	GetActiveAuctions(ctx context.Context) ([]models.BlindAuction, error)
 }
 
 type auctionService struct {
-	auctionRepo repository.AuctionRepository
-	walletRepo  repository.WalletRepository
-	txManager   repository.TransactionManager
-	db          *gorm.DB // Using db for chat lock and top users for simplicity since repo methods are missing
+	auctionRepo   repository.AuctionRepository
+	walletRepo    repository.WalletRepository
+	txManager     repository.TransactionManager
+	chatLockRepo  repository.ChatLockRepository
 }
 
 func NewAuctionService(
 	auctionRepo repository.AuctionRepository,
 	walletRepo repository.WalletRepository,
 	txManager repository.TransactionManager,
-	db *gorm.DB,
+	chatLockRepo repository.ChatLockRepository,
 ) AuctionService {
 	return &auctionService{
-		auctionRepo: auctionRepo,
-		walletRepo:  walletRepo,
-		txManager:   txManager,
-		db:          db,
+		auctionRepo:   auctionRepo,
+		walletRepo:    walletRepo,
+		txManager:     txManager,
+		chatLockRepo:  chatLockRepo,
 	}
+}
+
+func (s *auctionService) GetActiveAuctions(ctx context.Context) ([]models.BlindAuction, error) {
+	return s.auctionRepo.GetActiveAuctions(ctx)
 }
 
 // StartDailyAuctions picks Top 5 users based on some metric (e.g. cards) and creates Blind Auctions.
@@ -214,14 +218,14 @@ func (s *auctionService) FinalizeAuctions(ctx context.Context) error {
 			}
 
 			// Create ChatLock
-			if s.db != nil {
+			if s.chatLockRepo != nil {
 				lock := models.ChatLock{
 					ID:        uuid.New(),
 					UserID1:   auction.TargetUserID,
 					UserID2:   highest.BidderID,
 					ExpiresAt: time.Now().Add(24 * time.Hour),
 				}
-				if err := repository.GetDB(txCtx, s.db).WithContext(txCtx).Create(&lock).Error; err != nil {
+				if err := s.chatLockRepo.Create(txCtx, &lock); err != nil {
 					return err
 				}
 			}
