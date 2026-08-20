@@ -105,7 +105,7 @@ func TestCourtHandler_FileCase_ServiceErr(t *testing.T) {
 func TestCourtHandler_VoteCase_Success(t *testing.T) {
 	app := setupCourtHandlerApp(&mockCourtService{})
 	body := map[string]interface{}{
-		"vote": "Guilty",
+		"vote": "guilty",
 	}
 	bodyBytes, _ := json.Marshal(body)
 	req := httptest.NewRequest("POST", "/court/"+uuid.New().String()+"/vote", bytes.NewBuffer(bodyBytes))
