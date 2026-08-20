@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [docs/readme] Cập nhật toàn bộ README theo chuẩn Investor Ready và thêm logo mới.
 
 ### Fixed
+- [frontend/app] Khắc phục `ShameWallBloc` dùng mock data (Issue #119): Thêm `ShameRepository`, tách `ShameModel`, gọi API thực sự và thêm empty state UI.
 - [backend/server/security] Implement actual NSFW detection using AWS Rekognition in `NSFWService` (Issue #116): Fixes the mock implementation to perform real image content moderation.
 - [backend/server] Khắc phục vi phạm audit từ issue 74 (thiếu bản quyền, cập nhật CHANGELOG).
 - [backend/server/api] Sửa lỗi thiếu `JWTMiddleware` cho các API `/wingman` và `/upload`.
