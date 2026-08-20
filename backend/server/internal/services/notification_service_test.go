@@ -1,4 +1,4 @@
-// Copyright 2026 Q-Tech Team
+// Copyright 2026 Q-Tech Team
 // Licensed under the GNU AGPLv3 License.
 // See LICENSE file in the project root for full license information.
 
@@ -9,7 +9,9 @@ import (
 	"testing"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
+	"github.com/alicebob/miniredis/v2"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -50,7 +52,33 @@ func TestNotificationService_SendSilentPush_NoRedis(t *testing.T) {
 }
 
 func TestNotificationService_SendPush_MockFCMKeyEmpty(t *testing.T) {
-	// If redis is available but FCM key is empty, it should mock success
-	// But we need a mini redis cluster to test it properly, so we will skip integration tests here
-	// and rely on unit tests mocking.
+	// Setup miniredis
+	mr, err := miniredis.Run()
+	assert.NoError(t, err)
+	defer mr.Close()
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: mr.Addr(),
+	})
+
+	userID := uuid.New()
+	key := "fcm_token:" + userID.String()
+	redisClient.Set(context.Background(), key, "mock-token", 0)
+
+	mockRepo := &mockNotificationRepo{
+		CreateFn: func(ctx context.Context, notif *models.Notification) error {
+			return nil
+		},
+		UpdateStatusFn: func(ctx context.Context, id uuid.UUID, status string) error {
+			return nil
+		},
+	}
+	
+	svc := NewNotificationService(mockRepo, redisClient, "") // Empty FCM key
+
+	err = svc.SendPush(context.Background(), userID, "alert", "Hello", "World", map[string]string{"key": "value"})
+	assert.NoError(t, err)
+
+	err = svc.SendSilentPush(context.Background(), userID, map[string]string{"type": "locket"})
+	assert.NoError(t, err)
 }

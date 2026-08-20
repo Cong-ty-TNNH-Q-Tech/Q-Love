@@ -28,3 +28,21 @@ func TestDeviceHandler_RegisterFCMToken_Unauthorized(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, fiber.StatusUnauthorized, resp.StatusCode)
 }
+
+func TestDeviceHandler_RegisterFCMToken_InvalidPayload(t *testing.T) {
+	app := fiber.New()
+	handler := NewDeviceHandler(nil)
+	app.Post("/devices/token", func(c *fiber.Ctx) error {
+		c.Locals("user_id", uuid.New())
+		return handler.RegisterFCMToken(c)
+	})
+
+	// Missing token in body
+	body, _ := json.Marshal(map[string]string{"other": "abc"})
+	req := httptest.NewRequest("POST", "/devices/token", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := app.Test(req)
+	
+	assert.NoError(t, err)
+	assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
+}
