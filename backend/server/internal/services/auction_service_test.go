@@ -69,6 +69,13 @@ func (m *mockAuctionWalletRepo) UpdateBalance(ctx context.Context, userID uuid.U
 }
 func (m *mockAuctionWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
 
+type mockChatLockRepo struct {
+	err error
+}
+func (m *mockChatLockRepo) Create(ctx context.Context, lock *models.ChatLock) error {
+	return m.err
+}
+
 func TestAuctionService_PlaceBid_Success(t *testing.T) {
 	auctionID := uuid.New()
 	bidderID := uuid.New()
@@ -375,7 +382,7 @@ func TestAuctionService_FinalizeAuctions_ChatLock_DB_Error(t *testing.T) {
 	gormDB, _ := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{})
 	mock.ExpectQuery("INSERT INTO .*chat_locks.*").WillReturnError(assert.AnError)
 
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, gormDB)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockChatLockRepo{err: assert.AnError})
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err)
 }
