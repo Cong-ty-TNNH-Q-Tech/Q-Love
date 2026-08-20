@@ -1,0 +1,11 @@
+{
+    "@@locale": "en",
+    "appTitle": "Q-Love",
+    "@appTitle": {
+        "description": "The title of the application"
+    },
+    "login": "Login",
+    "@login": {
+        "description": "Login button text"
+    }
+}
