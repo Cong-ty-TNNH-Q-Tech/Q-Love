@@ -6,6 +6,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
@@ -89,4 +90,43 @@ func TestAdminService_OverrideCourtCase(t *testing.T) {
 	service := NewAdminService(nil, mockRepo, nil)
 	err := service.OverrideCourtCase(context.Background(), uuid.New(), "dismissed")
 	assert.NoError(t, err)
+}
+
+type mockUserViolationRepoError struct {
+	mockUserViolationRepo
+}
+func (m *mockUserViolationRepoError) SoftDelete(ctx context.Context, id uuid.UUID) error {
+	return errors.New("db error")
+}
+func (m *mockUserViolationRepoError) BanUser(ctx context.Context, userID uuid.UUID) error {
+	return errors.New("db error")
+}
+
+func TestAdminService_Errors(t *testing.T) {
+	mockUserRepo := &mockUserViolationRepoError{}
+	service := NewAdminService(mockUserRepo, nil, nil)
+	
+	err := service.BanUser(context.Background(), uuid.New())
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "db error")
+
+	err = service.DeleteViolationMedia(context.Background(), uuid.New(), "")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "db error")
+}
+
+type mockCourtCaseRepoError struct {
+	mockCourtCaseRepo
+}
+func (m *mockCourtCaseRepoError) UpdateStatus(ctx context.Context, id uuid.UUID, status string) error {
+	return errors.New("db error")
+}
+
+func TestAdminService_OverrideCourtCase_Error(t *testing.T) {
+	mockCourtRepo := &mockCourtCaseRepoError{}
+	service := NewAdminService(nil, mockCourtRepo, nil)
+	
+	err := service.OverrideCourtCase(context.Background(), uuid.New(), "dismissed")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "db error")
 }
