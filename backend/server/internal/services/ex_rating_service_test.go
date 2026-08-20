@@ -24,13 +24,14 @@ type mockExRatingRepo struct {
 	total      int64
 	tags       map[string]int
 	summaryErr error
+	hasRatedErr error
 }
 
 func (m *mockExRatingRepo) Create(ctx context.Context, rating *models.ExRating) error {
 	return m.createErr
 }
 func (m *mockExRatingRepo) HasRated(ctx context.Context, matchID, targetUserID uuid.UUID) (bool, error) {
-	return m.hasRated, nil
+	return m.hasRated, m.hasRatedErr
 }
 func (m *mockExRatingRepo) GetSummaryByUserID(ctx context.Context, targetUserID uuid.UUID) (float64, int64, map[string]int, error) {
 	return m.avg, m.total, m.tags, m.summaryErr
@@ -161,6 +162,40 @@ func TestExRatingService_SubmitRating_MatchNotFound(t *testing.T) {
 	err := svc.SubmitRating(context.Background(), uuid.New(), uuid.New(), 4, []string{"#tốt"})
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not found")
+}
+
+func TestExRatingService_SubmitRating_CreateErr(t *testing.T) {
+	targetUserID := uuid.New()
+	matchID := uuid.New()
+	match := &models.Match{ID: matchID, User1ID: uuid.New(), User2ID: targetUserID, DeletedAt: gorm.DeletedAt{Time: time.Now(), Valid: true}}
+
+	svc := NewExRatingService(
+		&mockExRatingRepo{hasRated: false, createErr: errors.New("db error")},
+		&mockWalletRepoForExRating{balance: 100},
+		&mockTxManagerForExRating{},
+		&mockChatRepoForExRating{msgCount: 51},
+		&mockMatchRepoForExRating{match: match},
+	)
+
+	err := svc.SubmitRating(context.Background(), targetUserID, matchID, 4, []string{"#tốt"})
+	assert.Error(t, err)
+}
+
+func TestExRatingService_SubmitRating_HasRatedErr(t *testing.T) {
+	targetUserID := uuid.New()
+	matchID := uuid.New()
+	match := &models.Match{ID: matchID, User1ID: uuid.New(), User2ID: targetUserID, DeletedAt: gorm.DeletedAt{Time: time.Now(), Valid: true}}
+
+	svc := NewExRatingService(
+		&mockExRatingRepo{hasRatedErr: errors.New("db error")},
+		&mockWalletRepoForExRating{balance: 100},
+		&mockTxManagerForExRating{},
+		&mockChatRepoForExRating{msgCount: 51},
+		&mockMatchRepoForExRating{match: match},
+	)
+
+	err := svc.SubmitRating(context.Background(), targetUserID, matchID, 4, []string{"#tốt"})
+	assert.Error(t, err)
 }
 
 func TestExRatingService_SubmitRating_TargetUserNotMatch(t *testing.T) {
