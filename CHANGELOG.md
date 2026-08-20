@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [backend/server/api] Thêm `NotificationService` để gọi API FCM gửi Push và Silent Push cho Locket (Issue #35).
+- [backend/server/api] Thêm API `POST /api/v1/devices/token` để nhận FCM Token từ Mobile App lưu vào Redis (Issue #35).
+- [backend/server/models] Thêm model `Notification` và repository để lưu lịch sử push notification (Issue #35).
 - [backend/server/api] Thêm endpoint `/ai/suggest` để Trợ lý Mỏ Hỗn sinh gợi ý tin nhắn.
 - [frontend/app] Tạo thư mục native (android/ và ios/) cho Flutter app, cấu hình Bundle ID, Permissions và Deep Links (Issue #111).
 - [backend/server/api] Thêm API Unmatch (Issue #42).
@@ -59,12 +62,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [backend/server/services] Sửa lỗi kiểu dữ liệu LocketRateLimiter (`uint64` sang `int64`) gây panic khi so sánh (Issue #110).
 - [backend/server/architecture] Khắc phục vi phạm DIP và Repository pattern ở `AuctionHandler` và `AuctionService` (Issue #113): Thêm `GetActiveAuctions` vào `AuctionService`, tạo `ChatLockRepository`, loại bỏ sử dụng trực tiếp `auctionRepo` trong Handler và `*gorm.DB` trong Service.
 - [backend/server] Bổ sung file `.env.example` và thiết lập hệ thống database migrations bằng `golang-migrate` (Issue #120): Thêm Makefile commands và 2 file migration khởi tạo schema.
+- [backend/server/services] Tối ưu hóa hiệu năng `FinalizeAuctions` (xử lý theo batch + pagination) và `StartDailyAuctions` (dùng `UserRepository` lấy real users) thay vì mock UUID và truy vấn N+1, sửa lỗi O(N*M) query (Issue #114).
 - [backend/server] Loại bỏ hardcoded `JWT_SECRET` trong `jwt_middleware.go` và yêu cầu tải từ Environment Variable, nếu thiếu sẽ panic khi khởi động (Issue #107).
+- [backend/server] Loại bỏ hardcoded credentials `admin/admin` cho Redis và Postgres, yêu cầu sử dụng Environment Variables (Issue #108).
 - [backend/server] Bổ sung header bản quyền AGPLv3 cho các file còn thiếu và thêm pre-commit hook (Issue #115).
 - [backend/server] Triển khai `UploadFile` lên Cloudflare R2 cho LocketService thay vì dùng URL ảo (Issue #112).
 - [backend/server] Refactor error handling trong `ShameHandler` và `WingmanHandler` (Issue #118): Sử dụng sentinel errors (`ErrInsufficientBalance`, `ErrReferralNotFound`, v.v.) thay vì so sánh string literals.
+- [backend/server/api] Sửa lỗi bảo mật auth bypass trong WebSocket chat (Issue #109): Xác thực user claim từ JWT payload trực tiếp trong socket handler thay vì phụ thuộc vào query parameter không an toàn.
 - [backend/server] Khắc phục vi phạm audit từ issue 74 (thiếu bản quyền, cập nhật CHANGELOG).
 - [backend/server/api] Sửa lỗi thiếu `JWTMiddleware` cho các API `/wingman` và `/upload`.
 - [backend/server/api] Sửa lỗi sử dụng dummy UUID thay cho JWT context tại `WingmanHandler`.
 - [backend/server/tests] Sửa lỗi sai argument count của `go-sqlmock` trong `wingman_service_test.go`.
-- [backend/server/api] Sửa lỗi bảo mật auth bypass trong WebSocket chat (Issue #109): Xác thực user claim từ JWT payload trực tiếp trong socket handler thay vì phụ thuộc vào query parameter không an toàn.

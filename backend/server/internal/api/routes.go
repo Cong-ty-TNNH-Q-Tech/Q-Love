@@ -48,7 +48,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	
 	violationRepo := repository.NewUserViolationRepository(db)
 	nsfwService := services.NewNSFWService(cfg)
-	locketService := services.NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
+	notificationRepo := repository.NewNotificationRepository(db)
+	notificationService := services.NewNotificationService(notificationRepo, redisClient, cfg.FCMKey)
+	locketService := services.NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, notificationService, r2Client)
 	locketHandler := handlers.NewLocketHandler(locketService)
 
 	iapService := services.NewIAPService(txManager, walletRepo, userPremRepo)
@@ -107,8 +109,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	
 	// Auction routes
 	auctionRepo := repository.NewAuctionRepository(db)
+	userRepo := repository.NewUserRepository(db)
 	chatLockRepo := repository.NewChatLockRepository(db)
-	auctionService := services.NewAuctionService(auctionRepo, walletRepo, txManager, chatLockRepo)
+	auctionService := services.NewAuctionService(auctionRepo, walletRepo, txManager, userRepo, chatLockRepo)
 	auctionHandler := handlers.NewAuctionHandler(auctionService)
 	auctionGroup := v1.Group("/auctions", middleware.JWTMiddleware(cfg.JWTSecret))
 	auctionGroup.Get("/active", auctionHandler.GetActiveAuctions)
@@ -117,6 +120,11 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	// Webhooks
 	webhookGroup := v1.Group("/webhooks")
 	webhookGroup.Post("/revenuecat", webhookHandler.HandleRevenueCat)
+
+	// Device routes
+	deviceHandler := handlers.NewDeviceHandler(redisClient)
+	deviceGroup := v1.Group("/devices", middleware.JWTMiddleware(cfg.JWTSecret))
+	deviceGroup.Post("/token", deviceHandler.RegisterFCMToken)
 
 	// Vibe Check (Spotify)
 	vibeGroup := v1.Group("/vibe", middleware.JWTMiddleware(cfg.JWTSecret))
