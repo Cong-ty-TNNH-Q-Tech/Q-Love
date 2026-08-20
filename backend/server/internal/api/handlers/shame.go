@@ -5,6 +5,7 @@
 package handlers
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -58,7 +59,7 @@ func (h *ShameHandler) ThrowTomato(c *fiber.Ctx) error {
 
 	err = h.service.ThrowTomato(c.Context(), throwerID, shameID)
 	if err != nil {
-		if err.Error() == "insufficient balance to throw a tomato" {
+		if errors.Is(err, services.ErrInsufficientBalance) {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to throw tomato"})
