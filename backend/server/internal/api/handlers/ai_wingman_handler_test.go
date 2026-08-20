@@ -61,7 +61,10 @@ func TestAIWingmanHandler_SuggestReplies(t *testing.T) {
 func TestAIWingmanHandler_SuggestReplies_InvalidJSON(t *testing.T) {
 	app := fiber.New()
 	handler := NewAIWingmanHandler(&mockAIWingmanService{})
-	app.Post("/suggest", handler.SuggestReplies)
+	app.Post("/suggest", func(c *fiber.Ctx) error {
+		c.Locals("user_id", uuid.New().String())
+		return handler.SuggestReplies(c)
+	})
 
 	req := httptest.NewRequest(http.MethodPost, "/suggest", bytes.NewReader([]byte(`invalid`)))
 	req.Header.Set("Content-Type", "application/json")
@@ -74,7 +77,10 @@ func TestAIWingmanHandler_SuggestReplies_InvalidJSON(t *testing.T) {
 func TestAIWingmanHandler_SuggestReplies_InvalidUUID(t *testing.T) {
 	app := fiber.New()
 	handler := NewAIWingmanHandler(&mockAIWingmanService{})
-	app.Post("/suggest", handler.SuggestReplies)
+	app.Post("/suggest", func(c *fiber.Ctx) error {
+		c.Locals("user_id", uuid.New().String())
+		return handler.SuggestReplies(c)
+	})
 
 	body := map[string]string{"match_id": "invalid-uuid"}
 	jsonBody, _ := json.Marshal(body)
