@@ -14,6 +14,7 @@ import (
 type AuctionRepository interface {
 	CreateAuction(ctx context.Context, auction *models.BlindAuction) error
 	GetActiveAuctions(ctx context.Context, offset, limit int) ([]models.BlindAuction, error)
+	GetActiveAuctionsCursor(ctx context.Context, lastID uuid.UUID, limit int) ([]models.BlindAuction, error)
 	GetAuctionForUpdate(ctx context.Context, auctionID uuid.UUID) (*models.BlindAuction, error)
 	PlaceBid(ctx context.Context, bid *models.AuctionBid) error
 	GetHighestBid(ctx context.Context, auctionID uuid.UUID) (*models.AuctionBid, error)
@@ -40,6 +41,16 @@ func (r *auctionRepository) GetActiveAuctions(ctx context.Context, offset, limit
 		Where("status = ?", "active").
 		Offset(offset).Limit(limit).
 		Find(&auctions).Error
+	return auctions, err
+}
+
+func (r *auctionRepository) GetActiveAuctionsCursor(ctx context.Context, lastID uuid.UUID, limit int) ([]models.BlindAuction, error) {
+	var auctions []models.BlindAuction
+	query := GetDB(ctx, r.db).WithContext(ctx).Where("status = ?", "active").Order("id ASC").Limit(limit)
+	if lastID != uuid.Nil {
+		query = query.Where("id > ?", lastID)
+	}
+	err := query.Find(&auctions).Error
 	return auctions, err
 }
 

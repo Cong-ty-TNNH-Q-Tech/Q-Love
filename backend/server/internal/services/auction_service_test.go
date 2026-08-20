@@ -32,6 +32,15 @@ func (m *mockAuctionRepo) GetActiveAuctions(ctx context.Context, offset, limit i
 	}
 	return nil, m.err
 }
+func (m *mockAuctionRepo) GetActiveAuctionsCursor(ctx context.Context, lastID uuid.UUID, limit int) ([]models.BlindAuction, error) {
+	if lastID != uuid.Nil {
+		return nil, m.err
+	}
+	if m.auction != nil && m.auction.Status == "active" {
+		return []models.BlindAuction{*m.auction}, m.err
+	}
+	return nil, m.err
+}
 func (m *mockAuctionRepo) GetAuctionForUpdate(ctx context.Context, auctionID uuid.UUID) (*models.BlindAuction, error) {
 	return m.auction, m.err
 }

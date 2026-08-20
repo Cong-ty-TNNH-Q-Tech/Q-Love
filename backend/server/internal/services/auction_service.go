@@ -139,11 +139,11 @@ func (s *auctionService) PlaceBid(ctx context.Context, auctionID, bidderID uuid.
 
 func (s *auctionService) FinalizeAuctions(ctx context.Context) error {
 	limit := 100
-	offset := 0
+	var lastID uuid.UUID
 	now := time.Now()
 
 	for {
-		auctions, err := s.auctionRepo.GetActiveAuctions(ctx, offset, limit)
+		auctions, err := s.auctionRepo.GetActiveAuctionsCursor(ctx, lastID, limit)
 		if err != nil {
 			return err
 		}
@@ -254,12 +254,8 @@ func (s *auctionService) FinalizeAuctions(ctx context.Context) error {
 			}
 		}
 
-		// Calculate new offset:
-		// Any auction that was NOT successfully updated to 'completed' (either because it hasn't ended yet, or it failed)
-		// will remain in the 'active' status. Therefore, it will appear at the beginning of the next query.
-		// To skip over these remaining active auctions, we increment the offset by the number of such auctions.
-		remainingActive := len(auctions) - successfullyUpdated
-		offset += remainingActive
+		// Update lastID for next batch
+		lastID = auctions[len(auctions)-1].ID
 	}
 	return nil
 }
