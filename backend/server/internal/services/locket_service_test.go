@@ -182,3 +182,19 @@ func TestLocketService_SendLocket_InvalidType(t *testing.T) {
 		t.Errorf("Expected invalid type error, got %v", err)
 	}
 }
+
+func TestLocketService_SendLocket_NSFWError(t *testing.T) {
+	matchRepo := &mockMatchRepo{match: &models.Match{}}
+	chatRepo := &mockChatRepo{}
+	violationRepo := &mockViolationRepo{}
+	nsfwService := &mockNSFWService{err: errors.New("ai error")}
+
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
+
+	fileHeader := &multipart.FileHeader{Filename: "test.jpg", Size: 1024, Header: make(map[string][]string)}
+	fileHeader.Header.Set("Content-Type", "image/jpeg")
+	err := service.SendLocket(context.Background(), uuid.New(), uuid.New(), fileHeader)
+	if err == nil || err.Error() != "failed to check image content" {
+		t.Errorf("Expected ai error, got %v", err)
+	}
+}
