@@ -24,8 +24,7 @@ jobs:
       - name: Run Flutter Create
         run: |
           cd frontend/app
-          flutter config --enable-web=false --enable-linux-desktop=false --enable-macos-desktop=false --enable-windows-desktop=false
-          flutter create --platforms=android,ios .
+          flutter create --org com.qtech --platforms=android,ios .
 
       - name: Commit changes
         run: |
