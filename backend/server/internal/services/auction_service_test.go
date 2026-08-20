@@ -31,7 +31,7 @@ func (m *mockAuctionRepo) GetActiveAuctions(ctx context.Context, offset, limit i
 	if offset > 0 {
 		return nil, m.err
 	}
-	if m.auction != nil {
+	if m.auction != nil && m.auction.Status == "active" {
 		return []models.BlindAuction{*m.auction}, m.err
 	}
 	return nil, m.err
@@ -52,6 +52,9 @@ func (m *mockAuctionRepo) GetBidsForAuctions(ctx context.Context, auctionIDs []u
 	return m.bids, m.err
 }
 func (m *mockAuctionRepo) UpdateAuctionStatus(ctx context.Context, auctionID uuid.UUID, status string, winnerID *uuid.UUID, winningBid float64) error {
+	if m.auction != nil && m.auction.ID == auctionID {
+		m.auction.Status = status
+	}
 	return m.err
 }
 

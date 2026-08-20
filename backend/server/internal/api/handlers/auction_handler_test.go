@@ -30,11 +30,17 @@ type mockAuctionRepo struct {
 	err      error
 }
 func (m *mockAuctionRepo) CreateAuction(ctx context.Context, auction *models.BlindAuction) error { return m.err }
-func (m *mockAuctionRepo) GetActiveAuctions(ctx context.Context) ([]models.BlindAuction, error) { return m.auctions, m.err }
+func (m *mockAuctionRepo) GetActiveAuctions(ctx context.Context, offset, limit int) ([]models.BlindAuction, error) { 
+	if offset > 0 {
+		return nil, m.err
+	}
+	return m.auctions, m.err 
+}
 func (m *mockAuctionRepo) GetAuctionForUpdate(ctx context.Context, auctionID uuid.UUID) (*models.BlindAuction, error) { return nil, m.err }
 func (m *mockAuctionRepo) PlaceBid(ctx context.Context, bid *models.AuctionBid) error { return m.err }
 func (m *mockAuctionRepo) GetHighestBid(ctx context.Context, auctionID uuid.UUID) (*models.AuctionBid, error) { return nil, m.err }
 func (m *mockAuctionRepo) GetBidsByAuction(ctx context.Context, auctionID uuid.UUID) ([]models.AuctionBid, error) { return nil, m.err }
+func (m *mockAuctionRepo) GetBidsForAuctions(ctx context.Context, auctionIDs []uuid.UUID) ([]models.AuctionBid, error) { return nil, m.err }
 func (m *mockAuctionRepo) UpdateAuctionStatus(ctx context.Context, auctionID uuid.UUID, status string, winnerID *uuid.UUID, winningBid float64) error { return m.err }
 
 

@@ -28,7 +28,10 @@ type BidRequest struct {
 
 func (h *AuctionHandler) GetActiveAuctions(c *fiber.Ctx) error {
 	ctx := c.Context()
-	auctions, err := h.auctionRepo.GetActiveAuctions(ctx)
+	offset := c.QueryInt("offset", 0)
+	limit := c.QueryInt("limit", 100)
+	
+	auctions, err := h.auctionRepo.GetActiveAuctions(ctx, offset, limit)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
