@@ -9,6 +9,30 @@ import (
 	"testing"
 )
 
+func TestLoadConfigPanics(t *testing.T) {
+	tests := []struct {
+		name     string
+		setupEnv func()
+	}{
+		{"Missing DB", func() { os.Clearenv() }},
+		{"Missing RC", func() { os.Clearenv(); os.Setenv("DATABASE_DSN", "x") }},
+		{"Missing R2 Access", func() { os.Clearenv(); os.Setenv("DATABASE_DSN", "x"); os.Setenv("REVENUECAT_WEBHOOK_SECRET", "x") }},
+		{"Missing R2 Secret", func() { os.Clearenv(); os.Setenv("DATABASE_DSN", "x"); os.Setenv("REVENUECAT_WEBHOOK_SECRET", "x"); os.Setenv("R2_ACCESS_KEY_ID", "x") }},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setupEnv()
+			defer func() {
+				if r := recover(); r == nil {
+					t.Errorf("The code did not panic")
+				}
+			}()
+			LoadConfig()
+		})
+	}
+}
+
 func TestLoadConfig(t *testing.T) {
 	os.Setenv("R2_ACCOUNT_ID", "test_id")
 	os.Setenv("PORT", "4000")

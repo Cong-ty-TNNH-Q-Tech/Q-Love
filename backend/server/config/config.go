@@ -29,22 +29,22 @@ func LoadConfig() *Config {
 
 	dbDSN := os.Getenv("DATABASE_DSN")
 	if dbDSN == "" {
-		log.Fatal("DATABASE_DSN is required")
+		log.Panic("DATABASE_DSN is required")
 	}
 
 	rcSecret := os.Getenv("REVENUECAT_WEBHOOK_SECRET")
 	if rcSecret == "" {
-		log.Fatal("REVENUECAT_WEBHOOK_SECRET is required")
+		log.Panic("REVENUECAT_WEBHOOK_SECRET is required")
 	}
 
 	r2AccessKey := os.Getenv("R2_ACCESS_KEY_ID")
 	if r2AccessKey == "" {
-		log.Fatal("R2_ACCESS_KEY_ID is required")
+		log.Panic("R2_ACCESS_KEY_ID is required")
 	}
 
 	r2SecretKey := os.Getenv("R2_SECRET_ACCESS_KEY")
 	if r2SecretKey == "" {
-		log.Fatal("R2_SECRET_ACCESS_KEY is required")
+		log.Panic("R2_SECRET_ACCESS_KEY is required")
 	}
 
 	return &Config{
