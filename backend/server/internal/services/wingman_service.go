@@ -100,7 +100,6 @@ func (s *wingmanService) AcceptReferral(ctx context.Context, referralID, accepti
 			ID:      uuid.New(),
 			User1ID: referral.Target1ID,
 			User2ID: referral.Target2ID,
-			Source:  "wingman",
 		}
 		if err := s.matchRepo.Create(txCtx, match); err != nil {
 			return err
