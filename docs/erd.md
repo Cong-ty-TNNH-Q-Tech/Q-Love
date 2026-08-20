@@ -124,6 +124,7 @@ erDiagram
 | `level` | INT | Default 1 | Cấp độ người dùng |
 | `is_shadowbanned` | BOOLEAN | Default false | Bị phạt bóp tương tác do Tòa án |
 | `created_at` | TIMESTAMP | Default NOW() | |
+| `deleted_at` | TIMESTAMP | | Hỗ trợ Xóa mềm (Soft Delete) |
 
 **Bảng `user_wallets`** (Ví lưu trữ Xu ảo - Cực kỳ quan trọng, cần tính ACID)
 | Column | Type | Constraints | Description |
@@ -141,6 +142,7 @@ erDiagram
 | `type` | VARCHAR(50) | | `deposit`, `contract_hold`, `penalty`, `card_trade`, vv... |
 | `reference_id` | UUID | | ID của luồng phát sinh (VD: id của Dating Contract) |
 | `created_at`| TIMESTAMP | Default NOW() | Thời gian giao dịch |
+| `deleted_at` | TIMESTAMP | | Hỗ trợ Xóa mềm (Soft Delete) |
 
 **Bảng `user_premiums`** (Quản lý quyền lợi thuê bao)
 | Column | Type | Constraints | Description |
@@ -202,6 +204,7 @@ erDiagram
 | `totp_secret` | VARCHAR(255)| | Secret Key để sinh mã Dynamic QR (thuật toán TOTP) |
 | `appointment_time` | TIMESTAMP | | Giờ hẹn dự kiến |
 | `created_at` | TIMESTAMP | Default NOW() | |
+| `deleted_at` | TIMESTAMP | | Hỗ trợ Xóa mềm (Soft Delete) |
 
 **Bảng `landmarks`** (Địa bàn Clan)
 | Column | Type | Constraints | Description |
@@ -240,6 +243,7 @@ erDiagram
 | `reason` | VARCHAR(100) | | Lý do kiện (Ghosting, Trap...) |
 | `status` | VARCHAR(20) | | `voting`, `guilty`, `not_guilty`, `settled` (Hòa giải) |
 | `created_at` | TIMESTAMP | Default NOW() | |
+| `deleted_at` | TIMESTAMP | | Hỗ trợ Xóa mềm (Soft Delete) |
 
 **Bảng `court_votes`** (Phiếu bầu của Bồi thẩm đoàn)
 | Column | Type | Constraints | Description |
@@ -407,5 +411,6 @@ erDiagram
 
 | Version | Ngày | Thay đổi |
 | :--- | :--- | :--- |
+| v1.2 | 2026-08-20 | Áp dụng Soft Delete (`deleted_at`) cho `users`, `dating_contracts`, `court_cases`, `wallet_transactions`. Bỏ `ON DELETE CASCADE` ở các bảng nhạy cảm. |
 | v1.1 | 2026-08-11 | Thêm bảng `notifications`, `user_violations`; Bổ sung cột `created_at` vào `chat_messages`; Thêm `available_cards` vào `card_profiles`; Thêm `radius_meters` vào `landmarks`. |
 | v1.0 | 2026-08-11 | Khởi tạo schema ban đầu. |
