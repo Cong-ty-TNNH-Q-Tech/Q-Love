@@ -22,6 +22,10 @@ type AuctionService interface {
 }
 
 type auctionService struct {
+	auctionRepo   repository.AuctionRepository
+	walletRepo    repository.WalletRepository
+	txManager     repository.TransactionManager
+	userRepo      repository.UserRepository
 	chatLockRepo  repository.ChatLockRepository
 }
 

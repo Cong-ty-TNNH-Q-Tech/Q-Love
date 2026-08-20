@@ -45,7 +45,7 @@ func (m *mockAuctionRepo) GetHighestBid(ctx context.Context, auctionID uuid.UUID
 func (m *mockAuctionRepo) GetBidsByAuction(ctx context.Context, auctionID uuid.UUID) ([]models.AuctionBid, error) { return nil, m.err }
 func (m *mockAuctionRepo) GetBidsForAuctions(ctx context.Context, auctionIDs []uuid.UUID) ([]models.AuctionBid, error) { return nil, m.err }
 func (m *mockAuctionRepo) UpdateAuctionStatus(ctx context.Context, auctionID uuid.UUID, status string, winnerID *uuid.UUID, winningBid float64) error { return m.err }
-
+func (m *mockAuctionRepo) GetActiveAuctionsCursor(ctx context.Context, lastID uuid.UUID, limit int) ([]models.BlindAuction, error) { return m.auctions, m.err }
 
 func TestAuctionHandler_GetActiveAuctions(t *testing.T) {
 	app := fiber.New()
