@@ -24,8 +24,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	walletRepo := repository.NewWalletRepository(db)
 	shameRepo := repository.NewShameRepository(db)
 	txManager := repository.NewTransactionManager(db)
+	matchRepo := repository.NewMatchRepository(db)
 
-	wingmanService := services.NewWingmanService(wingmanRepo, walletRepo, txManager)
+	wingmanService := services.NewWingmanService(wingmanRepo, walletRepo, txManager, matchRepo)
 	shameService := services.NewShameService(shameRepo, walletRepo, txManager)
 	clanRepo := repository.NewClanRepository(db)
 	clanService := services.NewClanService(clanRepo, walletRepo, txManager)
@@ -41,10 +42,8 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	go hub.Run(context.Background())
 	chatHandler := handlers.NewChatHandler(chatService, hub)
 
-	matchRepo := repository.NewMatchRepository(db)
 	matchService := services.NewMatchService(matchRepo)
 	matchHandler := handlers.NewMatchHandler(matchService)
-
 	userPremRepo := repository.NewUserPremiumRepository(db)
 	
 	violationRepo := repository.NewUserViolationRepository(db)
@@ -74,6 +73,19 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	shameGroup.Get("/", shameHandler.GetActiveShames)
 	shameGroup.Post("/:id/tomato", shameHandler.ThrowTomato)
 
+	// AI Wingman routes
+	aiService := services.NewAIWingmanService(chatRepo, cfg.OpenAIAPIKey)
+	aiHandler := handlers.NewAIWingmanHandler(aiService)
+	aiGroup := v1.Group("/ai", middleware.JWTMiddleware(cfg.JWTSecret))
+	aiGroup.Post("/suggest", aiHandler.SuggestReplies)
+
+	// Ex-Rating routes
+	exRatingRepo := repository.NewExRatingRepository(db)
+	exRatingService := services.NewExRatingService(exRatingRepo, walletRepo, txManager, chatRepo, matchRepo)
+	exRatingHandler := handlers.NewExRatingHandler(exRatingService)
+	v1.Post("/ex-ratings", middleware.JWTMiddleware(cfg.JWTSecret), exRatingHandler.SubmitRating)
+	v1.Get("/users/:user_id/ex-rating", middleware.JWTMiddleware(cfg.JWTSecret), exRatingHandler.ViewRating)
+
 	// Upload routes
 	uploadHandler := handlers.NewUploadHandler(r2Client)
 	uploadGroup := v1.Group("/upload", middleware.JWTMiddleware(cfg.JWTSecret))
@@ -85,7 +97,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 
 	// Chat routes
 	chatGroup := v1.Group("/chat")
-	chatGroup.Get("/ws", chatHandler.Upgrade, websocket.New(chatHandler.WSHandler))
+	chatGroup.Get("/ws", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.Upgrade, websocket.New(chatHandler.WSHandler))
 	chatGroup.Post("/messages", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.SendMessage)
 	chatGroup.Get("/messages/:match_id", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.GetMessages)
 

@@ -1,3 +1,7 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package repository
 
 import (
@@ -12,6 +16,7 @@ import (
 type ChatRepository interface {
 	Create(ctx context.Context, msg *models.ChatMessage) error
 	GetMessagesByMatchID(ctx context.Context, matchID uuid.UUID, limit int, before *time.Time) ([]models.ChatMessage, error)
+	CountMessagesByMatchID(ctx context.Context, matchID uuid.UUID) (int64, error)
 }
 
 type chatRepository struct {
@@ -37,4 +42,10 @@ func (r *chatRepository) GetMessagesByMatchID(ctx context.Context, matchID uuid.
 	
 	err := query.Order("created_at DESC").Limit(limit).Find(&messages).Error
 	return messages, err
+}
+
+func (r *chatRepository) CountMessagesByMatchID(ctx context.Context, matchID uuid.UUID) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&models.ChatMessage{}).Where("match_id = ?", matchID).Count(&count).Error
+	return count, err
 }
