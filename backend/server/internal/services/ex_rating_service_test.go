@@ -58,6 +58,9 @@ func (m *mockMatchRepoForExRating) FindByID(ctx context.Context, id uuid.UUID) (
 }
 func (m *mockMatchRepoForExRating) SoftDelete(ctx context.Context, id uuid.UUID) error { return nil }
 func (m *mockMatchRepoForExRating) FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error) {
+	if m.match == nil {
+		return nil, errors.New("not found")
+	}
 	return m.match, nil
 }
 func (m *mockMatchRepoForExRating) Create(ctx context.Context, match *models.Match) error { return nil }
@@ -140,6 +143,52 @@ func TestExRatingService_SubmitRating_NotEnoughMessages(t *testing.T) {
 	assert.Contains(t, err.Error(), "50")
 }
 
+func TestExRatingService_SubmitRating_MatchNotFound(t *testing.T) {
+	svc := NewExRatingService(
+		&mockExRatingRepo{hasRated: false},
+		&mockWalletRepoForExRating{balance: 100},
+		&mockTxManagerForExRating{},
+		&mockChatRepoForExRating{msgCount: 51},
+		&mockMatchRepoForExRating{match: nil},
+	)
+
+	err := svc.SubmitRating(context.Background(), uuid.New(), uuid.New(), 4, []string{"#tốt"})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not found")
+}
+
+func TestExRatingService_SubmitRating_TargetUserNotMatch(t *testing.T) {
+	match := &models.Match{ID: uuid.New(), User1ID: uuid.New(), User2ID: uuid.New(), DeletedAt: gorm.DeletedAt{Time: time.Now(), Valid: true}}
+	svc := NewExRatingService(
+		&mockExRatingRepo{hasRated: false},
+		&mockWalletRepoForExRating{balance: 100},
+		&mockTxManagerForExRating{},
+		&mockChatRepoForExRating{msgCount: 51},
+		&mockMatchRepoForExRating{match: match},
+	)
+
+	err := svc.SubmitRating(context.Background(), uuid.New(), match.ID, 4, []string{"#tốt"})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "thuộc về")
+}
+
+func TestExRatingService_SubmitRating_AlreadyRated(t *testing.T) {
+	targetUserID := uuid.New()
+	matchID := uuid.New()
+	match := &models.Match{ID: matchID, User1ID: uuid.New(), User2ID: targetUserID, DeletedAt: gorm.DeletedAt{Time: time.Now(), Valid: true}}
+	svc := NewExRatingService(
+		&mockExRatingRepo{hasRated: true},
+		&mockWalletRepoForExRating{balance: 100},
+		&mockTxManagerForExRating{},
+		&mockChatRepoForExRating{msgCount: 51},
+		&mockMatchRepoForExRating{match: match},
+	)
+
+	err := svc.SubmitRating(context.Background(), targetUserID, matchID, 4, []string{"#tốt"})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "đã đánh giá")
+}
+
 func TestExRatingService_ViewRating_Success(t *testing.T) {
 	viewerID := uuid.New()
 	targetID := uuid.New()
@@ -174,4 +223,26 @@ func TestExRatingService_ViewRating_InsufficientFunds(t *testing.T) {
 	_, _, _, err := svc.ViewRating(context.Background(), viewerID, targetID)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "xu")
+}
+
+type mockTxManagerWithError struct{}
+
+func (m *mockTxManagerWithError) WithTransaction(ctx context.Context, fn func(txCtx context.Context) error) error {
+	return errors.New("lỗi truy xuất ví")
+}
+
+func TestExRatingService_ViewRating_WalletError(t *testing.T) {
+	viewerID := uuid.New()
+	targetID := uuid.New()
+
+	svc := NewExRatingService(
+		&mockExRatingRepo{},
+		&mockWalletRepoForExRating{balance: 100}, 
+		&mockTxManagerWithError{},
+		nil,
+		nil,
+	)
+
+	_, _, _, err := svc.ViewRating(context.Background(), viewerID, targetID)
+	assert.Error(t, err)
 }
