@@ -12,6 +12,7 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
 	chatws "github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/websocket"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
 	"github.com/gofiber/websocket/v2"
 	"github.com/redis/go-redis/v9"
@@ -139,6 +140,23 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	// Match API
 	matchGroup := v1.Group("/matches", middleware.JWTMiddleware(cfg.JWTSecret))
 	matchGroup.Delete("/:match_id", matchHandler.Unmatch)
+
+	// Court System
+	courtRepo := repository.NewCourtRepository(db)
+	courtService := services.NewCourtService(courtRepo, matchRepo, redisClient)
+	courtHandler := handlers.NewCourtHandler(courtService)
+
+	courtGroup := v1.Group("/court", middleware.JWTMiddleware(cfg.JWTSecret))
+	courtGroup.Post("/cases", courtHandler.FileLawsuit)
+	courtGroup.Get("/feed", courtHandler.GetFeed)
+	courtGroup.Post("/:case_id/vote", courtHandler.VoteCase)
+	courtGroup.Post("/:case_id/withdraw", courtHandler.WithdrawCase)
+
+	// Start Court Worker
+	if redisClient != nil {
+		courtWorker := services.NewCourtWorker(courtRepo, violationRepo, redisClient, logger.Log)
+		courtWorker.Start(context.Background())
+	}
 
 	// Vouchers
 	voucherRepo := repository.NewVoucherRepository(db)
