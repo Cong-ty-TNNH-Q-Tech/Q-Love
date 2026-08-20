@@ -12,6 +12,10 @@ import (
 func TestLoadConfig(t *testing.T) {
 	os.Setenv("R2_ACCOUNT_ID", "test_id")
 	os.Setenv("PORT", "4000")
+	os.Setenv("DATABASE_DSN", "test")
+	os.Setenv("REVENUECAT_WEBHOOK_SECRET", "test")
+	os.Setenv("R2_ACCESS_KEY_ID", "test")
+	os.Setenv("R2_SECRET_ACCESS_KEY", "test")
 	defer os.Clearenv()
 
 	cfg := LoadConfig()

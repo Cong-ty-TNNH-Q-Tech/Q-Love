@@ -14,6 +14,10 @@ import (
 
 func TestMainServer(t *testing.T) {
 	// Setup app locally instead of using global
+	t.Setenv("DATABASE_DSN", "test")
+	t.Setenv("REVENUECAT_WEBHOOK_SECRET", "test")
+	t.Setenv("R2_ACCESS_KEY_ID", "test")
+	t.Setenv("R2_SECRET_ACCESS_KEY", "test")
 	cfg := config.LoadConfig()
 	
 	// Skip real db connection for tests
@@ -66,6 +70,9 @@ func TestMainServer(t *testing.T) {
 	t.Setenv("PORT", "3002")
 	t.Setenv("DATABASE_DSN", "skip")
 	t.Setenv("REDIS_URL", "skip")
+	t.Setenv("REVENUECAT_WEBHOOK_SECRET", "test")
+	t.Setenv("R2_ACCESS_KEY_ID", "test")
+	t.Setenv("R2_SECRET_ACCESS_KEY", "test")
 	go func() {
 		// This will block, but the test will exit and kill the goroutine
 		main()
