@@ -197,7 +197,7 @@ func TestLocketService_SendLocket_NSFWError(t *testing.T) {
 	if err == nil || err.Error() != "failed to check image content" {
 		t.Errorf("Expected ai error, got %v", err)
 	}
-
+}
 
 func createMultipartFile(t *testing.T) *multipart.FileHeader {
 	// Instead of a real form, we can just test if the fallback to r2.qlove.com works.
