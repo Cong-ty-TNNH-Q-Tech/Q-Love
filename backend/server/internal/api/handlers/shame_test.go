@@ -1,3 +1,7 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
+
 package handlers
 
 import (
@@ -13,6 +17,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gofiber/fiber/v2"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
 )
 
 type mockShameService struct {
@@ -93,7 +98,7 @@ func TestShameHandler_ThrowTomato(t *testing.T) {
 
 	// Service error (Insufficient Balance)
 	mockSvc.throwTomatoFn = func(ctx context.Context, throwerID uuid.UUID, shameID uuid.UUID) error {
-		return errors.New("insufficient balance to throw a tomato")
+		return services.ErrInsufficientBalance
 	}
 	respInsuff, _ := app.Test(req)
 	if respInsuff.StatusCode != http.StatusBadRequest {
