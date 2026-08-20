@@ -38,6 +38,7 @@ func (m *mockUserRepository) GetFeed(ctx context.Context, userID uuid.UUID, radi
 // Other mock methods returning nil
 func (m *mockUserRepository) UpdateLocation(ctx context.Context, userID uuid.UUID, lat, lon float64) error { return nil }
 func (m *mockUserRepository) Create(ctx context.Context, user *models.User) error { return nil }
+func (m *mockUserRepository) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) { return nil, nil }
 
 func TestFeedService_GetFeed_Default(t *testing.T) {
 	repo := &mockUserRepository{

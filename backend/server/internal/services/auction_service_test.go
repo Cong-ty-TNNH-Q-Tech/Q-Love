@@ -97,6 +97,12 @@ func (m *mockUserRepo) GetTopUsersByScore(ctx context.Context, limit int) ([]uui
 	}
 	return users, nil
 }
+func (m *mockUserRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+	return nil, nil
+}
+func (m *mockUserRepo) GetFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
+	return nil, nil
+}
 
 type mockChatLockRepo struct {
 	err error
@@ -189,6 +195,14 @@ func (m *mockUserRepoError) GetFeed(ctx context.Context, userID uuid.UUID, page,
 	return nil, assert.AnError
 }
 func (m *mockUserRepoError) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) {
+	return nil, assert.AnError
+}
+
+func (m *mockUserRepoError) GetUserByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+	return nil, assert.AnError
+}
+
+func (m *mockUserRepoError) GetFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
 	return nil, assert.AnError
 }
 
