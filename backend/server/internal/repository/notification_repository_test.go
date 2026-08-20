@@ -46,9 +46,9 @@ func TestNotificationRepository_Create(t *testing.T) {
 	}
 
 	mock.ExpectBegin()
-	mock.ExpectExec("INSERT INTO \"notifications\"").
-		WithArgs(notif.ID, notif.UserID, notif.Type, notif.Payload, notif.Status, sqlmock.AnyArg()).
-		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectQuery(`INSERT INTO "notifications"`).
+		WithArgs(notif.UserID, notif.Type, notif.Payload, notif.Status, sqlmock.AnyArg(), notif.ID).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(notif.ID))
 	mock.ExpectCommit()
 
 	err = repo.Create(context.Background(), notif)

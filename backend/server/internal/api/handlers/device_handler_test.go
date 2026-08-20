@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 )
