@@ -115,5 +115,5 @@ func (s *locketService) SendLocket(ctx context.Context, matchID, senderID uuid.U
 		})
 	}
 
-	return nil
+	return imageURL, nil
 }
