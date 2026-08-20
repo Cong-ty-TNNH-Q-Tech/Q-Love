@@ -178,6 +178,24 @@ func TestAuctionService_StartDailyAuctions(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestAuctionService_StartDailyAuctions_NilUserRepo(t *testing.T) {
+	auctionRepo := &mockAuctionRepo{}
+	service := NewAuctionService(auctionRepo, nil, nil, nil, nil)
+	err := service.StartDailyAuctions(context.Background())
+	assert.NoError(t, err)
+}
+
+type mockUserRepoError struct{}
+func (m *mockUserRepoError) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) {
+	return nil, assert.AnError
+}
+
+func TestAuctionService_StartDailyAuctions_UserRepoError(t *testing.T) {
+	auctionRepo := &mockAuctionRepo{}
+	service := NewAuctionService(auctionRepo, nil, nil, &mockUserRepoError{}, nil)
+	err := service.StartDailyAuctions(context.Background())
+	assert.NoError(t, err)
+}
 
 func TestAuctionService_PlaceBid_AmountZeroOrLess(t *testing.T) {
 	service := NewAuctionService(nil, nil, nil, &mockUserRepo{}, nil)
@@ -419,3 +437,13 @@ func TestAuctionService_GetActiveAuctions(t *testing.T) {
 	assert.Len(t, auctions, 1)
 	assert.Equal(t, auctionID, auctions[0].ID)
 }
+
+func TestAuctionService_GetActiveAuctions_Error(t *testing.T) {
+	auctionRepo := &mockAuctionRepo{err: assert.AnError}
+	service := NewAuctionService(auctionRepo, nil, nil, nil, nil)
+	
+	auctions, err := service.GetActiveAuctions(context.Background(), 0, 100)
+	assert.Error(t, err)
+	assert.Nil(t, auctions)
+}
+
