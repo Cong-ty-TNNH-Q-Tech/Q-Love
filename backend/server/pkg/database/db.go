@@ -35,6 +35,24 @@ func NewPostgresDB(cfg *config.Config) (*gorm.DB, error) {
 		return nil, err
 	}
 
+	err = db.AutoMigrate(
+		&models.VibeMatch{},
+		&models.CardProfile{},
+		&models.CardTransaction{},
+		&models.Bounty{},
+		&models.BlindAuction{},
+		&models.AuctionBid{},
+		&models.WallOfShame{},
+		&models.WingmanReferral{},
+		&models.CardSteal{},
+		&models.Landmark{},
+		&models.Notification{},
+	)
+	if err != nil {
+		logger.Log.Error("Failed to auto migrate database", zap.Error(err))
+		return nil, err
+	}
+
 	sqlDB, err := db.DB()
 	if err != nil {
 		logger.Log.Error("Failed to get database connection pool", zap.Error(err))
