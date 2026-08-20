@@ -187,7 +187,8 @@ func TestAuctionService_StartDailyAuctions_UserRepoError(t *testing.T) {
 	auctionRepo := &mockAuctionRepo{}
 	service := NewAuctionService(auctionRepo, nil, nil, &mockUserRepoError{}, nil)
 	err := service.StartDailyAuctions(context.Background())
-	assert.NoError(t, err)
+	assert.Error(t, err)
+	assert.Equal(t, assert.AnError, err)
 }
 
 func TestAuctionService_PlaceBid_AmountZeroOrLess(t *testing.T) {
