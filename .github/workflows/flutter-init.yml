@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   init:
     runs-on: ubuntu-latest
@@ -30,4 +33,4 @@ jobs:
           git config --local user.name "GitHub Action"
           git add frontend/app/android frontend/app/ios
           git commit -m "chore: init android and ios platforms" || echo "No changes to commit"
-          git push origin HEAD:${{ github.ref }}
+          git push origin HEAD:${{ github.head_ref }}
