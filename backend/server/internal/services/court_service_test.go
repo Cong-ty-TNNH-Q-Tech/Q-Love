@@ -105,7 +105,7 @@ func (m *mockMatchRepoForCourt) UpdateStreak(ctx context.Context, id uuid.UUID, 
 	return nil
 }
 
-func (m *mockMatchRepoForCourt) UpdateLastInteraction(ctx context.Context, id uuid.UUID) error {
+func (m *mockMatchRepoForCourt) UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error {
 	return nil
 }
 
