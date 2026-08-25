@@ -301,7 +301,7 @@ func TestLocketService_SendLocket_DecodeError(t *testing.T) {
 	violationRepo := &mockViolationRepo{}
 	nsfwService := &mockNSFWService{isNSFW: false}
 
-	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil)
+	service := NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, nil, nil)
 
 	fileHeader := createInvalidMultipartFile(t)
 	
