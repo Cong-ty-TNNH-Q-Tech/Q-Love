@@ -12,6 +12,7 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
 	chatws "github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/websocket"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/esms"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
 	"github.com/gofiber/websocket/v2"
 	"github.com/redis/go-redis/v9"
@@ -62,8 +63,20 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	minigameService := services.NewMinigameService(stealRepo, walletRepo, txManager)
 	minigameHandler := handlers.NewMinigameHandler(minigameService)
 
+	// Auth routes setup
+	esmsClient := esms.NewClient(cfg.ESMSAPIKey, cfg.ESMSSecretKey)
+	userRepo := repository.NewUserRepository(db)
+	authService := services.NewAuthService(userRepo, esmsClient, redisClient, cfg.JWTSecret)
+	authHandler := handlers.NewAuthHandler(authService)
+
 	// API v1 group
 	v1 := app.Group("/api/v1")
+
+	// Auth routes
+	authGroup := v1.Group("/auth")
+	authGroup.Post("/send-otp", authHandler.SendOTP)
+	authGroup.Post("/verify-otp", authHandler.VerifyOTP)
+	authGroup.Post("/refresh", authHandler.RefreshToken)
 
 	// Wingman routes
 	wingmanGroup := v1.Group("/wingman", middleware.JWTMiddleware(cfg.JWTSecret))
@@ -109,7 +122,6 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	
 	// Auction routes
 	auctionRepo := repository.NewAuctionRepository(db)
-	userRepo := repository.NewUserRepository(db)
 	chatLockRepo := repository.NewChatLockRepository(db)
 	auctionService := services.NewAuctionService(auctionRepo, walletRepo, txManager, userRepo, chatLockRepo)
 	auctionHandler := handlers.NewAuctionHandler(auctionService)

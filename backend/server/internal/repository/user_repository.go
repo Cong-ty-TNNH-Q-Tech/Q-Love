@@ -6,6 +6,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/google/uuid"
@@ -14,7 +15,9 @@ import (
 
 type UserRepository interface {
 	GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error)
-	GetUserByID(ctx context.Context, id uuid.UUID) (*models.User, error)
+	Create(ctx context.Context, user *models.User) error
+	FindByPhone(ctx context.Context, phone string) (*models.User, error)
+	FindByID(ctx context.Context, id uuid.UUID) (*models.User, error)
 	GetFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error)
 	GetSpiritualFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error)
 }
@@ -40,10 +43,28 @@ func (r *userRepository) GetTopUsersByScore(ctx context.Context, limit int) ([]u
 	return userIDs, err
 }
 
-func (r *userRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+func (r *userRepository) Create(ctx context.Context, user *models.User) error {
+	return GetDB(ctx, r.db).WithContext(ctx).Create(user).Error
+}
+
+func (r *userRepository) FindByPhone(ctx context.Context, phone string) (*models.User, error) {
 	var user models.User
-	err := GetDB(ctx, r.db).WithContext(ctx).First(&user, "id = ?", id).Error
+	err := GetDB(ctx, r.db).WithContext(ctx).Where("phone = ?", phone).First(&user).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // Return nil if not found instead of error
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+func (r *userRepository) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+	var user models.User
+	err := GetDB(ctx, r.db).WithContext(ctx).Where("id = ?", id).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &user, nil
@@ -51,9 +72,12 @@ func (r *userRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*models
 
 func (r *userRepository) GetFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
 	// Find user's location first
-	user, err := r.GetUserByID(ctx, userID)
+	user, err := r.FindByID(ctx, userID)
 	if err != nil {
 		return nil, err
+	}
+	if user == nil {
+		return nil, errors.New("user not found")
 	}
 
 	var feed []models.User
@@ -69,9 +93,12 @@ func (r *userRepository) GetFeed(ctx context.Context, userID uuid.UUID, radius i
 }
 
 func (r *userRepository) GetSpiritualFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
-	user, err := r.GetUserByID(ctx, userID)
+	user, err := r.FindByID(ctx, userID)
 	if err != nil {
 		return nil, err
+	}
+	if user == nil {
+		return nil, errors.New("user not found")
 	}
 
 	var feed []models.User

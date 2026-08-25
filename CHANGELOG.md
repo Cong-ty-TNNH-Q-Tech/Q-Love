@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [backend/server/api] Thêm endpoint `GET /api/v1/users/feed` hỗ trợ quét profile bán kính 50km (Issue #6).
 - [backend/server/services] Thêm thuật toán tương hợp `SpiritualService` dựa trên Cung hoàng đạo và Thần số học.
+- [backend/server/api] Thêm JWT Middleware và cấu trúc API cho hệ thống.
+- [backend/server/api] Tích hợp ESMS OTP và xác thực JWT (Issue #5).
 - [backend/server/api] Thêm API Đổi Xu lấy Voucher (Issue #47) với cơ chế chống Race Condition (`FOR UPDATE SKIP LOCKED`).
 - [backend/server/api] Thêm API Admin quản lý kho Voucher (thêm, xóa, xem danh sách).
 - [docs/erd.md] Cập nhật thiết kế bảng `vouchers` và `user_vouchers`.
