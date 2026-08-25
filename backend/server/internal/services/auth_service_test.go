@@ -202,3 +202,80 @@ func TestAuthService_RefreshToken_Invalid(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "invalid token type", err.Error())
 }
+func TestAuthService_VerifyOTP_RedisError(t *testing.T) {
+	mr, rdb := setupAuthServiceTest()
+	defer mr.Close()
+	mr.SetError("ERR_REDIS")
+
+	userRepo := new(mockUserRepoForAuth)
+	esmsClient := new(mockESMSClient)
+
+	svc := NewAuthService(userRepo, esmsClient, rdb, "secret")
+
+	_, _, _, _, err := svc.VerifyOTP(context.Background(), "0901234567", "123456")
+	assert.Error(t, err)
+	assert.Equal(t, "ERR_REDIS", err.Error())
+}
+
+func TestAuthService_VerifyOTP_UserRepoError(t *testing.T) {
+	mr, rdb := setupAuthServiceTest()
+	defer mr.Close()
+	rdb.Set(context.Background(), "otp:0901234567", "123456", 5*time.Minute)
+
+	userRepo := new(mockUserRepoForAuth)
+	esmsClient := new(mockESMSClient)
+
+	userRepo.On("FindByPhone", mock.Anything, "0901234567").Return(nil, errors.New("db error"))
+
+	svc := NewAuthService(userRepo, esmsClient, rdb, "secret")
+
+	_, _, _, _, err := svc.VerifyOTP(context.Background(), "0901234567", "123456")
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+}
+
+func TestAuthService_VerifyOTP_CreateError(t *testing.T) {
+	mr, rdb := setupAuthServiceTest()
+	defer mr.Close()
+	rdb.Set(context.Background(), "otp:0901234567", "123456", 5*time.Minute)
+
+	userRepo := new(mockUserRepoForAuth)
+	esmsClient := new(mockESMSClient)
+
+	userRepo.On("FindByPhone", mock.Anything, "0901234567").Return(nil, nil)
+	userRepo.On("Create", mock.Anything, mock.Anything).Return(errors.New("db error"))
+
+	svc := NewAuthService(userRepo, esmsClient, rdb, "secret")
+
+	_, _, _, _, err := svc.VerifyOTP(context.Background(), "0901234567", "123456")
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+}
+
+func TestAuthService_RefreshToken_ParseError(t *testing.T) {
+	mr, rdb := setupAuthServiceTest()
+	defer mr.Close()
+
+	userRepo := new(mockUserRepoForAuth)
+	esmsClient := new(mockESMSClient)
+	svc := NewAuthService(userRepo, esmsClient, rdb, "secret")
+
+	_, _, err := svc.RefreshToken(context.Background(), "invalid-token-format")
+	assert.Error(t, err)
+	assert.Equal(t, "invalid refresh token", err.Error())
+}
+
+func TestAuthService_SendOTP_RedisError(t *testing.T) {
+	mr, rdb := setupAuthServiceTest()
+	defer mr.Close()
+
+	userRepo := new(mockUserRepoForAuth)
+	esmsClient := new(mockESMSClient)
+
+	svc := NewAuthService(userRepo, esmsClient, rdb, "secret")
+
+	mr.SetError("ERR_REDIS")
+	err := svc.SendOTP(context.Background(), "0901234567")
+	assert.Error(t, err)
+	assert.Equal(t, "ERR_REDIS", err.Error())
+}
