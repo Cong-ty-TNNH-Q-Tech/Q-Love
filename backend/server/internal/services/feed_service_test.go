@@ -63,8 +63,8 @@ func TestFeedService_GetFeed_Spiritual(t *testing.T) {
 	repo := &mockUserRepository{
 		user: models.User{ID: uuid.New(), DOB: time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)},
 		feed: []models.User{
-			{ID: uuid.New(), DOB: time.Date(1996, 6, 6, 0, 0, 0, 0, time.UTC)},
-			{ID: uuid.New(), DOB: time.Date(1997, 7, 7, 0, 0, 0, 0, time.UTC)},
+			{ID: uuid.New(), DOB: time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)},
+			{ID: uuid.New(), DOB: time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)},
 		},
 	}
 	spiritual := NewSpiritualService()
