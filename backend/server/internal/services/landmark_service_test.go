@@ -49,18 +49,15 @@ func (m *mockUserViolationRepo) HasActiveFakeGPSBan(ctx context.Context, userID 
 }
 
 type mockClanRepo struct{ mock.Mock }
-func (m *mockClanRepo) Create(ctx context.Context, clan *models.Clan) error { return nil }
-func (m *mockClanRepo) FindByID(ctx context.Context, id uuid.UUID) (*models.Clan, error) { return nil, nil }
+func (m *mockClanRepo) CreateClan(ctx context.Context, clan *models.Clan) error { return nil }
+func (m *mockClanRepo) AddClanMember(ctx context.Context, member *models.ClanMember) error { return nil }
+func (m *mockClanRepo) FindByName(ctx context.Context, name string) (*models.Clan, error) { return nil, nil }
+func (m *mockClanRepo) GetTopWeeklyClan(ctx context.Context) (*models.Clan, error) { return nil, nil }
+func (m *mockClanRepo) ResetWeeklyScores(ctx context.Context) error { return nil }
+func (m *mockClanRepo) GetMembers(ctx context.Context, clanID uuid.UUID) ([]models.ClanMember, error) { return nil, nil }
 func (m *mockClanRepo) AddScore(ctx context.Context, clanID uuid.UUID, score int) error {
 	return m.Called(ctx, clanID, score).Error(0)
 }
-func (m *mockClanRepo) GetTopClan(ctx context.Context) (*models.Clan, error) { return nil, nil }
-func (m *mockClanRepo) ResetWeeklyScores(ctx context.Context) error { return nil }
-func (m *mockClanRepo) Update(ctx context.Context, clan *models.Clan) error { return nil }
-func (m *mockClanRepo) GetLeaderboard(ctx context.Context, limit int) ([]models.Clan, error) { return nil, nil }
-func (m *mockClanRepo) HardDelete(ctx context.Context, id uuid.UUID) error { return nil }
-func (m *mockClanRepo) SoftDelete(ctx context.Context, id uuid.UUID) error { return nil }
-func (m *mockClanRepo) FindByName(ctx context.Context, name string) (*models.Clan, error) { return nil, nil }
 
 type mockUserRepoForLandmark struct{ mock.Mock }
 func (m *mockUserRepoForLandmark) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
@@ -73,6 +70,9 @@ func (m *mockUserRepoForLandmark) FindByID(ctx context.Context, id uuid.UUID) (*
 }
 func (m *mockUserRepoForLandmark) Create(ctx context.Context, user *models.User) error { return nil }
 func (m *mockUserRepoForLandmark) FindByPhone(ctx context.Context, phone string) (*models.User, error) { return nil, nil }
+func (m *mockUserRepoForLandmark) GetFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) { return nil, nil }
+func (m *mockUserRepoForLandmark) GetSpiritualFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) { return nil, nil }
+func (m *mockUserRepoForLandmark) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) { return nil, nil }
 func (m *mockUserRepoForLandmark) Update(ctx context.Context, user *models.User) error { return nil }
 
 func TestLandmarkService_CheckIn_Mocked(t *testing.T) {
