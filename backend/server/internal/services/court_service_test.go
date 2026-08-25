@@ -270,3 +270,61 @@ func TestCourtService_FileLawsuit_CannotSueYourself(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "cannot sue yourself", err.Error())
 }
+func TestCourtService_FileLawsuit_MatchNotFound(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	mockMatch := new(mockMatchRepoForCourt)
+	svc := NewCourtService(mockCourt, mockMatch, nil)
+	
+	mockMatch.On("FindByID", mock.Anything, mock.Anything).Return(nil, errors.New("not found"))
+	
+	_, err := svc.FileLawsuit(context.Background(), uuid.New(), uuid.New(), uuid.New(), "Ghosting")
+	assert.Error(t, err)
+	assert.Equal(t, "match not found", err.Error())
+}
+
+func TestCourtService_FileLawsuit_Unauthorized(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	mockMatch := new(mockMatchRepoForCourt)
+	svc := NewCourtService(mockCourt, mockMatch, nil)
+	
+	match := &models.Match{
+		User1ID: uuid.New(),
+		User2ID: uuid.New(),
+	}
+	mockMatch.On("FindByID", mock.Anything, mock.Anything).Return(match, nil)
+	
+	_, err := svc.FileLawsuit(context.Background(), uuid.New(), uuid.New(), uuid.New(), "Ghosting")
+	assert.Error(t, err)
+	assert.Equal(t, "unauthorized to file lawsuit for this match", err.Error())
+}
+
+func TestCourtService_FileLawsuit_InvalidDefendant(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	mockMatch := new(mockMatchRepoForCourt)
+	svc := NewCourtService(mockCourt, mockMatch, nil)
+	
+	pID := uuid.New()
+	match := &models.Match{
+		User1ID: pID,
+		User2ID: uuid.New(),
+	}
+	mockMatch.On("FindByID", mock.Anything, mock.Anything).Return(match, nil)
+	
+	_, err := svc.FileLawsuit(context.Background(), pID, uuid.New(), uuid.New(), "Ghosting")
+	assert.Error(t, err)
+	assert.Equal(t, "invalid defendant for this match", err.Error())
+}
+
+func TestCourtService_VoteCase_VotingClosed(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	svc := NewCourtService(mockCourt, nil, nil)
+	
+	courtCase := &models.CourtCase{
+		Status: models.CourtCaseStatusSettled,
+	}
+	mockCourt.On("GetCaseByID", mock.Anything, mock.Anything).Return(courtCase, nil)
+	
+	err := svc.VoteCase(context.Background(), uuid.New(), uuid.New(), models.CourtVoteGuilty)
+	assert.Error(t, err)
+	assert.Equal(t, "voting is closed for this case", err.Error())
+}
