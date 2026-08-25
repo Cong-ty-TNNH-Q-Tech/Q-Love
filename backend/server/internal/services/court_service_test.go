@@ -329,3 +329,107 @@ func TestCourtService_VoteCase_VotingClosed(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "voting is closed for this case", err.Error())
 }
+func TestCourtService_FileLawsuit_StreakTooLow(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	mockMatch := new(mockMatchRepoForCourt)
+	svc := NewCourtService(mockCourt, mockMatch, nil)
+	
+	pID := uuid.New()
+	dID := uuid.New()
+	match := &models.Match{
+		User1ID: pID,
+		User2ID: dID,
+		StreakScore: 5, // <= 5
+	}
+	mockMatch.On("FindByID", mock.Anything, mock.Anything).Return(match, nil)
+	
+	_, err := svc.FileLawsuit(context.Background(), pID, dID, uuid.New(), "Ghosting")
+	assert.Error(t, err)
+	assert.Equal(t, "streak must be greater than 5 to file a lawsuit", err.Error())
+}
+
+func TestCourtService_VoteCase_CaseNotFound(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	svc := NewCourtService(mockCourt, nil, nil)
+	
+	mockCourt.On("GetCaseByID", mock.Anything, mock.Anything).Return(nil, errors.New("not found"))
+	
+	err := svc.VoteCase(context.Background(), uuid.New(), uuid.New(), models.CourtVoteGuilty)
+	assert.Error(t, err)
+	assert.Equal(t, "case not found", err.Error())
+}
+
+func TestCourtService_VoteCase_VotingExpired(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	svc := NewCourtService(mockCourt, nil, nil)
+	
+	courtCase := &models.CourtCase{
+		Status: models.CourtCaseStatusVoting,
+		ExpiresAt: time.Now().Add(-1 * time.Hour), // expired
+	}
+	mockCourt.On("GetCaseByID", mock.Anything, mock.Anything).Return(courtCase, nil)
+	
+	err := svc.VoteCase(context.Background(), uuid.New(), uuid.New(), models.CourtVoteGuilty)
+	assert.Error(t, err)
+	assert.Equal(t, "voting period has expired", err.Error())
+}
+
+func TestCourtService_VoteCase_PlaintiffDefendantCannotVote(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	svc := NewCourtService(mockCourt, nil, nil)
+	
+	pID := uuid.New()
+	courtCase := &models.CourtCase{
+		Status: models.CourtCaseStatusVoting,
+		ExpiresAt: time.Now().Add(1 * time.Hour),
+		PlaintiffID: pID,
+	}
+	mockCourt.On("GetCaseByID", mock.Anything, mock.Anything).Return(courtCase, nil)
+	
+	err := svc.VoteCase(context.Background(), uuid.New(), pID, models.CourtVoteGuilty)
+	assert.Error(t, err)
+	assert.Equal(t, "plaintiff or defendant cannot vote in their own case", err.Error())
+}
+
+func TestCourtService_VoteCase_AlreadyVoted(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	svc := NewCourtService(mockCourt, nil, nil)
+	
+	courtCase := &models.CourtCase{
+		Status: models.CourtCaseStatusVoting,
+		ExpiresAt: time.Now().Add(1 * time.Hour),
+	}
+	mockCourt.On("GetCaseByID", mock.Anything, mock.Anything).Return(courtCase, nil)
+	mockCourt.On("HasUserVoted", mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
+	
+	err := svc.VoteCase(context.Background(), uuid.New(), uuid.New(), models.CourtVoteGuilty)
+	assert.Error(t, err)
+	assert.Equal(t, "already voted", err.Error())
+}
+
+func TestCourtService_WithdrawCase_CaseNotFound(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	svc := NewCourtService(mockCourt, nil, nil)
+	
+	mockCourt.On("GetCaseByID", mock.Anything, mock.Anything).Return(nil, errors.New("not found"))
+	
+	err := svc.WithdrawCase(context.Background(), uuid.New(), uuid.New())
+	assert.Error(t, err)
+	assert.Equal(t, "case not found", err.Error())
+}
+
+func TestCourtService_WithdrawCase_NotInVotingPhase(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	svc := NewCourtService(mockCourt, nil, nil)
+	
+	pID := uuid.New()
+	courtCase := &models.CourtCase{
+		PlaintiffID: pID,
+		Status: models.CourtCaseStatusSettled,
+	}
+	mockCourt.On("GetCaseByID", mock.Anything, mock.Anything).Return(courtCase, nil)
+	
+	err := svc.WithdrawCase(context.Background(), uuid.New(), pID)
+	assert.Error(t, err)
+	assert.Equal(t, "can only withdraw cases that are currently in voting phase", err.Error())
+}
