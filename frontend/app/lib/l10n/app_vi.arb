@@ -1,5 +1,8 @@
 {
     "@@locale": "vi",
     "appTitle": "Q-Love",
-    "login": "Đăng nhập"
+    "login": "Đăng nhập",
+    "filter": "Bộ lọc",
+    "spiritualFilter": "Hệ Tâm linh \ud83d\udd2e",
+    "expandRadius": "Mở rộng bán kính"
 }
