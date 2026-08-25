@@ -508,3 +508,14 @@ func TestCourtService_FileLawsuit_TxFail(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "db error", err.Error())
 }
+
+func TestCourtService_GetFeed_Error(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	svc := NewCourtService(mockCourt, nil, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
+	
+	mockCourt.On("GetActiveCases", mock.Anything, mock.Anything, mock.Anything).Return([]models.CourtCase{}, errors.New("db error"))
+	
+	_, err := svc.GetFeed(context.Background(), uuid.New(), 10)
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+}
