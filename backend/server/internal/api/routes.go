@@ -20,7 +20,7 @@ import (
 	"context"
 )
 
-func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, redisClient *redis.Client, cfg *config.Config) {
+func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, redisClient *redis.Client, cfg *config.Config) {
 	wingmanRepo := repository.NewWingmanRepository(db)
 	walletRepo := repository.NewWalletRepository(db)
 	shameRepo := repository.NewShameRepository(db)
@@ -40,7 +40,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	chatRepo := repository.NewChatMessageRepository(db)
 	chatService := services.NewChatService(chatRepo)
 	hub := chatws.NewHub(redisClient)
-	go hub.Run(context.Background())
+	go hub.Run(ctx)
 	chatHandler := handlers.NewChatHandler(chatService, hub)
 
 	matchService := services.NewMatchService(matchRepo)
@@ -155,7 +155,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	// Start Court Worker
 	if redisClient != nil {
 		courtWorker := services.NewCourtWorker(courtRepo, violationRepo, redisClient, logger.Log)
-		courtWorker.Start(context.Background())
+		courtWorker.Start(ctx)
 	}
 
 	// Vouchers

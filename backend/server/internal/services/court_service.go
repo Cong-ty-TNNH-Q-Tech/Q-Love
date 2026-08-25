@@ -99,9 +99,8 @@ func (s *courtService) FileLawsuit(ctx context.Context, plaintiffID, defendantID
 }
 
 func (s *courtService) GetFeed(ctx context.Context, jurorID uuid.UUID, limit int) ([]models.CourtCase, error) {
-	// In a real app we might filter out cases the user already voted on.
-	// For simplicity, we just return active cases.
-	return s.courtRepo.GetActiveCases(ctx, limit)
+	// Active cases excluding those the juror has already voted on.
+	return s.courtRepo.GetActiveCases(ctx, jurorID, limit)
 }
 
 func (s *courtService) VoteCase(ctx context.Context, caseID, jurorID uuid.UUID, voteType models.CourtVoteType) error {

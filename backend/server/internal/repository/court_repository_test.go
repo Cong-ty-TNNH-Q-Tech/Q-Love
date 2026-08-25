@@ -153,7 +153,7 @@ func TestCourtRepository_GetActiveCases(t *testing.T) {
 		ExpiresAt:   time.Now().Add(48 * time.Hour),
 	})
 	
-	cases, err := repo.GetActiveCases(context.Background(), 10)
+	cases, err := repo.GetActiveCases(context.Background(), uuid.New(), 10)
 	assert.NoError(t, err)
 	assert.Len(t, cases, 1)
 }

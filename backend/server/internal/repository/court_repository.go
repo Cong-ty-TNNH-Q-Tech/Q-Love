@@ -16,7 +16,7 @@ import (
 type CourtRepository interface {
 	CreateCase(ctx context.Context, courtCase *models.CourtCase) error
 	GetCaseByID(ctx context.Context, id uuid.UUID) (*models.CourtCase, error)
-	GetActiveCases(ctx context.Context, limit int) ([]models.CourtCase, error)
+	GetActiveCases(ctx context.Context, jurorID uuid.UUID, limit int) ([]models.CourtCase, error)
 	GetExpiredVotingCases(ctx context.Context) ([]models.CourtCase, error)
 	UpdateCaseStatus(ctx context.Context, id uuid.UUID, status models.CourtCaseStatus) error
 	CreateVote(ctx context.Context, vote *models.CourtVote) error
@@ -45,10 +45,12 @@ func (r *courtRepository) GetCaseByID(ctx context.Context, id uuid.UUID) (*model
 	return &courtCase, nil
 }
 
-func (r *courtRepository) GetActiveCases(ctx context.Context, limit int) ([]models.CourtCase, error) {
+func (r *courtRepository) GetActiveCases(ctx context.Context, jurorID uuid.UUID, limit int) ([]models.CourtCase, error) {
 	var cases []models.CourtCase
+	subQuery := r.db.Model(&models.CourtVote{}).Select("case_id").Where("juror_id = ?", jurorID)
 	err := r.db.WithContext(ctx).
 		Where("status = ? AND expires_at > ?", models.CourtCaseStatusVoting, time.Now()).
+		Where("id NOT IN (?)", subQuery).
 		Limit(limit).
 		Find(&cases).Error
 	return cases, err

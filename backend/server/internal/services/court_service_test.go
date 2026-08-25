@@ -35,8 +35,8 @@ func (m *mockCourtRepo) GetCaseByID(ctx context.Context, id uuid.UUID) (*models.
 	return args.Get(0).(*models.CourtCase), args.Error(1)
 }
 
-func (m *mockCourtRepo) GetActiveCases(ctx context.Context, limit int) ([]models.CourtCase, error) {
-	args := m.Called(ctx, limit)
+func (m *mockCourtRepo) GetActiveCases(ctx context.Context, jurorID uuid.UUID, limit int) ([]models.CourtCase, error) {
+	args := m.Called(ctx, jurorID, limit)
 	return args.Get(0).([]models.CourtCase), args.Error(1)
 }
 
@@ -211,9 +211,9 @@ func TestCourtService_GetFeed_Success(t *testing.T) {
 	activeCases := []models.CourtCase{
 		{ID: uuid.New(), Status: models.CourtCaseStatusVoting},
 	}
-	mockCourt.On("GetActiveCases", mock.Anything, 10).Return(activeCases, nil)
+	mockCourt.On("GetActiveCases", mock.Anything, jurorID, 10).Return(activeCases, nil)
 
-	cases, err := svc.GetFeed(context.Background(), uuid.New(), 10)
+	cases, err := svc.GetFeed(context.Background(), jurorID, 10)
 	assert.NoError(t, err)
 	assert.Len(t, cases, 1)
 }
