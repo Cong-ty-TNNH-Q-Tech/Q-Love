@@ -26,7 +26,11 @@ func (m *mockUserRepository) GetTopUsersByScore(ctx context.Context, limit int) 
 	return nil, nil
 }
 
-func (m *mockUserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+func (m *mockUserRepository) FindByPhone(ctx context.Context, phone string) (*models.User, error) {
+	return nil, nil
+}
+
+func (m *mockUserRepository) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -52,10 +56,12 @@ func (m *mockUserRepository) UpdateLocation(ctx context.Context, userID uuid.UUI
 func (m *mockUserRepository) Create(ctx context.Context, user *models.User) error { return nil }
 
 func TestFeedService_GetFeed_Default(t *testing.T) {
+	dob1 := time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)
+	dob2 := time.Date(1996, 6, 6, 0, 0, 0, 0, time.UTC)
 	repo := &mockUserRepository{
-		user: models.User{ID: uuid.New(), DOB: time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)},
+		user: models.User{ID: uuid.New(), DOB: &dob1},
 		feed: []models.User{
-			{ID: uuid.New(), DOB: time.Date(1996, 6, 6, 0, 0, 0, 0, time.UTC)},
+			{ID: uuid.New(), DOB: &dob2},
 		},
 	}
 	spiritual := NewSpiritualService()
@@ -67,11 +73,12 @@ func TestFeedService_GetFeed_Default(t *testing.T) {
 }
 
 func TestFeedService_GetFeed_Spiritual(t *testing.T) {
+	dob := time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)
 	repo := &mockUserRepository{
-		user: models.User{ID: uuid.New(), DOB: time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)},
+		user: models.User{ID: uuid.New(), DOB: &dob},
 		feed: []models.User{
-			{ID: uuid.New(), DOB: time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)},
-			{ID: uuid.New(), DOB: time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)},
+			{ID: uuid.New(), DOB: &dob},
+			{ID: uuid.New(), DOB: &dob},
 		},
 	}
 	spiritual := NewSpiritualService()

@@ -37,7 +37,7 @@ func NewFeedService(userRepo repository.UserRepository, spiritualService Spiritu
 }
 
 func (s *feedService) GetFeed(ctx context.Context, userID uuid.UUID, filter string, radius int) ([]FeedUserResponse, error) {
-	requestor, err := s.userRepo.GetUserByID(ctx, userID)
+	requestor, err := s.userRepo.FindByID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,14 @@ func (s *feedService) GetFeed(ctx context.Context, userID uuid.UUID, filter stri
 
 	var results []FeedUserResponse
 	for _, u := range users {
-		score := s.spiritualService.CalculateSpiritualMatchScore(requestor.DOB, u.DOB)
+		var reqDob, uDob time.Time
+		if requestor.DOB != nil {
+			reqDob = *requestor.DOB
+		}
+		if u.DOB != nil {
+			uDob = *u.DOB
+		}
+		score := s.spiritualService.CalculateSpiritualMatchScore(reqDob, uDob)
 
 		if filter == "spiritual" && score <= 70 {
 			continue
@@ -65,8 +72,8 @@ func (s *feedService) GetFeed(ctx context.Context, userID uuid.UUID, filter stri
 		results = append(results, FeedUserResponse{
 			User:                u,
 			SpiritualMatchScore: score,
-			Zodiac:              s.spiritualService.CalculateZodiac(u.DOB),
-			Numerology:          s.spiritualService.CalculateNumerology(u.DOB),
+			Zodiac:              s.spiritualService.CalculateZodiac(uDob),
+			Numerology:          s.spiritualService.CalculateNumerology(uDob),
 		})
 	}
 
