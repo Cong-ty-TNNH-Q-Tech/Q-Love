@@ -32,9 +32,10 @@ func (m *mockFeedService) GetFeed(ctx context.Context, userID uuid.UUID, filter 
 
 func TestFeedHandler_GetFeed_Success(t *testing.T) {
 	app := fiber.New()
+	dob := time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)
 	mockSvc := &mockFeedService{
 		feed: []services.FeedUserResponse{
-			{User: models.User{ID: uuid.New(), DOB: time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)}},
+			{User: models.User{ID: uuid.New(), DOB: &dob}},
 		},
 	}
 	h := NewFeedHandler(mockSvc)
