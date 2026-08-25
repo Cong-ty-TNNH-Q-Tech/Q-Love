@@ -80,6 +80,10 @@ func (m *mockS3Client) PutObject(ctx context.Context, params *s3.PutObjectInput,
 	return m.output, m.err
 }
 
+func (m *mockS3Client) DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+	return &s3.DeleteObjectOutput{}, m.err
+}
+
 func TestUploadFile_Success(t *testing.T) {
 	client := &R2Client{
 		S3Client:   &mockS3Client{output: &s3.PutObjectOutput{}},
@@ -95,3 +99,33 @@ func TestUploadFile_Success(t *testing.T) {
 		t.Errorf("Expected %s, got %s", expected, url)
 	}
 }
+
+func TestDeleteObject_Success(t *testing.T) {
+	client := &R2Client{
+		S3Client:   &mockS3Client{output: &s3.PutObjectOutput{}},
+		BucketName: "test-bucket",
+	}
+
+	err := client.DeleteObject(context.Background(), "success.jpg")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+}
+
+func TestDeleteObject_Error(t *testing.T) {
+	cfg := &config.Config{
+		R2AccountID:       "dummy",
+		R2AccessKeyID:     "dummy",
+		R2SecretAccessKey: "dummy",
+		R2BucketName:      "dummy",
+	}
+	client, _ := NewR2Client(cfg)
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // Cancel immediately to force network error
+	
+	err := client.DeleteObject(ctx, "test.jpg")
+	if err == nil {
+		t.Fatal("Expected error due to cancelled context, got nil")
+	}
+}
+
