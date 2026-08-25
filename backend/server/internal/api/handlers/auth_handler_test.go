@@ -14,10 +14,12 @@ import (
 	"testing"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"go.uber.org/zap"
 )
 
 // Mocks
@@ -45,6 +47,9 @@ func (m *mockAuthService) RefreshToken(ctx context.Context, refreshToken string)
 }
 
 func setupAuthTestApp(svc *mockAuthService) *fiber.App {
+	if logger.Log == nil {
+		logger.Log = zap.NewNop()
+	}
 	app := fiber.New()
 	handler := NewAuthHandler(svc)
 	app.Post("/auth/send-otp", handler.SendOTP)
