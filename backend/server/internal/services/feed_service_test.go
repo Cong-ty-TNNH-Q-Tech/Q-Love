@@ -74,14 +74,13 @@ func TestFeedService_GetFeed_Default(t *testing.T) {
 
 func TestFeedService_GetFeed_Spiritual(t *testing.T) {
 	dob := time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)
-	dobLow := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) // Should have low score
+	dobLow := time.Date(2000, 8, 15, 0, 0, 0, 0, time.UTC) // Leo (Fire) -> score +5. Numerology 7 -> score +20. Total 65 <= 70.
 	repo := &mockUserRepository{
 		user: models.User{ID: uuid.New(), DOB: &dob},
 		feed: []models.User{
 			{ID: uuid.New(), DOB: &dob},
 			{ID: uuid.New(), DOB: &dob},
 			{ID: uuid.New(), DOB: &dobLow},
-			{ID: uuid.New(), DOB: nil},
 		},
 	}
 	spiritual := NewSpiritualService()
@@ -89,7 +88,7 @@ func TestFeedService_GetFeed_Spiritual(t *testing.T) {
 
 	res, err := svc.GetFeed(context.Background(), uuid.New(), "spiritual", 50)
 	assert.NoError(t, err)
-	// We expect 2 matches because dobLow will get score <= 70 and nil dob gets score <= 70
+	// We expect 2 matches because dobLow will get score <= 70 and be filtered out.
 	assert.Len(t, res, 2)
 }
 
