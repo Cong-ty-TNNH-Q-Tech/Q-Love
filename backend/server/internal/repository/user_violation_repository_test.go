@@ -80,10 +80,10 @@ func TestUserViolationRepository_GetViolations(t *testing.T) {
 
 	repo := NewUserViolationRepository(gormDB)
 
-	mock.ExpectQuery(`SELECT count\(\*\) FROM "user_violations" WHERE is_active = true`).
+	mock.ExpectQuery(`SELECT count\(\*\) FROM "user_violations" WHERE is_active = true AND "user_violations"\."deleted_at" IS NULL`).
 		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 
-	mock.ExpectQuery(`SELECT \* FROM "user_violations" WHERE is_active = true ORDER BY created_at DESC LIMIT \$1`).
+	mock.ExpectQuery(`SELECT \* FROM "user_violations" WHERE is_active = true AND "user_violations"\."deleted_at" IS NULL ORDER BY created_at DESC LIMIT \$1`).
 		WithArgs(10).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "user_id"}).AddRow(uuid.New(), uuid.New()))
 
@@ -93,7 +93,7 @@ func TestUserViolationRepository_GetViolations(t *testing.T) {
 	assert.Len(t, violations, 1)
 
 	// Test Count Error
-	mock.ExpectQuery(`SELECT count\(\*\) FROM "user_violations" WHERE is_active = true`).
+	mock.ExpectQuery(`SELECT count\(\*\) FROM "user_violations" WHERE is_active = true AND "user_violations"\."deleted_at" IS NULL`).
 		WillReturnError(assert.AnError)
 	_, _, err = repo.GetViolations(context.Background(), 1, 10)
 	assert.ErrorIs(t, err, assert.AnError)
