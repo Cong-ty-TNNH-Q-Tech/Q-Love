@@ -161,7 +161,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	voucherGroup.Post("/redeem", voucherHandler.RedeemVoucher)
 
 	// Admin
-	adminGroup := app.Group("/admin/v1", middleware.JWTMiddleware(cfg.JWTSecret))
+	// Admin Vouchers
 	adminGroup.Get("/vouchers", adminVoucherHandler.GetVouchers)
 	adminGroup.Post("/vouchers", adminVoucherHandler.CreateVoucher)
 	adminGroup.Delete("/vouchers/:id", adminVoucherHandler.DeleteVoucher)
