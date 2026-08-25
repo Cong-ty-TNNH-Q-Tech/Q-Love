@@ -83,6 +83,8 @@ func (m *mockWingmanMatchRepo) FindByID(ctx context.Context, id uuid.UUID) (*mod
 func (m *mockWingmanMatchRepo) FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error) { return nil, nil }
 func (m *mockWingmanMatchRepo) SoftDelete(ctx context.Context, id uuid.UUID) error { return nil }
 func (m *mockWingmanMatchRepo) UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error { return nil }
+func (m *mockWingmanMatchRepo) ResetStreakForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
+func (m *mockWingmanMatchRepo) ResetIslandLevelForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
 
 // --- Tests ---
 

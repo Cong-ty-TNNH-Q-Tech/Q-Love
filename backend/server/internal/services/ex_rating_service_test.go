@@ -66,6 +66,8 @@ func (m *mockMatchRepoForExRating) FindByIDUnscoped(ctx context.Context, id uuid
 }
 func (m *mockMatchRepoForExRating) Create(ctx context.Context, match *models.Match) error { return nil }
 func (m *mockMatchRepoForExRating) UpdateLastInteraction(ctx context.Context, matchID uuid.UUID, t time.Time) error { return nil }
+func (m *mockMatchRepoForExRating) ResetStreakForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
+func (m *mockMatchRepoForExRating) ResetIslandLevelForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
 
 type mockWalletRepoForExRating struct {
 	balance   float64

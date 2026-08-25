@@ -129,6 +129,9 @@ func (m *mockMatchRepoForCourt) Delete(ctx context.Context, id uuid.UUID) error 
 	return nil
 }
 
+func (m *mockMatchRepoForCourt) ResetStreakForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
+func (m *mockMatchRepoForCourt) ResetIslandLevelForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
+
 // Tests
 
 func TestCourtService_FileLawsuit_Success(t *testing.T) {

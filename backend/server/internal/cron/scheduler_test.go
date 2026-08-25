@@ -23,13 +23,24 @@ func (m *mockCronService) RunWeeklyReset(ctx context.Context) error {
 	return m.err
 }
 
+type mockIslandCronService struct {
+	called bool
+	err    error
+}
+
+func (m *mockIslandCronService) RunDailyGhostingCheck(ctx context.Context) error {
+	m.called = true
+	return m.err
+}
+
 func TestScheduler_StartStop(t *testing.T) {
 	if logger.Log == nil {
 		logger.Log = zap.NewNop()
 	}
 
 	mockService := &mockCronService{}
-	scheduler := NewScheduler(mockService)
+	mockIslandService := &mockIslandCronService{}
+	scheduler := NewScheduler(mockService, mockIslandService)
 
 	assert.NotNil(t, scheduler)
 	
@@ -46,21 +57,31 @@ func TestScheduler_CronJob(t *testing.T) {
 	}
 
 	mockService := &mockCronService{}
-	scheduler := NewScheduler(mockService)
+	mockIslandService := &mockIslandCronService{}
+	scheduler := NewScheduler(mockService, mockIslandService)
 
 	scheduler.Start()
 	defer scheduler.Stop()
 
 	entries := scheduler.c.Entries()
-	assert.Len(t, entries, 1)
+	assert.Len(t, entries, 2)
 
-	// Execute the job directly
+	// Execute the clan job directly
 	entries[0].Job.Run()
 	assert.True(t, mockService.called)
+
+	// Execute the island job directly
+	entries[1].Job.Run()
+	assert.True(t, mockIslandService.called)
 
 	// Test error case
 	mockService.called = false
 	mockService.err = assert.AnError
 	entries[0].Job.Run()
 	assert.True(t, mockService.called)
+
+	mockIslandService.called = false
+	mockIslandService.err = assert.AnError
+	entries[1].Job.Run()
+	assert.True(t, mockIslandService.called)
 }

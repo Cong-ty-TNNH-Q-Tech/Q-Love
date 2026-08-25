@@ -19,6 +19,8 @@ type MatchRepository interface {
 	FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error)
 	UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error
 	SoftDelete(ctx context.Context, id uuid.UUID) error
+	ResetStreakForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error
+	ResetIslandLevelForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error
 }
 
 type matchRepository struct {
@@ -62,5 +64,23 @@ func (r *matchRepository) SoftDelete(ctx context.Context, id uuid.UUID) error {
 	return GetDB(ctx, r.db).
 		Where("id = ?", id).
 		Delete(&models.Match{}).Error
+}
+
+func (r *matchRepository) ResetStreakForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error {
+	cutoffTime := time.Now().Add(-inactiveDuration)
+	return GetDB(ctx, r.db).
+		Model(&models.Match{}).
+		Where("last_interaction_at < ?", cutoffTime).
+		Where("streak_score > 0").
+		Update("streak_score", 0).Error
+}
+
+func (r *matchRepository) ResetIslandLevelForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error {
+	cutoffTime := time.Now().Add(-inactiveDuration)
+	return GetDB(ctx, r.db).
+		Model(&models.Match{}).
+		Where("last_interaction_at < ?", cutoffTime).
+		Where("island_level > 1").
+		Update("island_level", 1).Error
 }
 

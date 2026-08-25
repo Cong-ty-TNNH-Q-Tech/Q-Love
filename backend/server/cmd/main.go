@@ -66,6 +66,9 @@ func setupApp(ctx context.Context, cfg *config.Config) (*fiber.App, error) {
 	}))
 
 	// Cron Scheduler
+	matchRepo := repository.NewMatchRepository(db)
+	islandCronService := services.NewIslandCronService(matchRepo)
+	
 	clanRepo := repository.NewClanRepository(db)
 	landmarkRepo := repository.NewLandmarkRepository(db)
 	notifRepo := repository.NewNotificationRepository(db)
@@ -73,7 +76,8 @@ func setupApp(ctx context.Context, cfg *config.Config) (*fiber.App, error) {
 	walletRepo := repository.NewWalletRepository(db)
 	txManager := repository.NewTransactionManager(db)
 	clanCronService := services.NewClanCronService(clanRepo, landmarkRepo, notifRepo, pushService, walletRepo, txManager)
-	scheduler := cron.NewScheduler(clanCronService)
+	
+	scheduler := cron.NewScheduler(clanCronService, islandCronService)
 	scheduler.Start()
 
 	// Health Check
