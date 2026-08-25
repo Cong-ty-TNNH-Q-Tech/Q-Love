@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [backend/server/api] Thêm endpoints Admin `/admin/v1` (Issue #40) để xem danh sách vi phạm, xoá ảnh, cấm người dùng và quản lý Tòa án.
+- [backend/server/models] Thêm model `CourtCase` và repository tương ứng.
+- [backend/server/api] Thêm JWT Middleware và cấu trúc API cho hệ thống.
+- [backend/server/api] Tích hợp ESMS OTP và xác thực JWT (Issue #5).
 - [backend/server/api] Thêm API Đổi Xu lấy Voucher (Issue #47) với cơ chế chống Race Condition (`FOR UPDATE SKIP LOCKED`).
 - [backend/server/api] Thêm API Admin quản lý kho Voucher (thêm, xóa, xem danh sách).
 - [docs/erd.md] Cập nhật thiết kế bảng `vouchers` và `user_vouchers`.

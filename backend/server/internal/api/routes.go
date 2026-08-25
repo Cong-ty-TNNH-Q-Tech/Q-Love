@@ -13,6 +13,7 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
 	chatws "github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/websocket"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/esms"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
 	"github.com/gofiber/websocket/v2"
 	"github.com/redis/go-redis/v9"
@@ -63,8 +64,20 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 	minigameService := services.NewMinigameService(stealRepo, walletRepo, txManager)
 	minigameHandler := handlers.NewMinigameHandler(minigameService)
 
+	// Auth routes setup
+	esmsClient := esms.NewClient(cfg.ESMSAPIKey, cfg.ESMSSecretKey)
+	userRepo := repository.NewUserRepository(db)
+	authService := services.NewAuthService(userRepo, esmsClient, redisClient, cfg.JWTSecret)
+	authHandler := handlers.NewAuthHandler(authService)
+
 	// API v1 group
 	v1 := app.Group("/api/v1")
+
+	// Auth routes
+	authGroup := v1.Group("/auth")
+	authGroup.Post("/send-otp", authHandler.SendOTP)
+	authGroup.Post("/verify-otp", authHandler.VerifyOTP)
+	authGroup.Post("/refresh", authHandler.RefreshToken)
 
 	// Wingman routes
 	wingmanGroup := v1.Group("/wingman", middleware.JWTMiddleware(cfg.JWTSecret))
@@ -110,13 +123,22 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 	
 	// Auction routes
 	auctionRepo := repository.NewAuctionRepository(db)
-	userRepo := repository.NewUserRepository(db)
 	chatLockRepo := repository.NewChatLockRepository(db)
 	auctionService := services.NewAuctionService(auctionRepo, walletRepo, txManager, userRepo, chatLockRepo)
 	auctionHandler := handlers.NewAuctionHandler(auctionService)
 	auctionGroup := v1.Group("/auctions", middleware.JWTMiddleware(cfg.JWTSecret))
 	auctionGroup.Get("/active", auctionHandler.GetActiveAuctions)
 	auctionGroup.Post("/:id/bid", auctionHandler.PlaceBid)
+
+	// Admin routes
+	courtCaseRepo := repository.NewCourtCaseRepository(db)
+	adminService := services.NewAdminService(violationRepo, courtCaseRepo, r2Client, walletRepo, txManager)
+	adminHandler := handlers.NewAdminHandler(adminService)
+	adminGroup := app.Group("/admin/v1", middleware.AdminMiddleware(cfg.JWTSecret))
+	adminGroup.Get("/violations", adminHandler.GetViolations)
+	adminGroup.Post("/users/:id/ban", adminHandler.BanUser)
+	adminGroup.Delete("/violations/:id/media", adminHandler.DeleteViolationMedia)
+	adminGroup.Post("/court/:id/override", adminHandler.OverrideCourtCase)
 
 	// Webhooks
 	webhookGroup := v1.Group("/webhooks")
@@ -169,7 +191,7 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 	voucherGroup.Post("/redeem", voucherHandler.RedeemVoucher)
 
 	// Admin
-	adminGroup := app.Group("/admin/v1", middleware.JWTMiddleware(cfg.JWTSecret))
+	// Admin Vouchers
 	adminGroup.Get("/vouchers", adminVoucherHandler.GetVouchers)
 	adminGroup.Post("/vouchers", adminVoucherHandler.CreateVoucher)
 	adminGroup.Delete("/vouchers/:id", adminVoucherHandler.DeleteVoucher)
