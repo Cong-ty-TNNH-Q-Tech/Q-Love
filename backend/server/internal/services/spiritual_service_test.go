@@ -152,9 +152,7 @@ func TestSpiritualService_CalculateSpiritualMatchScore_Elements(t *testing.T) {
 
 	// 100 max capping branch
 	// Taurus (8) and Virgo (8) -> Same Element (+30) and Same Numerology (+30) -> 100
-	dobVirgo8, _ := time.Parse("2006-01-02", "2000-09-05") // 5+9+2 = 16 -> 7 wait.
 	// We want Virgo (August 23 - Sept 22) and Numerology 8.
-	// Sept 14, 2000 -> 1+4+0+9+2+0+0+0 = 16 -> 7.
 	// Sept 15, 2000 -> 1+5+0+9+2+0+0+0 = 17 -> 8!
 	dobVirgo8_real, _ := time.Parse("2006-01-02", "2000-09-15")
 	score7 := service.CalculateSpiritualMatchScore(dobTaurus, dobVirgo8_real)
