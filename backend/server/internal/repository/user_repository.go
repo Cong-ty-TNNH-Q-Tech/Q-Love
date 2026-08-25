@@ -16,6 +16,7 @@ type UserRepository interface {
 	GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (*models.User, error)
 	GetFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error)
+	GetSpiritualFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error)
 }
 
 type userRepository struct {
@@ -61,6 +62,24 @@ func (r *userRepository) GetFeed(ctx context.Context, userID uuid.UUID, radius i
 		Where("id != ?", userID).
 		Where("is_shadowbanned = ?", false).
 		Where("ST_DWithin(location::geography, ?::geography, ?)", user.Location, radius).
+		Limit(50).
+		Find(&feed).Error
+		
+	return feed, err
+}
+
+func (r *userRepository) GetSpiritualFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
+	user, err := r.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var feed []models.User
+	err = GetDB(ctx, r.db).WithContext(ctx).
+		Where("id != ?", userID).
+		Where("is_shadowbanned = ?", false).
+		Where("ST_DWithin(location::geography, ?::geography, ?)", user.Location, radius).
+		Where("calculate_spiritual_match_score(dob, ?) > 70", user.DOB).
 		Limit(50).
 		Find(&feed).Error
 		

@@ -102,6 +102,10 @@ func (m *mockUserRepo) GetFeed(ctx context.Context, userID uuid.UUID, radius int
 	return nil, nil
 }
 
+func (m *mockUserRepo) GetSpiritualFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
+	return nil, nil
+}
+
 type mockChatLockRepo struct {
 	err error
 }
@@ -198,7 +202,11 @@ func (m *mockUserRepoError) GetUserByID(ctx context.Context, id uuid.UUID) (*mod
 }
 
 func (m *mockUserRepoError) GetFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
-	return nil, assert.AnError
+	return nil, errors.New("db error")
+}
+
+func (m *mockUserRepoError) GetSpiritualFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
+	return nil, errors.New("db error")
 }
 
 func TestAuctionService_StartDailyAuctions_UserRepoError(t *testing.T) {

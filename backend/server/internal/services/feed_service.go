@@ -43,7 +43,13 @@ func (s *feedService) GetFeed(ctx context.Context, userID uuid.UUID, filter stri
 	}
 
 	// Lấy danh sách users trong bán kính (mặc định 50km)
-	users, err := s.userRepo.GetFeed(ctx, userID, radius)
+	var users []models.User
+	if filter == "spiritual" {
+		users, err = s.userRepo.GetSpiritualFeed(ctx, userID, radius)
+	} else {
+		users, err = s.userRepo.GetFeed(ctx, userID, radius)
+	}
+	
 	if err != nil {
 		return nil, err
 	}
@@ -51,11 +57,6 @@ func (s *feedService) GetFeed(ctx context.Context, userID uuid.UUID, filter stri
 	var results []FeedUserResponse
 	for _, u := range users {
 		score := s.spiritualService.CalculateSpiritualMatchScore(requestor.DOB, u.DOB)
-
-		if filter == "spiritual" && score <= 70 {
-			// Bỏ qua những người có điểm tâm linh <= 70%
-			continue
-		}
 
 		results = append(results, FeedUserResponse{
 			User:                u,

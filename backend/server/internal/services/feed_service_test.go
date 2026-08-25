@@ -40,6 +40,13 @@ func (m *mockUserRepository) GetFeed(ctx context.Context, userID uuid.UUID, radi
 	return m.feed, nil
 }
 
+func (m *mockUserRepository) GetSpiritualFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	return m.feed, nil
+}
+
 // Other mock methods returning nil
 func (m *mockUserRepository) UpdateLocation(ctx context.Context, userID uuid.UUID, lat, lon float64) error { return nil }
 func (m *mockUserRepository) Create(ctx context.Context, user *models.User) error { return nil }
