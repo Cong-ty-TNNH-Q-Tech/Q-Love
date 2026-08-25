@@ -24,11 +24,11 @@ type mockLandmarkService struct {
 	mock.Mock
 }
 
-func (m *mockLandmarkService) CheckIn(ctx context.Context, userID, landmarkID uuid.UUID, lat, lng float64, isMocked bool) (*models.UserViolation, error) {
+func (m *mockLandmarkService) CheckIn(ctx context.Context, userID, landmarkID uuid.UUID, lat, lng float64, isMocked bool) (*models.Landmark, error) {
 	args := m.Called(ctx, userID, landmarkID, lat, lng, isMocked)
-	var v *models.UserViolation
+	var v *models.Landmark
 	if args.Get(0) != nil {
-		v = args.Get(0).(*models.UserViolation)
+		v = args.Get(0).(*models.Landmark)
 	}
 	return v, args.Error(1)
 }

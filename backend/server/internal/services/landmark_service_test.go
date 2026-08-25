@@ -6,6 +6,7 @@ package services_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -171,7 +172,7 @@ func TestLandmarkService_CheckIn_Success(t *testing.T) {
 
 func TestLandmarkService_CheckIn_Errors(t *testing.T) {
 	landmarkRepo := new(mockLandmarkRepo)
-	violationRepo := new(mockUserViolationRepoForLandmark)
+	violationRepo := new(mockUserViolationRepo)
 	clanRepo := new(mockClanRepo)
 	userRepo := new(mockUserRepoForLandmark)
 
