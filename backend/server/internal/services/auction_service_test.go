@@ -24,8 +24,20 @@ type mockAuctionRepo struct {
 func (m *mockAuctionRepo) CreateAuction(ctx context.Context, auction *models.BlindAuction) error {
 	return m.err
 }
-func (m *mockAuctionRepo) GetActiveAuctions(ctx context.Context) ([]models.BlindAuction, error) {
-	if m.auction != nil {
+func (m *mockAuctionRepo) GetActiveAuctions(ctx context.Context, offset, limit int) ([]models.BlindAuction, error) {
+	if offset > 0 {
+		return nil, m.err
+	}
+	if m.auction != nil && m.auction.Status == "active" {
+		return []models.BlindAuction{*m.auction}, m.err
+	}
+	return nil, m.err
+}
+func (m *mockAuctionRepo) GetActiveAuctionsCursor(ctx context.Context, lastID uuid.UUID, limit int) ([]models.BlindAuction, error) {
+	if lastID != uuid.Nil {
+		return nil, m.err
+	}
+	if m.auction != nil && m.auction.Status == "active" {
 		return []models.BlindAuction{*m.auction}, m.err
 	}
 	return nil, m.err
@@ -42,7 +54,13 @@ func (m *mockAuctionRepo) GetHighestBid(ctx context.Context, auctionID uuid.UUID
 func (m *mockAuctionRepo) GetBidsByAuction(ctx context.Context, auctionID uuid.UUID) ([]models.AuctionBid, error) {
 	return m.bids, m.err
 }
+func (m *mockAuctionRepo) GetBidsForAuctions(ctx context.Context, auctionIDs []uuid.UUID) ([]models.AuctionBid, error) {
+	return m.bids, m.err
+}
 func (m *mockAuctionRepo) UpdateAuctionStatus(ctx context.Context, auctionID uuid.UUID, status string, winnerID *uuid.UUID, winningBid float64) error {
+	if m.auction != nil && m.auction.ID == auctionID {
+		m.auction.Status = status
+	}
 	return m.err
 }
 
@@ -65,6 +83,15 @@ func (m *mockAuctionWalletRepo) UpdateBalance(ctx context.Context, userID uuid.U
 	return nil
 }
 func (m *mockAuctionWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
+
+type mockUserRepo struct{}
+func (m *mockUserRepo) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) {
+	var users []uuid.UUID
+	for i := 0; i < limit; i++ {
+		users = append(users, uuid.New())
+	}
+	return users, nil
+}
 
 type mockChatLockRepo struct {
 	err error
@@ -96,7 +123,7 @@ func TestAuctionService_PlaceBid_Success(t *testing.T) {
 	auctionRepo := &mockAuctionRepo{auction: auction}
 	txManager := &mockTxManager{}
 
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.PlaceBid(context.Background(), auctionID, bidderID, 500)
 	assert.NoError(t, err)
 }
@@ -135,7 +162,7 @@ func TestAuctionService_FinalizeAuctions(t *testing.T) {
 	}
 	txManager := &mockTxManager{}
 
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err)
 }
@@ -146,15 +173,27 @@ func TestAuctionService_StartDailyAuctions(t *testing.T) {
 	walletRepo := &mockAuctionWalletRepo{}
 	txManager := &mockTxManager{}
 
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.StartDailyAuctions(context.Background())
 	// Usually this returns nil if successful or no db is provided in mock
 	assert.NoError(t, err)
 }
 
+type mockUserRepoError struct{}
+func (m *mockUserRepoError) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) {
+	return nil, assert.AnError
+}
+
+func TestAuctionService_StartDailyAuctions_UserRepoError(t *testing.T) {
+	auctionRepo := &mockAuctionRepo{}
+	service := NewAuctionService(auctionRepo, nil, nil, &mockUserRepoError{}, nil)
+	err := service.StartDailyAuctions(context.Background())
+	assert.Error(t, err)
+	assert.Equal(t, assert.AnError, err)
+}
 
 func TestAuctionService_PlaceBid_AmountZeroOrLess(t *testing.T) {
-	service := NewAuctionService(nil, nil, nil, nil)
+	service := NewAuctionService(nil, nil, nil, &mockUserRepo{}, nil)
 	err := service.PlaceBid(context.Background(), uuid.New(), uuid.New(), 0)
 	assert.Error(t, err)
 	assert.Equal(t, "bid amount must be greater than zero", err.Error())
@@ -165,7 +204,7 @@ func TestAuctionService_PlaceBid_AuctionNotActive(t *testing.T) {
 		auction: &models.BlindAuction{Status: "completed"},
 	}
 	txManager := &mockTxManager{}
-	service := NewAuctionService(auctionRepo, nil, txManager, nil)
+	service := NewAuctionService(auctionRepo, nil, txManager, &mockUserRepo{}, nil)
 	err := service.PlaceBid(context.Background(), uuid.New(), uuid.New(), 100)
 	assert.Error(t, err)
 	assert.Equal(t, "auction is not active", err.Error())
@@ -177,7 +216,7 @@ func TestAuctionService_PlaceBid_BidOnSelf(t *testing.T) {
 		auction: &models.BlindAuction{Status: "active", EndTime: time.Now().Add(1*time.Hour), TargetUserID: uid},
 	}
 	txManager := &mockTxManager{}
-	service := NewAuctionService(auctionRepo, nil, txManager, nil)
+	service := NewAuctionService(auctionRepo, nil, txManager, &mockUserRepo{}, nil)
 	err := service.PlaceBid(context.Background(), uuid.New(), uid, 100)
 	assert.Error(t, err)
 	assert.Equal(t, "cannot bid on yourself", err.Error())
@@ -194,7 +233,7 @@ func TestAuctionService_PlaceBid_InsufficientBalance(t *testing.T) {
 		},
 	}
 	txManager := &mockTxManager{}
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.PlaceBid(context.Background(), uuid.New(), uid, 100)
 	assert.Error(t, err)
 	assert.Equal(t, "insufficient balance for this bid", err.Error())
@@ -211,7 +250,7 @@ func TestAuctionService_PlaceBid_GetWalletError(t *testing.T) {
 		},
 	}
 	txManager := &mockTxManager{}
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.PlaceBid(context.Background(), uuid.New(), uid, 100)
 	assert.Error(t, err)
 	assert.Equal(t, assert.AnError, err)
@@ -219,7 +258,7 @@ func TestAuctionService_PlaceBid_GetWalletError(t *testing.T) {
 
 func TestAuctionService_FinalizeAuctions_GetActiveError(t *testing.T) {
 	auctionRepo := &mockAuctionRepo{err: assert.AnError}
-	service := NewAuctionService(auctionRepo, nil, nil, nil)
+	service := NewAuctionService(auctionRepo, nil, nil, &mockUserRepo{}, nil)
 	err := service.FinalizeAuctions(context.Background())
 	assert.Error(t, err)
 }
@@ -228,7 +267,7 @@ func TestAuctionService_FinalizeAuctions_AuctionNotEnded(t *testing.T) {
 	auctionRepo := &mockAuctionRepo{
 		auction: &models.BlindAuction{EndTime: time.Now().Add(1 * time.Hour)},
 	}
-	service := NewAuctionService(auctionRepo, nil, nil, nil)
+	service := NewAuctionService(auctionRepo, nil, nil, &mockUserRepo{}, nil)
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err) 
 }
@@ -243,7 +282,7 @@ func TestAuctionService_FinalizeAuctions_NoBids(t *testing.T) {
 		highest: nil,
 	}
 	txManager := &mockTxManager{}
-	service := NewAuctionService(auctionRepo, nil, txManager, nil)
+	service := NewAuctionService(auctionRepo, nil, txManager, &mockUserRepo{}, nil)
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err) 
 }
@@ -271,14 +310,14 @@ func TestAuctionService_FinalizeAuctions_WithBidsAndRefunds(t *testing.T) {
 	walletRepo := &mockAuctionWalletRepo{}
 	txManager := &mockTxManager{}
 
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err)
 }
 
 func TestAuctionService_StartDailyAuctions_CreateError(t *testing.T) {
 	auctionRepo := &mockAuctionRepo{err: assert.AnError}
-	service := NewAuctionService(auctionRepo, nil, nil, nil)
+	service := NewAuctionService(auctionRepo, nil, nil, &mockUserRepo{}, nil)
 	err := service.StartDailyAuctions(context.Background())
 	assert.Error(t, err)
 }
@@ -312,7 +351,7 @@ func TestAuctionService_FinalizeAuctions_Refund_UpdateBalance_Error(t *testing.T
 		},
 	}
 	txManager := &mockTxManager{}
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err) // It continues on inner loop error
 }
@@ -346,7 +385,7 @@ func TestAuctionService_FinalizeAuctions_Winner_UpdateBalance_Error(t *testing.T
 		},
 	}
 	txManager := &mockTxManager{}
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, nil)
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{})
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err)
 }
@@ -374,7 +413,7 @@ func TestAuctionService_FinalizeAuctions_ChatLock_DB_Error(t *testing.T) {
 	walletRepo := &mockAuctionWalletRepo{}
 	txManager := &mockTxManager{}
 	
-	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockChatLockRepo{err: assert.AnError})
+	service := NewAuctionService(auctionRepo, walletRepo, txManager, &mockUserRepo{}, &mockChatLockRepo{err: assert.AnError})
 	err := service.FinalizeAuctions(context.Background())
 	assert.NoError(t, err)
 }
@@ -386,10 +425,20 @@ func TestAuctionService_GetActiveAuctions(t *testing.T) {
 		Status:       "active",
 	}
 	auctionRepo := &mockAuctionRepo{auction: auction}
-	service := NewAuctionService(auctionRepo, nil, nil, nil)
+	service := NewAuctionService(auctionRepo, nil, nil, nil, nil)
 	
-	auctions, err := service.GetActiveAuctions(context.Background())
+	auctions, err := service.GetActiveAuctions(context.Background(), 0, 100)
 	assert.NoError(t, err)
 	assert.Len(t, auctions, 1)
 	assert.Equal(t, auctionID, auctions[0].ID)
 }
+
+func TestAuctionService_GetActiveAuctions_Error(t *testing.T) {
+	auctionRepo := &mockAuctionRepo{err: assert.AnError}
+	service := NewAuctionService(auctionRepo, nil, nil, nil, nil)
+	
+	auctions, err := service.GetActiveAuctions(context.Background(), 0, 100)
+	assert.Error(t, err)
+	assert.Nil(t, auctions)
+}
+
