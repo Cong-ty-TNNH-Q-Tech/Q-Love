@@ -72,9 +72,19 @@ func TestFeedService_GetFeed_Default(t *testing.T) {
 	assert.Len(t, res, 1)
 }
 
+type mockSpiritualServiceFeed struct{}
+func (m *mockSpiritualServiceFeed) CalculateZodiac(dob time.Time) string { return "" }
+func (m *mockSpiritualServiceFeed) CalculateNumerology(dob time.Time) int { return 0 }
+func (m *mockSpiritualServiceFeed) CalculateSpiritualMatchScore(dobA, dobB time.Time) int {
+	if dobB.Year() == 2000 {
+		return 65
+	}
+	return 80
+}
+
 func TestFeedService_GetFeed_Spiritual(t *testing.T) {
-	dob := time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC) // Numerology 7
-	dobLow := time.Date(2007, 8, 15, 0, 0, 0, 0, time.UTC) // Leo (Fire) -> score +5. Numerology 5 -> score +20. Total 65 <= 70.
+	dob := time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)
+	dobLow := time.Date(2000, 8, 15, 0, 0, 0, 0, time.UTC)
 	repo := &mockUserRepository{
 		user: models.User{ID: uuid.New(), DOB: &dob},
 		feed: []models.User{
@@ -83,7 +93,8 @@ func TestFeedService_GetFeed_Spiritual(t *testing.T) {
 			{ID: uuid.New(), DOB: &dobLow},
 		},
 	}
-	spiritual := NewSpiritualService()
+
+	spiritual := &mockSpiritualServiceFeed{}
 	svc := NewFeedService(repo, spiritual)
 
 	res, err := svc.GetFeed(context.Background(), uuid.New(), "spiritual", 50)
