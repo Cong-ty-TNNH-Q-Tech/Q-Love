@@ -27,8 +27,8 @@ func TestCourtCaseRepository(t *testing.T) {
 	targetID := uuid.New()
 
 	// Test UpdateStatus
-	mock.ExpectExec(`UPDATE "court_cases" SET "status"=\$1 WHERE id = \$2`).
-		WithArgs("rejected", caseID).
+	mock.ExpectExec(`UPDATE "court_cases" SET "status"=\$1,"updated_at"=\$2 WHERE id = \$3 AND "court_cases"."deleted_at" IS NULL`).
+		WithArgs("rejected", sqlmock.AnyArg(), caseID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = repo.UpdateStatus(ctx, caseID, "rejected")
@@ -38,7 +38,7 @@ func TestCourtCaseRepository(t *testing.T) {
 
 	// Test FindByID Success
 	createdAt := time.Now()
-	mock.ExpectQuery(`SELECT \* FROM "court_cases" WHERE id = \$1 ORDER BY "court_cases"."id" LIMIT \$2`).
+	mock.ExpectQuery(`SELECT \* FROM "court_cases" WHERE id = \$1 AND "court_cases"."deleted_at" IS NULL ORDER BY "court_cases"."id" LIMIT \$2`).
 		WithArgs(caseID, 1).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "plaintiff_id", "defendant_id", "status", "created_at"}).
 			AddRow(caseID, userID, targetID, "pending", createdAt))
@@ -52,7 +52,7 @@ func TestCourtCaseRepository(t *testing.T) {
 	}
 
 	// Test FindByID Error
-	mock.ExpectQuery(`SELECT \* FROM "court_cases" WHERE id = \$1 ORDER BY "court_cases"."id" LIMIT \$2`).
+	mock.ExpectQuery(`SELECT \* FROM "court_cases" WHERE id = \$1 AND "court_cases"."deleted_at" IS NULL ORDER BY "court_cases"."id" LIMIT \$2`).
 		WithArgs(caseID, 1).
 		WillReturnError(gorm.ErrRecordNotFound)
 

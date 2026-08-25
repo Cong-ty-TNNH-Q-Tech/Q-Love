@@ -66,10 +66,10 @@ func TestUserViolationRepository(t *testing.T) {
 	}
 
 	// Test GetViolations
-	mock.ExpectQuery(`SELECT count\(\*\) FROM "user_violations" WHERE is_active = true`).
+	mock.ExpectQuery(`SELECT count\(\*\) FROM "user_violations" WHERE is_active = true AND "user_violations"\."deleted_at" IS NULL`).
 		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-	mock.ExpectQuery(`SELECT \* FROM "user_violations" WHERE is_active = true ORDER BY created_at DESC LIMIT \? OFFSET \?`).
-		WithArgs(10, 0).
+	mock.ExpectQuery(`SELECT \* FROM "user_violations" WHERE is_active = true AND "user_violations"\."deleted_at" IS NULL ORDER BY created_at DESC LIMIT \$1`).
+		WithArgs(10).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(violation.ID))
 
 	violations, total, err := repo.GetViolations(ctx, 1, 10)
@@ -78,8 +78,8 @@ func TestUserViolationRepository(t *testing.T) {
 	}
 
 	// Test DeleteViolation
-	mock.ExpectExec(`UPDATE "user_violations" SET "is_active"=\$1 WHERE id = \$2`).
-		WithArgs(false, violation.ID).
+	mock.ExpectExec(`UPDATE "user_violations" SET "is_active"=\$1,"updated_at"=\$2 WHERE id = \$3 AND "user_violations"\."deleted_at" IS NULL`).
+		WithArgs(false, sqlmock.AnyArg(), violation.ID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = repo.DeleteViolation(ctx, violation.ID)
@@ -133,8 +133,8 @@ func TestUserViolationRepository_DeleteViolation(t *testing.T) {
 	id := uuid.New()
 
 	mock.ExpectBegin()
-	mock.ExpectExec(`UPDATE "user_violations" SET "is_active"=\$1 WHERE id = \$2`).
-		WithArgs(false, id).
+	mock.ExpectExec(`UPDATE "user_violations" SET "is_active"=\$1,"updated_at"=\$2 WHERE id = \$3 AND "user_violations"\."deleted_at" IS NULL`).
+		WithArgs(false, sqlmock.AnyArg(), id).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
