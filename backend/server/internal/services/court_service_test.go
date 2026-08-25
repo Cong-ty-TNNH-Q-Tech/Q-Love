@@ -15,6 +15,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"database/sql"
+	"github.com/alicebob/miniredis/v2"
+	"github.com/redis/go-redis/v9"
 )
 
 // Mocks
@@ -545,4 +547,64 @@ func TestCourtService_FileLawsuit_WalletFail(t *testing.T) {
 	_, err := svc.FileLawsuit(context.Background(), pID, dID, uuid.New(), "Ghosting")
 	assert.Error(t, err)
 	assert.Equal(t, "wallet err", err.Error())
+}
+
+func TestCourtService_FileLawsuit_WithRedis(t *testing.T) {
+	mr, _ := miniredis.Run()
+	defer mr.Close()
+	client := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+
+	mockCourt := new(mockCourtRepo)
+	mockMatch := new(mockMatchRepoForCourt)
+	mockWallet := new(mockWalletRepoCourt)
+	
+	svc := NewCourtService(mockCourt, mockMatch, client, mockWallet, &mockTxManagerCourt{})
+	
+	pID := uuid.New()
+	dID := uuid.New()
+	matchID := uuid.New()
+	
+	match := &models.Match{
+		User1ID: pID,
+		User2ID: dID,
+		StreakScore: 10,
+		LastInteractionAt: time.Now().Add(-50 * time.Hour),
+	}
+	mockMatch.On("FindByID", mock.Anything, matchID).Return(match, nil)
+	mockCourt.On("CreateCase", mock.Anything, mock.Anything).Return(nil)
+	
+	caseData, err := svc.FileLawsuit(context.Background(), pID, dID, matchID, "Ghosting")
+	assert.NoError(t, err)
+	assert.NotNil(t, caseData)
+}
+
+func TestCourtService_FileLawsuit_WithRedisError(t *testing.T) {
+	mr, _ := miniredis.Run()
+	client := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+
+	mockCourt := new(mockCourtRepo)
+	mockMatch := new(mockMatchRepoForCourt)
+	mockWallet := new(mockWalletRepoCourt)
+	
+	svc := NewCourtService(mockCourt, mockMatch, client, mockWallet, &mockTxManagerCourt{})
+	
+	pID := uuid.New()
+	dID := uuid.New()
+	matchID := uuid.New()
+	
+	match := &models.Match{
+		User1ID: pID,
+		User2ID: dID,
+		StreakScore: 10,
+		LastInteractionAt: time.Now().Add(-50 * time.Hour),
+	}
+	mockMatch.On("FindByID", mock.Anything, matchID).Return(match, nil)
+	mockCourt.On("CreateCase", mock.Anything, mock.Anything).Return(nil)
+	
+	// Close miniredis so XAdd fails!
+	mr.Close()
+	
+	caseData, err := svc.FileLawsuit(context.Background(), pID, dID, matchID, "Ghosting")
+	assert.NoError(t, err) // Lawsuit still succeeds even if redis fails!
+	assert.NotNil(t, caseData)
 }
