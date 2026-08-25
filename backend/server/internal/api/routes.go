@@ -12,6 +12,7 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
 	chatws "github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/websocket"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/esms"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
 	"github.com/gofiber/websocket/v2"
@@ -20,7 +21,7 @@ import (
 	"context"
 )
 
-func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, redisClient *redis.Client, cfg *config.Config) {
+func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, redisClient *redis.Client, cfg *config.Config) {
 	wingmanRepo := repository.NewWingmanRepository(db)
 	walletRepo := repository.NewWalletRepository(db)
 	shameRepo := repository.NewShameRepository(db)
@@ -40,7 +41,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	chatRepo := repository.NewChatMessageRepository(db)
 	chatService := services.NewChatService(chatRepo)
 	hub := chatws.NewHub(redisClient)
-	go hub.Run(context.Background())
+	go hub.Run(ctx)
 	chatHandler := handlers.NewChatHandler(chatService, hub)
 
 	matchService := services.NewMatchService(matchRepo)
@@ -129,6 +130,16 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	auctionGroup.Get("/active", auctionHandler.GetActiveAuctions)
 	auctionGroup.Post("/:id/bid", auctionHandler.PlaceBid)
 
+	// Admin routes
+	courtRepo := repository.NewCourtRepository(db)
+	adminService := services.NewAdminService(violationRepo, courtRepo, r2Client, walletRepo, txManager)
+	adminHandler := handlers.NewAdminHandler(adminService)
+	adminGroup := app.Group("/admin/v1", middleware.AdminMiddleware(cfg.JWTSecret))
+	adminGroup.Get("/violations", adminHandler.GetViolations)
+	adminGroup.Post("/users/:id/ban", adminHandler.BanUser)
+	adminGroup.Delete("/violations/:id/media", adminHandler.DeleteViolationMedia)
+	adminGroup.Post("/court/:id/override", adminHandler.OverrideCourtCase)
+
 	// Webhooks
 	webhookGroup := v1.Group("/webhooks")
 	webhookGroup.Post("/revenuecat", webhookHandler.HandleRevenueCat)
@@ -152,6 +163,28 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	matchGroup := v1.Group("/matches", middleware.JWTMiddleware(cfg.JWTSecret))
 	matchGroup.Delete("/:match_id", matchHandler.Unmatch)
 
+	// Feed API
+	spiritualService := services.NewSpiritualService()
+	feedService := services.NewFeedService(userRepo, spiritualService)
+	feedHandler := handlers.NewFeedHandler(feedService)
+	v1.Get("/users/feed", middleware.JWTMiddleware(cfg.JWTSecret), feedHandler.GetFeed)
+
+	// Court System
+	courtService := services.NewCourtService(courtRepo, matchRepo, redisClient, walletRepo, txManager)
+	courtHandler := handlers.NewCourtHandler(courtService)
+
+	courtGroup := v1.Group("/court", middleware.JWTMiddleware(cfg.JWTSecret))
+	courtGroup.Post("/cases", courtHandler.FileLawsuit)
+	courtGroup.Get("/feed", courtHandler.GetFeed)
+	courtGroup.Post("/:case_id/vote", courtHandler.VoteCase)
+	courtGroup.Post("/:case_id/withdraw", courtHandler.WithdrawCase)
+
+	// Start Court Worker
+	if redisClient != nil {
+		courtWorker := services.NewCourtWorker(courtRepo, violationRepo, redisClient, logger.Log, walletRepo, txManager)
+		courtWorker.Start(ctx)
+	}
+
 	// Vouchers
 	voucherRepo := repository.NewVoucherRepository(db)
 	voucherService := services.NewVoucherService(voucherRepo, walletRepo, txManager)
@@ -163,7 +196,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	voucherGroup.Post("/redeem", voucherHandler.RedeemVoucher)
 
 	// Admin
-	adminGroup := app.Group("/admin/v1", middleware.JWTMiddleware(cfg.JWTSecret))
+	// Admin Vouchers
 	adminGroup.Get("/vouchers", adminVoucherHandler.GetVouchers)
 	adminGroup.Post("/vouchers", adminVoucherHandler.CreateVoucher)
 	adminGroup.Delete("/vouchers/:id", adminVoucherHandler.DeleteVoucher)

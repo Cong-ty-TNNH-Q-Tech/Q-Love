@@ -18,6 +18,8 @@ type UserRepository interface {
 	Create(ctx context.Context, user *models.User) error
 	FindByPhone(ctx context.Context, phone string) (*models.User, error)
 	FindByID(ctx context.Context, id uuid.UUID) (*models.User, error)
+	GetFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error)
+	GetSpiritualFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error)
 }
 
 type userRepository struct {
@@ -56,7 +58,6 @@ func (r *userRepository) FindByPhone(ctx context.Context, phone string) (*models
 	}
 	return &user, nil
 }
-
 func (r *userRepository) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
 	var user models.User
 	err := GetDB(ctx, r.db).WithContext(ctx).Where("id = ?", id).First(&user).Error
@@ -67,4 +68,46 @@ func (r *userRepository) FindByID(ctx context.Context, id uuid.UUID) (*models.Us
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (r *userRepository) GetFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
+	// Find user's location first
+	user, err := r.FindByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	var feed []models.User
+	
+	err = GetDB(ctx, r.db).WithContext(ctx).
+		Where("id != ?", userID).
+		Where("is_shadowbanned = ?", false).
+		Where("ST_DWithin(location::geography, ?::geography, ?)", user.Location, radius).
+		Limit(50).
+		Find(&feed).Error
+		
+	return feed, err
+}
+
+func (r *userRepository) GetSpiritualFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
+	user, err := r.FindByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	var feed []models.User
+	err = GetDB(ctx, r.db).WithContext(ctx).
+		Where("id != ?", userID).
+		Where("is_shadowbanned = ?", false).
+		Where("ST_DWithin(location::geography, ?::geography, ?)", user.Location, radius).
+		Limit(1000).
+		Find(&feed).Error
+		
+	return feed, err
 }
