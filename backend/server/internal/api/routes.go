@@ -163,6 +163,16 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 	matchGroup := v1.Group("/matches", middleware.JWTMiddleware(cfg.JWTSecret))
 	matchGroup.Delete("/:match_id", matchHandler.Unmatch)
 
+	// Dating Contracts
+	contractRepo := repository.NewDatingContractRepository(db)
+	contractService := services.NewDatingContractService(contractRepo, walletRepo, matchRepo, chatRepo, userPremRepo, txManager)
+	contractHandler := handlers.NewDatingContractHandler(contractService)
+	contractGroup := v1.Group("/contracts", middleware.JWTMiddleware(cfg.JWTSecret))
+	contractGroup.Post("/", contractHandler.CreateContract)
+	contractGroup.Post("/:contract_id/accept", contractHandler.AcceptContract)
+	contractGroup.Post("/:contract_id/cancel", contractHandler.CancelContract)
+	contractGroup.Post("/:contract_id/scan", contractHandler.ScanContract)
+
 	// Feed API
 	spiritualService := services.NewSpiritualService()
 	feedService := services.NewFeedService(userRepo, spiritualService)
