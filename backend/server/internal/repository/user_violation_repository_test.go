@@ -78,8 +78,8 @@ func TestUserViolationRepository(t *testing.T) {
 	}
 
 	// Test DeleteViolation
-	mock.ExpectExec(`UPDATE "user_violations" SET "is_active"=\$1,"updated_at"=\$2 WHERE id = \$3 AND "user_violations"\."deleted_at" IS NULL`).
-		WithArgs(false, sqlmock.AnyArg(), violation.ID).
+	mock.ExpectExec(`UPDATE "user_violations" SET "is_active"=\$1 WHERE id = \$2 AND "user_violations"\."deleted_at" IS NULL`).
+		WithArgs(false, violation.ID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = repo.DeleteViolation(ctx, violation.ID)
@@ -133,8 +133,8 @@ func TestUserViolationRepository_DeleteViolation(t *testing.T) {
 	id := uuid.New()
 
 	mock.ExpectBegin()
-	mock.ExpectExec(`UPDATE "user_violations" SET "is_active"=\$1,"updated_at"=\$2 WHERE id = \$3 AND "user_violations"\."deleted_at" IS NULL`).
-		WithArgs(false, sqlmock.AnyArg(), id).
+	mock.ExpectExec(`UPDATE "user_violations" SET "is_active"=\$1 WHERE id = \$2 AND "user_violations"\."deleted_at" IS NULL`).
+		WithArgs(false, id).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
