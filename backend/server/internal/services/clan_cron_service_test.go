@@ -77,6 +77,9 @@ func (m *mockCronLandmarkRepo) UpdateAllOwners(ctx context.Context, ownerClan *m
 func (m *mockCronLandmarkRepo) CheckDistance(ctx context.Context, landmarkID uuid.UUID, lat, lng float64) (bool, error) {
 	return true, nil
 }
+func (m *mockCronLandmarkRepo) FindByID(ctx context.Context, id uuid.UUID) (*models.Landmark, error) {
+	return nil, nil
+}
 
 // Mock NotificationRepository
 type mockCronNotifRepo struct {
