@@ -5,10 +5,17 @@
 package main
 
 import (
+	"context"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/api"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/cron"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/database"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/redis"
@@ -20,7 +27,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func setupApp(cfg *config.Config) (*fiber.App, error) {
+func setupApp(ctx context.Context, cfg *config.Config) (*fiber.App, error) {
 	// Init Logger & Sentry
 	logger.InitLogger(cfg.Environment, cfg.SentryDSN)
 
@@ -58,6 +65,17 @@ func setupApp(cfg *config.Config) (*fiber.App, error) {
 		WaitForDelivery: true,
 	}))
 
+	// Cron Scheduler
+	clanRepo := repository.NewClanRepository(db)
+	landmarkRepo := repository.NewLandmarkRepository(db)
+	notifRepo := repository.NewNotificationRepository(db)
+	pushService := services.NewPushService()
+	walletRepo := repository.NewWalletRepository(db)
+	txManager := repository.NewTransactionManager(db)
+	clanCronService := services.NewClanCronService(clanRepo, landmarkRepo, notifRepo, pushService, walletRepo, txManager)
+	scheduler := cron.NewScheduler(clanCronService)
+	scheduler.Start()
+
 	// Health Check
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
@@ -67,14 +85,19 @@ func setupApp(cfg *config.Config) (*fiber.App, error) {
 	})
 
 	// Register API Routes
-	api.RegisterRoutes(app, db, r2Client, redisClient, cfg)
+	api.RegisterRoutes(ctx, app, db, r2Client, redisClient, cfg)
 
 	return app, nil
 }
 
 func main() {
 	cfg := config.LoadConfig()
-	app, err := setupApp(cfg)
+	
+	// Setup context that cancels on interrupt
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	
+	app, err := setupApp(ctx, cfg)
 	if err != nil {
 		logger.Log.Fatal("Failed to setup app", zap.Error(err))
 	}
@@ -87,6 +110,15 @@ func main() {
 	if port == "" {
 		port = "3000"
 	}
+
+	go func() {
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+		<-sigChan
+		logger.Log.Info("Gracefully shutting down...")
+		cancel()
+		_ = app.Shutdown()
+	}()
 
 	logger.Log.Info("Starting server...", zap.String("port", port))
 	if err := app.Listen(":" + port); err != nil {

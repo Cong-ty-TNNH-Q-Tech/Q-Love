@@ -39,6 +39,7 @@ erDiagram
         varchar name
         geometry location "PostGIS"
         int level
+        boolean is_shadowbanned
     }
     USER_WALLETS {
         uuid user_id FK
@@ -110,7 +111,15 @@ erDiagram
         varchar type
         text payload
         varchar status
+        uuid reference_id
         timestamp created_at
+    }
+    LANDMARKS {
+        uuid id PK
+        varchar name
+        geometry location "PostGIS"
+        int radius_meters
+        uuid current_owner_clan_id FK
     }
     USER_VIOLATIONS {
         uuid id PK
@@ -291,6 +300,7 @@ erDiagram
 | `reason` | VARCHAR(100) | | Lý do kiện (Ghosting, Trap...) |
 | `status` | VARCHAR(20) | | `voting`, `guilty`, `not_guilty`, `settled` (Hòa giải) |
 | `created_at` | TIMESTAMP | Default NOW() | |
+| `expires_at` | TIMESTAMP | | Thời điểm kết thúc vụ kiện (12h) |
 | `deleted_at` | TIMESTAMP | | Hỗ trợ Xóa mềm (Soft Delete) |
 
 **Bảng `court_votes`** (Phiếu bầu của Bồi thẩm đoàn)
@@ -459,6 +469,8 @@ erDiagram
 
 | Version | Ngày | Thay đổi |
 | :--- | :--- | :--- |
+| v1.4 | 2026-08-25 | Cập nhật `location`, `level`, `is_shadowbanned` cho `USERS` (Spiritual Match). |
+| v1.3 | 2026-08-20 | Áp dụng Clan Cronjob cho các model `Landmark`, `Notification`. |
 | v1.2 | 2026-08-20 | Áp dụng Soft Delete (`deleted_at`) cho `users`, `dating_contracts`, `court_cases`, `wallet_transactions`. Bỏ `ON DELETE CASCADE` ở các bảng nhạy cảm. |
 | v1.1 | 2026-08-11 | Thêm bảng `notifications`, `user_violations`; Bổ sung cột `created_at` vào `chat_messages`; Thêm `available_cards` vào `card_profiles`; Thêm `radius_meters` vào `landmarks`. |
 | v1.0 | 2026-08-11 | Khởi tạo schema ban đầu. |

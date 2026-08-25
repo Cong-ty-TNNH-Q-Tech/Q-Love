@@ -7,6 +7,7 @@ package repository
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"gorm.io/gorm"
 )
@@ -15,6 +16,9 @@ type ClanRepository interface {
 	CreateClan(ctx context.Context, clan *models.Clan) error
 	AddClanMember(ctx context.Context, member *models.ClanMember) error
 	FindByName(ctx context.Context, name string) (*models.Clan, error)
+	GetTopWeeklyClan(ctx context.Context) (*models.Clan, error)
+	ResetWeeklyScores(ctx context.Context) error
+	GetMembers(ctx context.Context, clanID uuid.UUID) ([]models.ClanMember, error)
 }
 
 type clanRepository struct {
@@ -39,4 +43,27 @@ func (r *clanRepository) FindByName(ctx context.Context, name string) (*models.C
 		return nil, err
 	}
 	return &clan, nil
+}
+
+func (r *clanRepository) GetTopWeeklyClan(ctx context.Context) (*models.Clan, error) {
+	var clan models.Clan
+	if err := GetDB(ctx, r.db).WithContext(ctx).Order("weekly_score DESC").First(&clan).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &clan, nil
+}
+
+func (r *clanRepository) ResetWeeklyScores(ctx context.Context) error {
+	return GetDB(ctx, r.db).WithContext(ctx).Model(&models.Clan{}).Where("weekly_score > 0").Update("weekly_score", 0).Error
+}
+
+func (r *clanRepository) GetMembers(ctx context.Context, clanID uuid.UUID) ([]models.ClanMember, error) {
+	var members []models.ClanMember
+	if err := GetDB(ctx, r.db).WithContext(ctx).Where("clan_id = ?", clanID).Find(&members).Error; err != nil {
+		return nil, err
+	}
+	return members, nil
 }

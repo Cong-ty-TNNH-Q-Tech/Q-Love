@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [backend/server/api] Implement Ex-Rating system and Ex-Rating APIs (Issue #27).
 - [backend/server/ai] Tích hợp AI xử lý làm mờ ảnh (Gaussian Blur) dựa trên số nguyên âm bằng Go `image/draw` (Issue #21).
+- [backend/server/api] Thêm endpoint `GET /api/v1/users/feed` hỗ trợ quét profile bán kính 50km (Issue #6).
+- [backend/server/services] Thêm thuật toán tương hợp `SpiritualService` dựa trên Cung hoàng đạo và Thần số học.
+- [backend/server/cron] Thêm `ClanCronService` để chạy Cronjob hàng tuần Reset điểm clan.
+- [backend/server/repository] Thêm `LandmarkRepository` và `PushService` mock.
+- [backend/server/api] Thêm endpoints Admin `/admin/v1` (Issue #40) để xem danh sách vi phạm, xoá ảnh, cấm người dùng và quản lý Tòa án.
+- [backend/server/models] Thêm model `CourtCase` và repository tương ứng.
+- [backend/server/api] Thêm API tạo và bầu chọn Tòa án Tình Yêu (Issue #7).
 - [backend/server/api] Thêm JWT Middleware và cấu trúc API cho hệ thống.
 - [backend/server/api] Tích hợp ESMS OTP và xác thực JWT (Issue #5).
 - [backend/server/api] Thêm API Đổi Xu lấy Voucher (Issue #47) với cơ chế chống Race Condition (`FOR UPDATE SKIP LOCKED`).
@@ -19,8 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [backend/server/api] Thêm `NotificationService` để gọi API FCM gửi Push và Silent Push cho Locket (Issue #35).
 - [backend/server/api] Thêm API `POST /api/v1/devices/token` để nhận FCM Token từ Mobile App lưu vào Redis (Issue #35).
 - [backend/server/models] Thêm model `Notification` và repository để lưu lịch sử push notification (Issue #35).
+- [backend/server/api] Thêm endpoints Admin `/admin/v1` (Issue #40) để xem danh sách vi phạm, xoá ảnh, cấm người dùng và quản lý Tòa án.
+- [backend/server/models] Thêm model `CourtCase` và repository tương ứng.
 - [backend/server/api] Thêm endpoint `/ai/suggest` để Trợ lý Mỏ Hỗn sinh gợi ý tin nhắn.
 - [frontend/app] Tạo thư mục native (android/ và ios/) cho Flutter app, cấu hình Bundle ID, Permissions và Deep Links (Issue #111).
+- [backend/server/api] Thêm API Court System (Issue #7) quản lý xét xử vi phạm bằng Redis queue.
 - [backend/server/api] Thêm API Unmatch (Issue #42).
 - [frontend/app] Hoàn thiện cấu hình App Store Optimization (ASO): Thêm App Icon, Splash Screen, Deep Links (`qlove://match`), Localization (en, vi) và tính năng In-App Review (Issue #121).
 - [frontend/app] Locket Widget iOS/Android (Issue #15).

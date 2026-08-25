@@ -77,6 +77,15 @@ func (m *mockViolationRepo) BanUser(ctx context.Context, userID uuid.UUID) error
 	return nil
 }
 
+func (m *mockViolationRepo) GetViolations(ctx context.Context, page, limit int) ([]models.UserViolation, int64, error) {
+	return nil, 0, nil
+}
+
+func (m *mockViolationRepo) DeleteViolation(ctx context.Context, violationID uuid.UUID) error {
+	return nil
+}
+
+
 type mockNSFWService struct {
 	isNSFW bool
 	err    error
@@ -371,6 +380,10 @@ type mockS3Client struct {
 
 func (m *mockS3Client) PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error) {
 	return m.output, m.err
+}
+
+func (m *mockS3Client) DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+	return &s3.DeleteObjectOutput{}, m.err
 }
 
 func TestLocketService_SendLocket_R2UploadSuccess(t *testing.T) {
