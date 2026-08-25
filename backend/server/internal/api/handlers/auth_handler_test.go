@@ -81,6 +81,20 @@ func TestAuthHandler_SendOTP_RateLimit(t *testing.T) {
 	assert.Equal(t, http.StatusTooManyRequests, resp.StatusCode)
 }
 
+func TestAuthHandler_SendOTP_InternalError(t *testing.T) {
+	svc := new(mockAuthService)
+	app := setupAuthTestApp(svc)
+
+	svc.On("SendOTP", mock.Anything, "0901234567").Return(errors.New("some unexpected error"))
+
+	reqBody, _ := json.Marshal(map[string]string{"phone": "0901234567"})
+	req := httptest.NewRequest(http.MethodPost, "/auth/send-otp", bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, _ := app.Test(req)
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+}
+
 func TestAuthHandler_SendOTP_InvalidBody(t *testing.T) {
 	svc := new(mockAuthService)
 	app := setupAuthTestApp(svc)

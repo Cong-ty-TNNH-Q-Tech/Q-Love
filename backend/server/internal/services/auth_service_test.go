@@ -172,6 +172,34 @@ func TestAuthService_VerifyOTP_InvalidOTP(t *testing.T) {
 	assert.Equal(t, "ERR_INVALID_OTP", err.Error())
 }
 
+func TestAuthService_VerifyOTP_TooManyAttempts(t *testing.T) {
+	mr, rdb := setupAuthServiceTest()
+	defer mr.Close()
+
+	userRepo := new(mockUserRepoForAuth)
+	esmsClient := new(mockESMSClient)
+	svc := NewAuthService(userRepo, esmsClient, rdb, "secret")
+
+	rdb.Set(context.Background(), "otp:0901234567", "654321", 5*time.Minute)
+
+	// Fail 1st time
+	_, _, _, _, err := svc.VerifyOTP(context.Background(), "0901234567", "123456")
+	assert.Error(t, err)
+
+	// Fail 2nd time
+	_, _, _, _, err = svc.VerifyOTP(context.Background(), "0901234567", "123456")
+	assert.Error(t, err)
+
+	// Fail 3rd time
+	_, _, _, _, err = svc.VerifyOTP(context.Background(), "0901234567", "123456")
+	assert.Error(t, err)
+	assert.Equal(t, "ERR_TOO_MANY_ATTEMPTS", err.Error())
+
+	// OTP should be deleted
+	_, err = rdb.Get(context.Background(), "otp:0901234567").Result()
+	assert.ErrorIs(t, err, go_redis.Nil)
+}
+
 func TestAuthService_RefreshToken_Success(t *testing.T) {
 	mr, rdb := setupAuthServiceTest()
 	defer mr.Close()
