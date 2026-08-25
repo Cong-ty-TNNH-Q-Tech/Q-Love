@@ -142,3 +142,36 @@ func TestUserViolationRepository_DeleteViolation(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestUserViolationRepository_HasActiveFakeGPSBan(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+	defer db.Close()
+
+	gormDB, err := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{})
+	assert.NoError(t, err)
+
+	repo := NewUserViolationRepository(gormDB)
+	userID := uuid.New()
+
+	t.Run("Has Ban", func(t *testing.T) {
+		mock.ExpectQuery(`SELECT \* FROM "user_violations" WHERE user_id = \$1 AND type = \$2 AND is_active = true AND "user_violations"\."deleted_at" IS NULL ORDER BY "user_violations"\."id" LIMIT \$3`).
+			WithArgs(userID, "fake_gps", 1).
+			WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).AddRow(uuid.New(), time.Now().Add(-24*time.Hour)))
+
+		hasBan, expiresAt, err := repo.HasActiveFakeGPSBan(context.Background(), userID)
+		assert.NoError(t, err)
+		assert.True(t, hasBan)
+		assert.NotNil(t, expiresAt)
+	})
+
+	t.Run("No Ban", func(t *testing.T) {
+		mock.ExpectQuery(`SELECT \* FROM "user_violations" WHERE user_id = \$1 AND type = \$2 AND is_active = true AND "user_violations"\."deleted_at" IS NULL ORDER BY "user_violations"\."id" LIMIT \$3`).
+			WithArgs(userID, "fake_gps", 1).
+			WillReturnError(gorm.ErrRecordNotFound)
+
+		hasBan, expiresAt, err := repo.HasActiveFakeGPSBan(context.Background(), userID)
+		assert.NoError(t, err)
+		assert.False(t, hasBan)
+		assert.Nil(t, expiresAt)
+	})
+}
