@@ -143,7 +143,7 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 
 	// Court System
 	courtRepo := repository.NewCourtRepository(db)
-	courtService := services.NewCourtService(courtRepo, matchRepo, redisClient)
+	courtService := services.NewCourtService(courtRepo, matchRepo, redisClient, walletRepo, txManager)
 	courtHandler := handlers.NewCourtHandler(courtService)
 
 	courtGroup := v1.Group("/court", middleware.JWTMiddleware(cfg.JWTSecret))
@@ -154,7 +154,7 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 
 	// Start Court Worker
 	if redisClient != nil {
-		courtWorker := services.NewCourtWorker(courtRepo, violationRepo, redisClient, logger.Log)
+		courtWorker := services.NewCourtWorker(courtRepo, violationRepo, redisClient, logger.Log, walletRepo, txManager)
 		courtWorker.Start(ctx)
 	}
 

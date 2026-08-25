@@ -120,7 +120,7 @@ func TestCourtService_FileLawsuit_Success(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
 	mockMatch := new(mockMatchRepoForCourt)
 
-	service := NewCourtService(mockCourt, mockMatch, nil)
+	service := NewCourtService(mockCourt, mockMatch, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 
 	plaintiffID := uuid.New()
 	defendantID := uuid.New()
@@ -154,7 +154,7 @@ func TestCourtService_FileLawsuit_FailsIfNot48Hours(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
 	mockMatch := new(mockMatchRepoForCourt)
 
-	service := NewCourtService(mockCourt, mockMatch, nil)
+	service := NewCourtService(mockCourt, mockMatch, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 
 	plaintiffID := uuid.New()
 	defendantID := uuid.New()
@@ -180,7 +180,7 @@ func TestCourtService_VoteCase_Success(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
 	mockMatch := new(mockMatchRepoForCourt)
 
-	service := NewCourtService(mockCourt, mockMatch, nil)
+	service := NewCourtService(mockCourt, mockMatch, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 
 	caseID := uuid.New()
 	jurorID := uuid.New()
@@ -206,7 +206,7 @@ func TestCourtService_VoteCase_Success(t *testing.T) {
 func TestCourtService_GetFeed_Success(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
 	mockMatch := new(mockMatchRepoForCourt)
-	svc := NewCourtService(mockCourt, mockMatch, nil)
+	svc := NewCourtService(mockCourt, mockMatch, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 	jurorID := uuid.New()
 
 	activeCases := []models.CourtCase{
@@ -225,7 +225,7 @@ func TestCourtService_WithdrawCase_Success(t *testing.T) {
 	
 	mockCourt := new(mockCourtRepo)
 	mockMatch := new(mockMatchRepoForCourt)
-	svc := NewCourtService(mockCourt, mockMatch, nil)
+	svc := NewCourtService(mockCourt, mockMatch, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 
 	courtCase := &models.CourtCase{
 		ID:          caseID,
@@ -246,7 +246,7 @@ func TestCourtService_WithdrawCase_NotPlaintiff(t *testing.T) {
 	
 	mockCourt := new(mockCourtRepo)
 	mockMatch := new(mockMatchRepoForCourt)
-	svc := NewCourtService(mockCourt, mockMatch, nil)
+	svc := NewCourtService(mockCourt, mockMatch, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 
 	courtCase := &models.CourtCase{
 		ID:          caseID,
@@ -263,7 +263,7 @@ func TestCourtService_WithdrawCase_NotPlaintiff(t *testing.T) {
 func TestCourtService_FileLawsuit_CannotSueYourself(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
 	mockMatch := new(mockMatchRepoForCourt)
-	svc := NewCourtService(mockCourt, mockMatch, nil)
+	svc := NewCourtService(mockCourt, mockMatch, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 
 	userID := uuid.New()
 	matchID := uuid.New()
@@ -275,7 +275,7 @@ func TestCourtService_FileLawsuit_CannotSueYourself(t *testing.T) {
 func TestCourtService_FileLawsuit_MatchNotFound(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
 	mockMatch := new(mockMatchRepoForCourt)
-	svc := NewCourtService(mockCourt, mockMatch, nil)
+	svc := NewCourtService(mockCourt, mockMatch, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 	
 	mockMatch.On("FindByID", mock.Anything, mock.Anything).Return(nil, errors.New("not found"))
 	
@@ -287,7 +287,7 @@ func TestCourtService_FileLawsuit_MatchNotFound(t *testing.T) {
 func TestCourtService_FileLawsuit_Unauthorized(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
 	mockMatch := new(mockMatchRepoForCourt)
-	svc := NewCourtService(mockCourt, mockMatch, nil)
+	svc := NewCourtService(mockCourt, mockMatch, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 	
 	match := &models.Match{
 		User1ID: uuid.New(),
@@ -303,7 +303,7 @@ func TestCourtService_FileLawsuit_Unauthorized(t *testing.T) {
 func TestCourtService_FileLawsuit_InvalidDefendant(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
 	mockMatch := new(mockMatchRepoForCourt)
-	svc := NewCourtService(mockCourt, mockMatch, nil)
+	svc := NewCourtService(mockCourt, mockMatch, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 	
 	pID := uuid.New()
 	match := &models.Match{
@@ -319,7 +319,7 @@ func TestCourtService_FileLawsuit_InvalidDefendant(t *testing.T) {
 
 func TestCourtService_VoteCase_VotingClosed(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
-	svc := NewCourtService(mockCourt, nil, nil)
+	svc := NewCourtService(mockCourt, nil, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 	
 	courtCase := &models.CourtCase{
 		Status: models.CourtCaseStatusSettled,
@@ -333,7 +333,7 @@ func TestCourtService_VoteCase_VotingClosed(t *testing.T) {
 func TestCourtService_FileLawsuit_StreakTooLow(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
 	mockMatch := new(mockMatchRepoForCourt)
-	svc := NewCourtService(mockCourt, mockMatch, nil)
+	svc := NewCourtService(mockCourt, mockMatch, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 	
 	pID := uuid.New()
 	dID := uuid.New()
@@ -351,7 +351,7 @@ func TestCourtService_FileLawsuit_StreakTooLow(t *testing.T) {
 
 func TestCourtService_VoteCase_CaseNotFound(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
-	svc := NewCourtService(mockCourt, nil, nil)
+	svc := NewCourtService(mockCourt, nil, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 	
 	mockCourt.On("GetCaseByID", mock.Anything, mock.Anything).Return(nil, errors.New("not found"))
 	
@@ -362,7 +362,7 @@ func TestCourtService_VoteCase_CaseNotFound(t *testing.T) {
 
 func TestCourtService_VoteCase_VotingExpired(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
-	svc := NewCourtService(mockCourt, nil, nil)
+	svc := NewCourtService(mockCourt, nil, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 	
 	courtCase := &models.CourtCase{
 		Status: models.CourtCaseStatusVoting,
@@ -377,7 +377,7 @@ func TestCourtService_VoteCase_VotingExpired(t *testing.T) {
 
 func TestCourtService_VoteCase_PlaintiffDefendantCannotVote(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
-	svc := NewCourtService(mockCourt, nil, nil)
+	svc := NewCourtService(mockCourt, nil, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 	
 	pID := uuid.New()
 	courtCase := &models.CourtCase{
@@ -394,7 +394,7 @@ func TestCourtService_VoteCase_PlaintiffDefendantCannotVote(t *testing.T) {
 
 func TestCourtService_VoteCase_AlreadyVoted(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
-	svc := NewCourtService(mockCourt, nil, nil)
+	svc := NewCourtService(mockCourt, nil, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 	
 	courtCase := &models.CourtCase{
 		Status: models.CourtCaseStatusVoting,
@@ -410,7 +410,7 @@ func TestCourtService_VoteCase_AlreadyVoted(t *testing.T) {
 
 func TestCourtService_WithdrawCase_CaseNotFound(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
-	svc := NewCourtService(mockCourt, nil, nil)
+	svc := NewCourtService(mockCourt, nil, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 	
 	mockCourt.On("GetCaseByID", mock.Anything, mock.Anything).Return(nil, errors.New("not found"))
 	
@@ -421,7 +421,7 @@ func TestCourtService_WithdrawCase_CaseNotFound(t *testing.T) {
 
 func TestCourtService_WithdrawCase_NotInVotingPhase(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
-	svc := NewCourtService(mockCourt, nil, nil)
+	svc := NewCourtService(mockCourt, nil, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 	
 	pID := uuid.New()
 	courtCase := &models.CourtCase{

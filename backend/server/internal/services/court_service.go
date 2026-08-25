@@ -27,17 +27,23 @@ type courtService struct {
 	courtRepo    repository.CourtRepository
 	matchRepo    repository.MatchRepository
 	redisClient  *redis.Client
+	walletRepo   repository.WalletRepository
+	txManager    repository.TransactionManager
 }
 
 func NewCourtService(
 	courtRepo repository.CourtRepository,
 	matchRepo repository.MatchRepository,
 	redisClient *redis.Client,
+	walletRepo repository.WalletRepository,
+	txManager repository.TransactionManager,
 ) CourtService {
 	return &courtService{
 		courtRepo:   courtRepo,
 		matchRepo:   matchRepo,
 		redisClient: redisClient,
+		walletRepo:  walletRepo,
+		txManager:   txManager,
 	}
 }
 
@@ -77,7 +83,20 @@ func (s *courtService) FileLawsuit(ctx context.Context, plaintiffID, defendantID
 		ExpiresAt:   time.Now().Add(12 * time.Hour),
 	}
 
-	if err := s.courtRepo.CreateCase(ctx, courtCase); err != nil {
+	err = s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
+		// Deduct deposit (freeze) from plaintiff
+		courtFee := float64(50)
+		if err := s.walletRepo.UpdateBalance(txCtx, plaintiffID, -courtFee); err != nil {
+			return err
+		}
+
+		if err := s.courtRepo.CreateCase(txCtx, courtCase); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
 		return nil, err
 	}
 

@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Q-Tech Team
+// Copyright 2026 Q-Tech Team
 // Licensed under the GNU AGPLv3 License.
 // See LICENSE file in the project root for full license information.
 
@@ -39,7 +39,7 @@ func TestCourtWorker_EvaluateExpiredCases_Guilty(t *testing.T) {
 	mockViolation := new(mockUserViolationRepo)
 	logger := zap.NewNop()
 
-	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger)
+	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 
 	caseID := uuid.New()
 	defendantID := uuid.New()
@@ -73,7 +73,7 @@ func TestCourtWorker_EvaluateExpiredCases_NotGuilty(t *testing.T) {
 	mockViolation := new(mockUserViolationRepo)
 	logger := zap.NewNop()
 
-	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger)
+	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 
 	caseID := uuid.New()
 	defendantID := uuid.New()
@@ -106,7 +106,7 @@ func TestCourtWorker_Start(t *testing.T) {
 	mockViolation := new(mockUserViolationRepo)
 	logger := zap.NewNop()
 
-	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger)
+	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 	ctx, cancel := context.WithCancel(context.Background())
 	
 	worker.Start(ctx)
@@ -122,7 +122,7 @@ func TestCourtWorker_EvaluateExpiredCases_RepoErrors(t *testing.T) {
 	mockViolation := new(mockUserViolationRepo)
 	logger := zap.NewNop()
 
-	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger)
+	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 
 	// 1. GetExpiredVotingCases returns error
 	mockCourt.On("GetExpiredVotingCases", mock.Anything).Return([]models.CourtCase{}, errors.New("db error")).Once()
@@ -141,7 +141,7 @@ func TestCourtWorker_EvaluateExpiredCases_ViolationErrors(t *testing.T) {
 	mockViolation := new(mockUserViolationRepo)
 	logger := zap.NewNop()
 
-	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger)
+	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 
 	caseID := uuid.New()
 	cases := []models.CourtCase{{ID: caseID, DefendantID: uuid.New(), Status: models.CourtCaseStatusVoting}}

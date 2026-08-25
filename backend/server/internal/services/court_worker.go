@@ -20,6 +20,8 @@ type CourtWorker struct {
 	userViolationRepo  repository.UserViolationRepository
 	redisClient        *redis.Client
 	logger             *zap.Logger
+	walletRepo         repository.WalletRepository
+	txManager          repository.TransactionManager
 }
 
 func NewCourtWorker(
@@ -27,12 +29,16 @@ func NewCourtWorker(
 	userViolationRepo repository.UserViolationRepository,
 	redisClient *redis.Client,
 	logger *zap.Logger,
+	walletRepo repository.WalletRepository,
+	txManager repository.TransactionManager,
 ) *CourtWorker {
 	return &CourtWorker{
 		courtRepo:         courtRepo,
 		userViolationRepo: userViolationRepo,
 		redisClient:       redisClient,
 		logger:            logger,
+		walletRepo:        walletRepo,
+		txManager:         txManager,
 	}
 }
 
@@ -80,30 +86,48 @@ func (w *CourtWorker) evaluateExpiredCases(ctx context.Context) {
 		var status models.CourtCaseStatus
 		if total >= 50 && float64(guilty)/float64(total) > 0.65 {
 			status = models.CourtCaseStatusGuilty
-			
-			// Penalize defendant
+		} else {
+			status = models.CourtCaseStatusNotGuilty
+		}
+
+		err = w.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
+			if err := w.courtRepo.UpdateCaseStatus(txCtx, c.ID, status); err != nil {
+				return err
+			}
+
+			courtFee := float64(50)
+			if status == models.CourtCaseStatusGuilty {
+				if err := w.walletRepo.UpdateBalance(txCtx, c.DefendantID, -courtFee); err != nil {
+					return err
+				}
+				if err := w.walletRepo.UpdateBalance(txCtx, c.PlaintiffID, courtFee*2); err != nil {
+					return err
+				}
+			} else {
+				if err := w.walletRepo.UpdateBalance(txCtx, c.DefendantID, courtFee); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+
+		if err != nil {
+			w.logger.Error("Failed to resolve court case", zap.Error(err))
+		}
+
+		// Penalize defendant outside tx to avoid rolling back on external failure (if it fails, the case is already resolved)
+		if status == models.CourtCaseStatusGuilty {
 			violation := &models.UserViolation{
 				UserID: c.DefendantID,
 				Type:   "court_shadowban",
 				Reason: "Found guilty by the Court of Love for ghosting",
 			}
-			err := w.userViolationRepo.Create(ctx, violation)
-			if err != nil {
+			if err := w.userViolationRepo.Create(ctx, violation); err != nil {
 				w.logger.Error("Failed to create user violation", zap.Error(err))
 			}
-			
-			// Apply shadowban
-			err = w.userViolationRepo.BanUser(ctx, c.DefendantID)
-			if err != nil {
+			if err := w.userViolationRepo.BanUser(ctx, c.DefendantID); err != nil {
 				w.logger.Error("Failed to shadowban user", zap.Error(err))
 			}
-		} else {
-			status = models.CourtCaseStatusNotGuilty
-		}
-
-		err = w.courtRepo.UpdateCaseStatus(ctx, c.ID, status)
-		if err != nil {
-			w.logger.Error("Failed to update case status", zap.Error(err))
 		}
 	}
 }

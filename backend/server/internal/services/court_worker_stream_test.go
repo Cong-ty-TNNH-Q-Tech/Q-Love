@@ -27,7 +27,7 @@ func TestCourtWorker_ConsumeCourtCasesStream(t *testing.T) {
 	defer mr.Close()
 
 	logger := zap.NewNop()
-	worker := NewCourtWorker(nil, nil, rdb, logger)
+	worker := NewCourtWorker(nil, nil, rdb, logger, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 
 	ctx, cancel := context.WithCancel(context.Background())
 	
@@ -55,7 +55,7 @@ func TestCourtWorker_ConsumeCourtCasesStream_GroupCreateError(t *testing.T) {
 	defer mr.Close()
 
 	logger := zap.NewNop()
-	worker := NewCourtWorker(nil, nil, rdb, logger)
+	worker := NewCourtWorker(nil, nil, rdb, logger, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
 
 	// Inject error into miniredis
 	mr.SetError("ERR_REDIS")
