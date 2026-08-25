@@ -58,6 +58,9 @@ func (m *mockMatchServiceRepo) SoftDelete(ctx context.Context, id uuid.UUID) err
 func (m *mockMatchServiceRepo) Create(ctx context.Context, match *models.Match) error {
 	return nil
 }
+func (m *mockMatchServiceRepo) FindByUsers(ctx context.Context, u1, u2 uuid.UUID) (*models.Match, error) {
+	return nil, nil
+}
 
 func TestMatchService_Unmatch(t *testing.T) {
 	matchID := uuid.New()
