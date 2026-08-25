@@ -207,6 +207,7 @@ func TestCourtService_GetFeed_Success(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
 	mockMatch := new(mockMatchRepoForCourt)
 	svc := NewCourtService(mockCourt, mockMatch, nil)
+	jurorID := uuid.New()
 
 	activeCases := []models.CourtCase{
 		{ID: uuid.New(), Status: models.CourtCaseStatusVoting},

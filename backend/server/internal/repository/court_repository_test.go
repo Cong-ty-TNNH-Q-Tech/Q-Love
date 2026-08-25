@@ -17,7 +17,7 @@ import (
 )
 
 func setupCourtTestDB(t *testing.T) *gorm.DB {
-	dbName := "file:" + uuid.New().String() + "?mode=memory&cache=shared"
+	dbName := "file:" + uuid.New().String() + "?mode=memory"
 	db, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("failed to connect database: %v", err)
