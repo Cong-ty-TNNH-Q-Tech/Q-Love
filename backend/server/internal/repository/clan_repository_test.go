@@ -97,7 +97,7 @@ func TestClanRepository_GetTopWeeklyClan(t *testing.T) {
 	ctx := context.Background()
 	clanID := uuid.New()
 
-	mock.ExpectQuery(`SELECT \* FROM "clans" ORDER BY weekly_score DESC LIMIT \$1`).
+	mock.ExpectQuery(`SELECT \* FROM "clans" ORDER BY weekly_score DESC,"clans"."id" LIMIT \$1`).
 		WithArgs(1).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "weekly_score"}).
 			AddRow(clanID, 100))
@@ -113,7 +113,7 @@ func TestClanRepository_GetTopWeeklyClan_NotFound(t *testing.T) {
 	_, mock, repo := setupClanRepoTest(t)
 	ctx := context.Background()
 
-	mock.ExpectQuery(`SELECT \* FROM "clans" ORDER BY weekly_score DESC LIMIT \$1`).
+	mock.ExpectQuery(`SELECT \* FROM "clans" ORDER BY weekly_score DESC,"clans"."id" LIMIT \$1`).
 		WithArgs(1).
 		WillReturnError(gorm.ErrRecordNotFound)
 
