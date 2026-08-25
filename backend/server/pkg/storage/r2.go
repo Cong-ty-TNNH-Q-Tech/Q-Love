@@ -19,6 +19,7 @@ import (
 
 type S3API interface {
 	PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error)
+	DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error)
 }
 
 type R2Client struct {
@@ -66,6 +67,15 @@ func (r *R2Client) GeneratePresignedURL(ctx context.Context, objectKey string, c
 		return "", fmt.Errorf("couldn't get a presigned request: %v", err)
 	}
 	return request.URL, nil
+}
+
+// DeleteObject deletes an object from R2 bucket
+func (r *R2Client) DeleteObject(ctx context.Context, objectKey string) error {
+	_, err := r.S3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: aws.String(r.BucketName),
+		Key:    aws.String(objectKey),
+	})
+	return err
 }
 
 func (r *R2Client) UploadFile(ctx context.Context, objectKey string, file io.Reader, contentType string) (string, error) {
