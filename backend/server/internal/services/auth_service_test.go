@@ -12,6 +12,7 @@ import (
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/alicebob/miniredis/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -279,4 +280,66 @@ func TestAuthService_SendOTP_RedisError(t *testing.T) {
 	err := svc.SendOTP(context.Background(), "0901234567")
 	assert.Error(t, err)
 	assert.Equal(t, "ERR_REDIS", err.Error())
+}
+func TestAuthService_RefreshToken_InvalidClaims(t *testing.T) {
+	mr, rdb := setupAuthServiceTest()
+	defer mr.Close()
+
+	svc := NewAuthService(nil, nil, rdb, "secret")
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{})
+	tokenString, _ := token.SignedString([]byte("secret"))
+
+	_, _, err := svc.RefreshToken(context.Background(), tokenString)
+	assert.Error(t, err)
+	assert.Equal(t, "invalid token type", err.Error())
+}
+
+func TestAuthService_RefreshToken_MissingUserID(t *testing.T) {
+	mr, rdb := setupAuthServiceTest()
+	defer mr.Close()
+
+	svc := NewAuthService(nil, nil, rdb, "secret")
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"type": "refresh",
+	})
+	tokenString, _ := token.SignedString([]byte("secret"))
+
+	_, _, err := svc.RefreshToken(context.Background(), tokenString)
+	assert.Error(t, err)
+	assert.Equal(t, "missing user_id in claims", err.Error())
+}
+
+func TestAuthService_RefreshToken_InvalidUUID(t *testing.T) {
+	mr, rdb := setupAuthServiceTest()
+	defer mr.Close()
+
+	svc := NewAuthService(nil, nil, rdb, "secret")
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"type":    "refresh",
+		"user_id": "invalid-uuid",
+	})
+	tokenString, _ := token.SignedString([]byte("secret"))
+
+	_, _, err := svc.RefreshToken(context.Background(), tokenString)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid UUID")
+}
+
+func TestAuthService_SendOTP_ESMSError(t *testing.T) {
+	mr, rdb := setupAuthServiceTest()
+	defer mr.Close()
+
+	userRepo := new(mockUserRepoForAuth)
+	esmsClient := new(mockESMSClient)
+
+	esmsClient.On("SendOTP", mock.Anything, "0901234567", mock.AnythingOfType("string")).Return(errors.New("esms error"))
+
+	svc := NewAuthService(userRepo, esmsClient, rdb, "secret")
+
+	err := svc.SendOTP(context.Background(), "0901234567")
+	assert.Error(t, err)
+	assert.Equal(t, "esms error", err.Error())
 }
