@@ -1,8 +1,12 @@
+// Copyright 2026 Q-Tech Team
+// Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
 package services
 
 import (
 	"context"
 	"errors"
+	"fmt"
 	"mime/multipart"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
@@ -20,6 +24,7 @@ type locketService struct {
 	matchRepo     repository.MatchRepository
 	violationRepo repository.UserViolationRepository
 	nsfwService   NSFWService
+	notifService  NotificationService
 	r2Client      *storage.R2Client
 }
 
@@ -28,6 +33,7 @@ func NewLocketService(
 	matchRepo repository.MatchRepository,
 	violationRepo repository.UserViolationRepository,
 	nsfwService NSFWService,
+	notifService NotificationService,
 	r2Client *storage.R2Client,
 ) LocketService {
 	return &locketService{
@@ -35,13 +41,14 @@ func NewLocketService(
 		matchRepo:     matchRepo,
 		violationRepo: violationRepo,
 		nsfwService:   nsfwService,
+		notifService:  notifService,
 		r2Client:      r2Client,
 	}
 }
 
 func (s *locketService) SendLocket(ctx context.Context, senderID uuid.UUID, matchID uuid.UUID, file *multipart.FileHeader) error {
 	// Verify match exists
-	_, err := s.matchRepo.FindByID(ctx, matchID)
+	match, err := s.matchRepo.FindByID(ctx, matchID)
 	if err != nil {
 		return errors.New("match not found")
 	}
@@ -71,14 +78,34 @@ func (s *locketService) SendLocket(ctx context.Context, senderID uuid.UUID, matc
 		return errors.New("ảnh chứa nội dung nhạy cảm, không được phép gửi")
 	}
 
-	// Upload to R2 (Simplified for now, assuming worker processes blur later)
-	// For actual implementation, we might upload via r2Client
-	// Here we simulate the URL since storage.R2Client might not have Upload File logic fully implemented for multipart.
-	// We'll just generate a fake URL or use Presigned URL logic if upload happens via presigned URLs instead.
-	// Actually, API description says: "Upload ảnh và trigger silent push".
-	// Let's assume file is uploaded. We will just save a placeholder URL.
-	imageURL := "https://r2.qlove.com/" + matchID.String() + "/" + file.Filename
-	blurURL := imageURL + "?blur=true" // Handled by worker later
+	// Validate file type and size
+	if file.Size > 10*1024*1024 { // 10MB limit
+		return errors.New("file too large, limit is 10MB")
+	}
+	contentType := file.Header.Get("Content-Type")
+	if contentType != "image/jpeg" && contentType != "image/png" && contentType != "image/webp" {
+		return errors.New("only jpeg, png, and webp images are supported")
+	}
+
+	var imageURL string
+	if s.r2Client != nil {
+		// THUC SU upload len R2
+		src, err := file.Open()
+		if err != nil {
+			return fmt.Errorf("failed to open file: %w", err)
+		}
+		defer src.Close()
+
+		objectKey := fmt.Sprintf("lockets/%s/%s/%s", matchID.String(), senderID.String(), file.Filename)
+		imageURL, err = s.r2Client.UploadFile(ctx, objectKey, src, contentType)
+		if err != nil {
+			return fmt.Errorf("failed to upload to R2: %w", err)
+		}
+	} else {
+		imageURL = "https://r2.qlove.com/" + matchID.String() + "/" + file.Filename
+	}
+
+	blurURL := imageURL + "?blur=1" // CDN transform or worker
 
 	chatMessage := &models.ChatMessage{
 		MatchID:  matchID,
@@ -96,8 +123,25 @@ func (s *locketService) SendLocket(ctx context.Context, senderID uuid.UUID, matc
 	// We ignore the error here as it's not critical for the locket send success
 	_ = s.matchRepo.UpdateLastInteraction(ctx, matchID, chatMessage.CreatedAt)
 
-	// Trigger silent push (In a real app, send to FCM/APNs)
-	// s.notificationService.SendSilentPush(...)
+	// Determine the target user ID for notification
+	var targetUserID uuid.UUID
+	if match.User1ID == senderID {
+		targetUserID = match.User2ID
+	} else {
+		targetUserID = match.User1ID
+	}
+
+	// Trigger silent push (FCM/APNs)
+	if s.notifService != nil {
+		_ = s.notifService.SendSilentPush(ctx, targetUserID, map[string]string{
+			"type":       "locket",
+			"match_id":   matchID.String(),
+			"image_url":  imageURL,
+			"blur_url":   blurURL,
+			"message_id": chatMessage.ID.String(),
+		})
+	}
 
 	return nil
 }
+

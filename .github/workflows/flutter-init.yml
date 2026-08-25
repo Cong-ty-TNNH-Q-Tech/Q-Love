@@ -1,0 +1,35 @@
+name: Init Flutter Platforms
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Run Flutter Create
+        run: |
+          cd frontend/app
+          flutter create --org com.qtech --platforms=android,ios .
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add frontend/app/android frontend/app/ios
+          git commit -m "chore: init android and ios platforms" || echo "No changes to commit"
+          git push origin HEAD:${{ github.head_ref }}

@@ -24,8 +24,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	walletRepo := repository.NewWalletRepository(db)
 	shameRepo := repository.NewShameRepository(db)
 	txManager := repository.NewTransactionManager(db)
+	matchRepo := repository.NewMatchRepository(db)
 
-	wingmanService := services.NewWingmanService(wingmanRepo, walletRepo, txManager)
+	wingmanService := services.NewWingmanService(wingmanRepo, walletRepo, txManager, matchRepo)
 	shameService := services.NewShameService(shameRepo, walletRepo, txManager)
 	clanRepo := repository.NewClanRepository(db)
 	clanService := services.NewClanService(clanRepo, walletRepo, txManager)
@@ -41,12 +42,15 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	go hub.Run(context.Background())
 	chatHandler := handlers.NewChatHandler(chatService, hub)
 
-	matchRepo := repository.NewMatchRepository(db)
+	matchService := services.NewMatchService(matchRepo)
+	matchHandler := handlers.NewMatchHandler(matchService)
 	userPremRepo := repository.NewUserPremiumRepository(db)
 	
 	violationRepo := repository.NewUserViolationRepository(db)
-	nsfwService := services.NewNSFWService()
-	locketService := services.NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, r2Client)
+	nsfwService := services.NewNSFWService(cfg)
+	notificationRepo := repository.NewNotificationRepository(db)
+	notificationService := services.NewNotificationService(notificationRepo, redisClient, cfg.FCMKey)
+	locketService := services.NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, notificationService, r2Client)
 	locketHandler := handlers.NewLocketHandler(locketService)
 
 	iapService := services.NewIAPService(txManager, walletRepo, userPremRepo)
@@ -71,6 +75,19 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	shameGroup.Get("/", shameHandler.GetActiveShames)
 	shameGroup.Post("/:id/tomato", shameHandler.ThrowTomato)
 
+	// AI Wingman routes
+	aiService := services.NewAIWingmanService(chatRepo, cfg.OpenAIAPIKey)
+	aiHandler := handlers.NewAIWingmanHandler(aiService)
+	aiGroup := v1.Group("/ai", middleware.JWTMiddleware(cfg.JWTSecret))
+	aiGroup.Post("/suggest", aiHandler.SuggestReplies)
+
+	// Ex-Rating routes
+	exRatingRepo := repository.NewExRatingRepository(db)
+	exRatingService := services.NewExRatingService(exRatingRepo, walletRepo, txManager, chatRepo, matchRepo)
+	exRatingHandler := handlers.NewExRatingHandler(exRatingService)
+	v1.Post("/ex-ratings", middleware.JWTMiddleware(cfg.JWTSecret), exRatingHandler.SubmitRating)
+	v1.Get("/users/:user_id/ex-rating", middleware.JWTMiddleware(cfg.JWTSecret), exRatingHandler.ViewRating)
+
 	// Upload routes
 	uploadHandler := handlers.NewUploadHandler(r2Client)
 	uploadGroup := v1.Group("/upload", middleware.JWTMiddleware(cfg.JWTSecret))
@@ -82,7 +99,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 
 	// Chat routes
 	chatGroup := v1.Group("/chat")
-	chatGroup.Get("/ws", chatHandler.Upgrade, websocket.New(chatHandler.WSHandler))
+	chatGroup.Get("/ws", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.Upgrade, websocket.New(chatHandler.WSHandler))
 	chatGroup.Post("/messages", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.SendMessage)
 	chatGroup.Get("/messages/:match_id", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.GetMessages)
 
@@ -92,8 +109,9 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	
 	// Auction routes
 	auctionRepo := repository.NewAuctionRepository(db)
+	userRepo := repository.NewUserRepository(db)
 	chatLockRepo := repository.NewChatLockRepository(db)
-	auctionService := services.NewAuctionService(auctionRepo, walletRepo, txManager, chatLockRepo)
+	auctionService := services.NewAuctionService(auctionRepo, walletRepo, txManager, userRepo, chatLockRepo)
 	auctionHandler := handlers.NewAuctionHandler(auctionService)
 	auctionGroup := v1.Group("/auctions", middleware.JWTMiddleware(cfg.JWTSecret))
 	auctionGroup.Get("/active", auctionHandler.GetActiveAuctions)
@@ -103,14 +121,38 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	webhookGroup := v1.Group("/webhooks")
 	webhookGroup.Post("/revenuecat", webhookHandler.HandleRevenueCat)
 
+	// Device routes
+	deviceHandler := handlers.NewDeviceHandler(redisClient)
+	deviceGroup := v1.Group("/devices", middleware.JWTMiddleware(cfg.JWTSecret))
+	deviceGroup.Post("/token", deviceHandler.RegisterFCMToken)
+
 	// Vibe Check (Spotify)
 	vibeGroup := v1.Group("/vibe", middleware.JWTMiddleware(cfg.JWTSecret))
 	vibeGroup.Get("/status", vibeHandler.Status)
 	vibeGroup.Get("/current-track", vibeHandler.CurrentTrack)
 	vibeGroup.Post("/match", vibeHandler.Match)
-
 	// Minigame Steal routes
 	stealGroup := v1.Group("/minigame/steal", middleware.JWTMiddleware(cfg.JWTSecret))
 	stealGroup.Post("/init", minigameHandler.InitSteal)
 	stealGroup.Post("/submit", minigameHandler.SubmitStealResult)
+
+	// Match API
+	matchGroup := v1.Group("/matches", middleware.JWTMiddleware(cfg.JWTSecret))
+	matchGroup.Delete("/:match_id", matchHandler.Unmatch)
+
+	// Vouchers
+	voucherRepo := repository.NewVoucherRepository(db)
+	voucherService := services.NewVoucherService(voucherRepo, walletRepo, txManager)
+	voucherHandler := handlers.NewVoucherHandler(voucherService)
+	adminVoucherHandler := handlers.NewAdminVoucherHandler(voucherService)
+
+	voucherGroup := v1.Group("/vouchers", middleware.JWTMiddleware(cfg.JWTSecret))
+	voucherGroup.Get("/", voucherHandler.GetAvailableVouchers)
+	voucherGroup.Post("/redeem", voucherHandler.RedeemVoucher)
+
+	// Admin
+	adminGroup := app.Group("/admin/v1", middleware.JWTMiddleware(cfg.JWTSecret))
+	adminGroup.Get("/vouchers", adminVoucherHandler.GetVouchers)
+	adminGroup.Post("/vouchers", adminVoucherHandler.CreateVoucher)
+	adminGroup.Delete("/vouchers/:id", adminVoucherHandler.DeleteVoucher)
 }

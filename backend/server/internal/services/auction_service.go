@@ -1,5 +1,6 @@
-// Copyright (c) 2026 Q-Tech. All rights reserved.
+// Copyright 2026 Q-Tech Team
 // Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
 
 package services
 
@@ -18,13 +19,14 @@ type AuctionService interface {
 	StartDailyAuctions(ctx context.Context) error
 	PlaceBid(ctx context.Context, auctionID, bidderID uuid.UUID, amount float64) error
 	FinalizeAuctions(ctx context.Context) error
-	GetActiveAuctions(ctx context.Context) ([]models.BlindAuction, error)
+	GetActiveAuctions(ctx context.Context, offset, limit int) ([]models.BlindAuction, error)
 }
 
 type auctionService struct {
 	auctionRepo   repository.AuctionRepository
 	walletRepo    repository.WalletRepository
 	txManager     repository.TransactionManager
+	userRepo      repository.UserRepository
 	chatLockRepo  repository.ChatLockRepository
 }
 
@@ -32,26 +34,28 @@ func NewAuctionService(
 	auctionRepo repository.AuctionRepository,
 	walletRepo repository.WalletRepository,
 	txManager repository.TransactionManager,
+	userRepo repository.UserRepository,
 	chatLockRepo repository.ChatLockRepository,
 ) AuctionService {
 	return &auctionService{
 		auctionRepo:   auctionRepo,
 		walletRepo:    walletRepo,
 		txManager:     txManager,
+		userRepo:      userRepo,
 		chatLockRepo:  chatLockRepo,
 	}
 }
-
-func (s *auctionService) GetActiveAuctions(ctx context.Context) ([]models.BlindAuction, error) {
-	return s.auctionRepo.GetActiveAuctions(ctx)
+func (s *auctionService) GetActiveAuctions(ctx context.Context, offset, limit int) ([]models.BlindAuction, error) {
+	return s.auctionRepo.GetActiveAuctions(ctx, offset, limit)
 }
 
 // StartDailyAuctions picks Top 5 users based on some metric (e.g. cards) and creates Blind Auctions.
+
 func (s *auctionService) StartDailyAuctions(ctx context.Context) error {
-	// Mock: Fetch top 5 users. In reality, we'd query users ordered by score.
-	var topUsers []uuid.UUID
-	for i := 0; i < 5; i++ {
-		topUsers = append(topUsers, uuid.New())
+	// Query real top users
+	topUsers, err := s.userRepo.GetTopUsersByScore(ctx, 5)
+	if err != nil {
+		return err
 	}
 
 	for _, uid := range topUsers {
@@ -139,105 +143,124 @@ func (s *auctionService) PlaceBid(ctx context.Context, auctionID, bidderID uuid.
 }
 
 func (s *auctionService) FinalizeAuctions(ctx context.Context) error {
-	auctions, err := s.auctionRepo.GetActiveAuctions(ctx)
-	if err != nil {
-		return err
-	}
-
+	limit := 100
+	var lastID uuid.UUID
 	now := time.Now()
-	for _, auction := range auctions {
-		if now.Before(auction.EndTime) {
-			continue // Not yet ended
+
+	for {
+		auctions, err := s.auctionRepo.GetActiveAuctionsCursor(ctx, lastID, limit)
+		if err != nil {
+			return err
+		}
+		if len(auctions) == 0 {
+			break
 		}
 
-		err := s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
-			// Lock auction
-			lockedAuc, err := s.auctionRepo.GetAuctionForUpdate(txCtx, auction.ID)
-			if err != nil || lockedAuc.Status != "active" {
-				return err
+		var endedAuctionIDs []uuid.UUID
+		var endedAuctions []models.BlindAuction
+		for _, auction := range auctions {
+			if now.After(auction.EndTime) || now.Equal(auction.EndTime) {
+				endedAuctionIDs = append(endedAuctionIDs, auction.ID)
+				endedAuctions = append(endedAuctions, auction)
 			}
+		}
 
-			bids, err := s.auctionRepo.GetBidsByAuction(txCtx, auction.ID)
+		var successfullyUpdated int
+		if len(endedAuctionIDs) > 0 {
+			bids, err := s.auctionRepo.GetBidsForAuctions(ctx, endedAuctionIDs)
 			if err != nil {
 				return err
 			}
 
-			highest, err := s.auctionRepo.GetHighestBid(txCtx, auction.ID)
-			if err != nil {
-				return err
+			bidsByAuction := make(map[uuid.UUID][]models.AuctionBid)
+			for _, bid := range bids {
+				bidsByAuction[bid.AuctionID] = append(bidsByAuction[bid.AuctionID], bid)
 			}
 
-			if highest == nil {
-				// No bids
-				return s.auctionRepo.UpdateAuctionStatus(txCtx, auction.ID, "completed", nil, 0)
-			}
-
-			// Refund losers
-			// To simplify, we keep track of max bid per user
-			userMaxBid := make(map[uuid.UUID]float64)
-			for _, b := range bids {
-				if b.Amount > userMaxBid[b.BidderID] {
-					userMaxBid[b.BidderID] = b.Amount
+			for _, auction := range endedAuctions {
+				auctionBids := bidsByAuction[auction.ID]
+				
+				var highestBid *models.AuctionBid
+				for i, b := range auctionBids {
+					if highestBid == nil || b.Amount > highestBid.Amount {
+						highestBid = &auctionBids[i]
+					}
 				}
-			}
 
-			for uid, amt := range userMaxBid {
-				if uid != highest.BidderID {
-					// Refund
-					if err := s.walletRepo.UpdateBalance(txCtx, uid, amt); err != nil {
+				err := s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
+					lockedAuc, err := s.auctionRepo.GetAuctionForUpdate(txCtx, auction.ID)
+					if err != nil || lockedAuc.Status != "active" {
 						return err
 					}
-					// Refund transaction
-					refundTx := &models.WalletTransaction{
+
+					if highestBid == nil {
+						return s.auctionRepo.UpdateAuctionStatus(txCtx, auction.ID, "completed", nil, 0)
+					}
+
+					userMaxBid := make(map[uuid.UUID]float64)
+					for _, b := range auctionBids {
+						if b.Amount > userMaxBid[b.BidderID] {
+							userMaxBid[b.BidderID] = b.Amount
+						}
+					}
+
+					for uid, amt := range userMaxBid {
+						if uid != highestBid.BidderID {
+							if err := s.walletRepo.UpdateBalance(txCtx, uid, amt); err != nil {
+								return err
+							}
+							refundTx := &models.WalletTransaction{
+								ID:          uuid.New(),
+								UserID:      uid,
+								Amount:      amt,
+								Type:        "AUCTION_REFUND",
+								ReferenceID: auction.ID,
+							}
+							if err := s.walletRepo.CreateTransaction(txCtx, refundTx); err != nil {
+								return err
+							}
+						}
+					}
+
+					half := highestBid.Amount / 2
+					if err := s.walletRepo.UpdateBalance(txCtx, auction.TargetUserID, half); err != nil {
+						return err
+					}
+					commissionTx := &models.WalletTransaction{
 						ID:          uuid.New(),
-						UserID:      uid,
-						Amount:      amt,
-						Type:        "AUCTION_REFUND",
+						UserID:      auction.TargetUserID,
+						Amount:      half,
+						Type:        "AUCTION_REVENUE",
 						ReferenceID: auction.ID,
 					}
-					if err := s.walletRepo.CreateTransaction(txCtx, refundTx); err != nil {
+					if err := s.walletRepo.CreateTransaction(txCtx, commissionTx); err != nil {
 						return err
 					}
+
+					// Create ChatLock
+					if s.chatLockRepo != nil {
+						lock := models.ChatLock{
+							ID:        uuid.New(),
+							UserID1:   auction.TargetUserID,
+							UserID2:   highestBid.BidderID,
+							ExpiresAt: time.Now().Add(24 * time.Hour),
+						}
+						if err := s.chatLockRepo.Create(txCtx, &lock); err != nil {
+							return err
+						}
+					}
+
+					return s.auctionRepo.UpdateAuctionStatus(txCtx, auction.ID, "completed", &highestBid.BidderID, highestBid.Amount)
+				}, &sql.TxOptions{Isolation: sql.LevelSerializable})
+				
+				if err == nil {
+					successfullyUpdated++
 				}
 			}
-
-			// Split 50-50 for winner bid
-			half := highest.Amount / 2
-			if err := s.walletRepo.UpdateBalance(txCtx, auction.TargetUserID, half); err != nil {
-				return err
-			}
-			commissionTx := &models.WalletTransaction{
-				ID:          uuid.New(),
-				UserID:      auction.TargetUserID,
-				Amount:      half,
-				Type:        "AUCTION_REVENUE",
-				ReferenceID: auction.ID,
-			}
-			if err := s.walletRepo.CreateTransaction(txCtx, commissionTx); err != nil {
-				return err
-			}
-
-			// Create ChatLock
-			if s.chatLockRepo != nil {
-				lock := models.ChatLock{
-					ID:        uuid.New(),
-					UserID1:   auction.TargetUserID,
-					UserID2:   highest.BidderID,
-					ExpiresAt: time.Now().Add(24 * time.Hour),
-				}
-				if err := s.chatLockRepo.Create(txCtx, &lock); err != nil {
-					return err
-				}
-			}
-
-			// Update Auction Status
-			return s.auctionRepo.UpdateAuctionStatus(txCtx, auction.ID, "completed", &highest.BidderID, highest.Amount)
-		}, &sql.TxOptions{Isolation: sql.LevelSerializable})
-
-		if err != nil {
-			// Log error and continue with next auction
-			continue
 		}
+
+		// Update lastID for next batch
+		lastID = auctions[len(auctions)-1].ID
 	}
 	return nil
 }

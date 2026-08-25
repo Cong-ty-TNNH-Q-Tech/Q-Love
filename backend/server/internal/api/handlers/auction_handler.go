@@ -1,5 +1,6 @@
-// Copyright (c) 2026 Q-Tech. All rights reserved.
+// Copyright 2026 Q-Tech Team
 // Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
 
 package handlers
 
@@ -25,7 +26,10 @@ type BidRequest struct {
 
 func (h *AuctionHandler) GetActiveAuctions(c *fiber.Ctx) error {
 	ctx := c.Context()
-	auctions, err := h.auctionService.GetActiveAuctions(ctx)
+	offset := c.QueryInt("offset", 0)
+	limit := c.QueryInt("limit", 100)
+	
+	auctions, err := h.auctionService.GetActiveAuctions(ctx, offset, limit)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}

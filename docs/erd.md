@@ -30,6 +30,8 @@ erDiagram
     USERS ||--o{ COURT_VOTES : "votes"
     USERS ||--o{ NOTIFICATIONS : "receives"
     USERS ||--o{ USER_VIOLATIONS : "has"
+    USERS ||--o{ USER_VOUCHERS : "claims"
+    VOUCHERS ||--o{ USER_VOUCHERS : "claimed as"
 
     USERS {
         uuid id PK
@@ -47,6 +49,20 @@ erDiagram
         timestamp expires_at
         timestamp created_at
         timestamp updated_at
+    }
+    VOUCHERS {
+        uuid id PK
+        varchar brand "Highlands, CGV"
+        varchar code
+        int value_xu
+        varchar status "available, claimed, expired"
+        timestamp expires_at
+    }
+    USER_VOUCHERS {
+        uuid id PK
+        uuid user_id FK
+        uuid voucher_id FK
+        timestamp claimed_at
     }
     MATCHES {
         uuid id PK
@@ -152,6 +168,25 @@ erDiagram
 | `expires_at`| TIMESTAMP | | Hạn sử dụng gói |
 | `free_cancel_left`| INT | Default 1 | Số lần được miễn trừ hủy cọc Date/tháng |
 
+**Bảng `vouchers`** (Kho mã giảm giá)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `brand` | VARCHAR(50) | | Tên thương hiệu (VD: Highlands, CGV) |
+| `code` | VARCHAR(50) | Unique | Mã Voucher thực tế |
+| `value_xu` | INT | | Giá trị quy đổi bằng Xu |
+| `status` | VARCHAR(20) | Default 'available' | `available`, `claimed`, `expired` |
+| `expires_at`| TIMESTAMP | | Hạn dùng của mã |
+| `created_at`| TIMESTAMP | Default NOW() | |
+
+**Bảng `user_vouchers`** (Voucher user đã đổi)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `user_id` | UUID | FK(users.id) | |
+| `voucher_id`| UUID | FK(vouchers.id) | Unique để tránh 1 mã gán 2 người |
+| `claimed_at`| TIMESTAMP | Default NOW() | |
+
 ---
 
 ### 2.2. Tương tác & Matchmaking (Engagement)
@@ -187,6 +222,19 @@ erDiagram
 | `target_id` | UUID | FK(users.id) | Người bị đánh giá |
 | `rating_score`| INT | Check(1-5) | Điểm số (1 đến 5 sao) |
 | `tags` | TEXT[] | | Mảng các tag nhận xét (VD: #RedFlag) |
+
+**Bảng `wingman_referrals`** (Nghề Cò Mối)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Primary Key | |
+| `wingman_id` | UUID | FK(users.id) | Người mai mối |
+| `target1_id` | UUID | FK(users.id) | Đối tượng 1 |
+| `target2_id` | UUID | FK(users.id) | Đối tượng 2 |
+| `match_id` | UUID | FK(matches.id), Nullable | Match được tạo nếu thành công |
+| `status` | VARCHAR(20) | Default 'pending' | pending, matched, dated, rewarded |
+| `deep_link` | VARCHAR(255) | | Link chia sẻ |
+| `created_at` | TIMESTAMP | Default NOW() | |
+| `expires_at` | TIMESTAMP | | Thời gian hết hạn lời mời |
 
 ---
 

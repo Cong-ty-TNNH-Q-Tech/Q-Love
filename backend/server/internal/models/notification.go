@@ -11,11 +11,11 @@ import (
 )
 
 type Notification struct {
-	ID          uuid.UUID `json:"id" gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
-	UserID      uuid.UUID `json:"user_id" gorm:"type:uuid;not null"`
-	Type        string    `json:"type" gorm:"type:varchar(50);not null"`
-	Payload     string    `json:"payload" gorm:"type:text"`
-	Status      string    `json:"status" gorm:"type:varchar(20);default:'sent'"`
-	ReferenceID *uuid.UUID `json:"reference_id" gorm:"type:uuid"`
-	CreatedAt   time.Time `json:"created_at" gorm:"default:now()"`
+	ID          uuid.UUID  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	UserID      uuid.UUID  `gorm:"type:uuid;not null;index" json:"user_id"`
+	Type        string     `gorm:"type:varchar(50);not null" json:"type"`
+	Payload     string     `gorm:"type:text" json:"payload"`
+	Status      string     `gorm:"type:varchar(20);default:'sent'" json:"status"`
+	ReferenceID *uuid.UUID `gorm:"type:uuid" json:"reference_id"`
+	CreatedAt   time.Time  `gorm:"autoCreateTime" json:"created_at"`
 }
