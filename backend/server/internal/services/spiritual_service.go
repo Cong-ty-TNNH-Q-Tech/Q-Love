@@ -180,7 +180,7 @@ func (s *spiritualService) CalculateSpiritualMatchScore(dobA, dobB time.Time) in
 		score += 10
 	}
 
-	if score > 100 {
+	if score >= 100 {
 		score = 100
 	}
 

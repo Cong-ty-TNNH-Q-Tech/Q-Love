@@ -135,9 +135,28 @@ func TestSpiritualService_CalculateSpiritualMatchScore_Elements(t *testing.T) {
 	score3 := service.CalculateSpiritualMatchScore(dobTaurus, dobVirgo)
 	assert.Equal(t, 80, score3)
 	
-	// Same Numerology (score capped to 100)
-	// Taurus vs Taurus (same zodiac: +25), same numerology (+30), base (40) -> 95
-	dobTaurus2, _ := time.Parse("2006-01-02", "2000-05-10")
-	score4 := service.CalculateSpiritualMatchScore(dobTaurus, dobTaurus2)
-	assert.Equal(t, 95, score4)
+	// Air vs Fire (Gemini vs Aries)
+	score4 := service.CalculateSpiritualMatchScore(dobGemini, dobAries)
+	assert.Equal(t, 80, score4)
+
+	// Water vs Earth (Cancer vs Taurus)
+	score5 := service.CalculateSpiritualMatchScore(dobCancer, dobTaurus)
+	assert.Equal(t, 70, score5)
+
+	// Even vs Even
+	// Taurus(8) vs Capricorn(4)
+	dobCap, _ := time.Parse("2006-01-02", "2000-01-01") // 1+1+2 = 4
+	score6 := service.CalculateSpiritualMatchScore(dobTaurus, dobCap)
+	// Base(40) + Same Element(30) + Even/Even(20) = 90
+	assert.Equal(t, 90, score6)
+
+	// 100 max capping branch
+	// Taurus (8) and Virgo (8) -> Same Element (+30) and Same Numerology (+30) -> 100
+	dobVirgo8, _ := time.Parse("2006-01-02", "2000-09-05") // 5+9+2 = 16 -> 7 wait.
+	// We want Virgo (August 23 - Sept 22) and Numerology 8.
+	// Sept 14, 2000 -> 1+4+0+9+2+0+0+0 = 16 -> 7.
+	// Sept 15, 2000 -> 1+5+0+9+2+0+0+0 = 17 -> 8!
+	dobVirgo8_real, _ := time.Parse("2006-01-02", "2000-09-15")
+	score7 := service.CalculateSpiritualMatchScore(dobTaurus, dobVirgo8_real)
+	assert.Equal(t, 100, score7)
 }
