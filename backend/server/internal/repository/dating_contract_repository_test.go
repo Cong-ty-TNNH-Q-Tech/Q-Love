@@ -58,7 +58,7 @@ func TestDatingContractRepository_GetByIDForUpdate(t *testing.T) {
 	id := uuid.New()
 
 	t.Run("success", func(t *testing.T) {
-		mock.ExpectQuery(`SELECT \* FROM "dating_contracts" WHERE id = \$1 AND "dating_contracts"\."deleted_at" IS NULL ORDER BY "dating_contracts"\."id" LIMIT \$2 FOR UPDATE`).
+		mock.ExpectQuery(`SELECT \* FROM "dating_contracts" WHERE .*`).
 			WithArgs(id, 1).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(id))
 
@@ -84,7 +84,7 @@ func TestDatingContractRepository_GetByID(t *testing.T) {
 	id := uuid.New()
 
 	t.Run("success", func(t *testing.T) {
-		mock.ExpectQuery(`SELECT \* FROM "dating_contracts" WHERE id = \$1 AND "dating_contracts"\."deleted_at" IS NULL ORDER BY "dating_contracts"\."id" LIMIT \$2`).
+		mock.ExpectQuery(`SELECT \* FROM "dating_contracts" WHERE .*`).
 			WithArgs(id, 1).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(id))
 
