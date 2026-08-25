@@ -46,6 +46,10 @@ func (m *mockCronClanRepo) GetMembers(ctx context.Context, clanID uuid.UUID) ([]
 	return []models.ClanMember{{UserID: uuid.New()}}, nil
 }
 
+func (m *mockCronClanRepo) AddScore(ctx context.Context, clanID uuid.UUID, score int) error {
+	return nil
+}
+
 type mockCronWalletRepo struct {
 	updateErr error
 }
