@@ -58,6 +58,10 @@ func (m *mockCronNotifRepo) Create(ctx context.Context, notification *models.Not
 	return nil
 }
 
+func (m *mockCronNotifRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status string) error {
+	return nil
+}
+
 // Mock PushService
 type mockCronPushService struct {
 	broadcastCalled bool
