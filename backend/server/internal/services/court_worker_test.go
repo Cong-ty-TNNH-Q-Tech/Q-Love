@@ -25,6 +25,11 @@ func (m *mockUserViolationRepoCourt) Create(ctx context.Context, violation *mode
 	return args.Error(0)
 }
 
+func (m *mockUserViolationRepoCourt) DeleteViolation(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
 func (m *mockUserViolationRepoCourt) CountActiveViolationsByType(ctx context.Context, userID uuid.UUID, vType string) (int64, error) {
 	return 0, nil
 }
