@@ -76,7 +76,7 @@ func (h *AuthHandler) VerifyOTP(c *fiber.Ctx) error {
 		})
 	}
 
-	user, accessToken, refreshToken, err := h.authService.VerifyOTP(c.Context(), req.Phone, req.OTP)
+	user, accessToken, refreshToken, isNewUser, err := h.authService.VerifyOTP(c.Context(), req.Phone, req.OTP)
 	if err != nil {
 		if err.Error() == "ERR_INVALID_OTP" {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -93,7 +93,7 @@ func (h *AuthHandler) VerifyOTP(c *fiber.Ctx) error {
 		"access_token": accessToken,
 		"refresh_token": refreshToken,
 		"user": user,
-		"is_new_user": false, // TODO: detect if new
+		"is_new_user": isNewUser,
 	})
 }
 
@@ -115,7 +115,7 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 		})
 	}
 
-	newAccessToken, err := h.authService.RefreshToken(c.Context(), req.RefreshToken)
+	newAccessToken, newRefreshToken, err := h.authService.RefreshToken(c.Context(), req.RefreshToken)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": err.Error(),
@@ -124,5 +124,6 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"access_token": newAccessToken,
+		"refresh_token": newRefreshToken,
 	})
 }

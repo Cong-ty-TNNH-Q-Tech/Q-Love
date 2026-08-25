@@ -22,8 +22,8 @@ import (
 
 type AuthService interface {
 	SendOTP(ctx context.Context, phone string) error
-	VerifyOTP(ctx context.Context, phone, otp string) (*models.User, string, string, error)
-	RefreshToken(ctx context.Context, refreshToken string) (string, error)
+	VerifyOTP(ctx context.Context, phone, otp string) (*models.User, string, string, bool, error)
+	RefreshToken(ctx context.Context, refreshToken string) (string, string, error)
 }
 
 type authService struct {
@@ -88,17 +88,17 @@ func (s *authService) SendOTP(ctx context.Context, phone string) error {
 	return err
 }
 
-func (s *authService) VerifyOTP(ctx context.Context, phone, otp string) (*models.User, string, string, error) {
+func (s *authService) VerifyOTP(ctx context.Context, phone, otp string) (*models.User, string, string, bool, error) {
 	otpKey := fmt.Sprintf("otp:%s", phone)
 	cachedOTP, err := s.redis.Get(ctx, otpKey).Result()
 	if err == redis.Nil {
-		return nil, "", "", errors.New("ERR_INVALID_OTP")
+		return nil, "", "", false, errors.New("ERR_INVALID_OTP")
 	} else if err != nil {
-		return nil, "", "", err
+		return nil, "", "", false, err
 	}
 
 	if cachedOTP != otp {
-		return nil, "", "", errors.New("ERR_INVALID_OTP")
+		return nil, "", "", false, errors.New("ERR_INVALID_OTP")
 	}
 
 	// Remove OTP after successful verification
@@ -107,34 +107,36 @@ func (s *authService) VerifyOTP(ctx context.Context, phone, otp string) (*models
 	// Check if user exists
 	user, err := s.userRepo.FindByPhone(ctx, phone)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", false, err
 	}
 
+	isNewUser := false
 	if user == nil {
+		isNewUser = true
 		// Create new user
 		user = &models.User{
 			Phone: phone,
 		}
 		if err := s.userRepo.Create(ctx, user); err != nil {
-			return nil, "", "", err
+			return nil, "", "", false, err
 		}
 	}
 
 	// Generate tokens
 	accessToken, err := s.generateAccessToken(user.ID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", false, err
 	}
 
 	refreshToken, err := s.generateRefreshToken(user.ID)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", false, err
 	}
 
-	return user, accessToken, refreshToken, nil
+	return user, accessToken, refreshToken, isNewUser, nil
 }
 
-func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (string, error) {
+func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (string, string, error) {
 	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -143,29 +145,39 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (st
 	})
 
 	if err != nil || !token.Valid {
-		return "", errors.New("invalid refresh token")
+		return "", "", errors.New("invalid refresh token")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", errors.New("invalid claims")
+		return "", "", errors.New("invalid claims")
 	}
 
 	if typ, ok := claims["type"].(string); !ok || typ != "refresh" {
-		return "", errors.New("invalid token type")
+		return "", "", errors.New("invalid token type")
 	}
 
 	userIDStr, ok := claims["user_id"].(string)
 	if !ok {
-		return "", errors.New("missing user_id in claims")
+		return "", "", errors.New("missing user_id in claims")
 	}
 
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return s.generateAccessToken(userID)
+	newAccessToken, err := s.generateAccessToken(userID)
+	if err != nil {
+		return "", "", err
+	}
+
+	newRefreshToken, err := s.generateRefreshToken(userID)
+	if err != nil {
+		return "", "", err
+	}
+
+	return newAccessToken, newRefreshToken, nil
 }
 
 func (s *authService) generateAccessToken(userID uuid.UUID) (string, error) {
