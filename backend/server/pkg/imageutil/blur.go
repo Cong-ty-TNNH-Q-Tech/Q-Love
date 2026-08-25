@@ -44,9 +44,9 @@ func ApplyGaussianBlur(img image.Image, blurPercentage int) image.Image {
 		h = bounds.Dy()
 	}
 
-	bounds := img.Bounds()
-	w := bounds.Dx()
-	h := bounds.Dy()
+	bounds = img.Bounds()
+	w = bounds.Dx()
+	h = bounds.Dy()
 
 	// Max radius is arbitrarily chosen as 1/10th of the smaller dimension.
 	maxRadius := w
