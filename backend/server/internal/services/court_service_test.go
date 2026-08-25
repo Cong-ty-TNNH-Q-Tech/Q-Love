@@ -519,3 +519,30 @@ func TestCourtService_GetFeed_Error(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "db error", err.Error())
 }
+
+type mockWalletRepoCourtFail struct{}
+func (m *mockWalletRepoCourtFail) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error { return errors.New("wallet err") }
+func (m *mockWalletRepoCourtFail) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) { return nil, nil }
+func (m *mockWalletRepoCourtFail) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
+func (m *mockWalletRepoCourtFail) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
+func (m *mockWalletRepoCourtFail) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error { return nil }
+
+func TestCourtService_FileLawsuit_WalletFail(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	mockMatch := new(mockMatchRepoForCourt)
+	svc := NewCourtService(mockCourt, mockMatch, nil, &mockWalletRepoCourtFail{}, &mockTxManagerCourt{})
+	
+	pID := uuid.New()
+	dID := uuid.New()
+	match := &models.Match{
+		User1ID: pID,
+		User2ID: dID,
+		StreakScore: 10,
+		LastInteractionAt: time.Now().Add(-50 * time.Hour),
+	}
+	mockMatch.On("FindByID", mock.Anything, mock.Anything).Return(match, nil)
+	
+	_, err := svc.FileLawsuit(context.Background(), pID, dID, uuid.New(), "Ghosting")
+	assert.Error(t, err)
+	assert.Equal(t, "wallet err", err.Error())
+}
