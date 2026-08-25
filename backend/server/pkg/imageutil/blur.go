@@ -20,6 +20,30 @@ func ApplyGaussianBlur(img image.Image, blurPercentage int) image.Image {
 		blurPercentage = 100
 	}
 
+	// Fast resize to max 150px width for performance
+	bounds := img.Bounds()
+	w := bounds.Dx()
+	h := bounds.Dy()
+	if w > 150 {
+		ratio := float64(h) / float64(w)
+		targetHeight := int(150.0 * ratio)
+		dst := image.NewRGBA(image.Rect(0, 0, 150, targetHeight))
+		scaleX := float64(w) / 150.0
+		scaleY := float64(h) / float64(targetHeight)
+		
+		for y := 0; y < targetHeight; y++ {
+			for x := 0; x < 150; x++ {
+				srcX := bounds.Min.X + int(float64(x)*scaleX)
+				srcY := bounds.Min.Y + int(float64(y)*scaleY)
+				dst.Set(x, y, img.At(srcX, srcY))
+			}
+		}
+		img = dst
+		bounds = img.Bounds()
+		w = bounds.Dx()
+		h = bounds.Dy()
+	}
+
 	bounds := img.Bounds()
 	w := bounds.Dx()
 	h := bounds.Dy()
