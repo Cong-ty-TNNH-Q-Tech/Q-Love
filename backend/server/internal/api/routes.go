@@ -12,6 +12,7 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
 	chatws "github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/websocket"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/esms"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/storage"
 	"github.com/gofiber/websocket/v2"
@@ -20,7 +21,7 @@ import (
 	"context"
 )
 
-func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, redisClient *redis.Client, cfg *config.Config) {
+func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, redisClient *redis.Client, cfg *config.Config) {
 	wingmanRepo := repository.NewWingmanRepository(db)
 	walletRepo := repository.NewWalletRepository(db)
 	shameRepo := repository.NewShameRepository(db)
@@ -40,7 +41,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	chatRepo := repository.NewChatMessageRepository(db)
 	chatService := services.NewChatService(chatRepo)
 	hub := chatws.NewHub(redisClient)
-	go hub.Run(context.Background())
+	go hub.Run(ctx)
 	chatHandler := handlers.NewChatHandler(chatService, hub)
 
 	matchService := services.NewMatchService(matchRepo)
@@ -130,8 +131,8 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	auctionGroup.Post("/:id/bid", auctionHandler.PlaceBid)
 
 	// Admin routes
-	courtCaseRepo := repository.NewCourtCaseRepository(db)
-	adminService := services.NewAdminService(violationRepo, courtCaseRepo, r2Client, walletRepo, txManager)
+	courtRepo := repository.NewCourtRepository(db)
+	adminService := services.NewAdminService(violationRepo, courtRepo, r2Client, walletRepo, txManager)
 	adminHandler := handlers.NewAdminHandler(adminService)
 	adminGroup := app.Group("/admin/v1", middleware.AdminMiddleware(cfg.JWTSecret))
 	adminGroup.Get("/violations", adminHandler.GetViolations)
@@ -167,6 +168,22 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 	feedService := services.NewFeedService(userRepo, spiritualService)
 	feedHandler := handlers.NewFeedHandler(feedService)
 	v1.Get("/users/feed", middleware.JWTMiddleware(cfg.JWTSecret), feedHandler.GetFeed)
+
+	// Court System
+	courtService := services.NewCourtService(courtRepo, matchRepo, redisClient, walletRepo, txManager)
+	courtHandler := handlers.NewCourtHandler(courtService)
+
+	courtGroup := v1.Group("/court", middleware.JWTMiddleware(cfg.JWTSecret))
+	courtGroup.Post("/cases", courtHandler.FileLawsuit)
+	courtGroup.Get("/feed", courtHandler.GetFeed)
+	courtGroup.Post("/:case_id/vote", courtHandler.VoteCase)
+	courtGroup.Post("/:case_id/withdraw", courtHandler.WithdrawCase)
+
+	// Start Court Worker
+	if redisClient != nil {
+		courtWorker := services.NewCourtWorker(courtRepo, violationRepo, redisClient, logger.Log, walletRepo, txManager)
+		courtWorker.Start(ctx)
+	}
 
 	// Vouchers
 	voucherRepo := repository.NewVoucherRepository(db)

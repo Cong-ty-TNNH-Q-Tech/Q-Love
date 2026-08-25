@@ -23,7 +23,7 @@ type AdminService interface {
 
 type adminService struct {
 	violationRepo repository.UserViolationRepository
-	courtCaseRepo repository.CourtCaseRepository
+	courtRepo     repository.CourtRepository
 	r2Client      *storage.R2Client
 	walletRepo    repository.WalletRepository
 	txManager     repository.TransactionManager
@@ -31,14 +31,14 @@ type adminService struct {
 
 func NewAdminService(
 	violationRepo repository.UserViolationRepository,
-	courtCaseRepo repository.CourtCaseRepository,
+	courtRepo repository.CourtRepository,
 	r2Client *storage.R2Client,
 	walletRepo repository.WalletRepository,
 	txManager repository.TransactionManager,
 ) AdminService {
 	return &adminService{
 		violationRepo: violationRepo,
-		courtCaseRepo: courtCaseRepo,
+		courtRepo:     courtRepo,
 		r2Client:      r2Client,
 		walletRepo:    walletRepo,
 		txManager:     txManager,
@@ -72,12 +72,12 @@ func (s *adminService) DeleteViolationMedia(ctx context.Context, violationID uui
 
 func (s *adminService) OverrideCourtCase(ctx context.Context, caseID uuid.UUID, status string) error {
 	return s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
-		courtCase, err := s.courtCaseRepo.FindByID(txCtx, caseID)
+		courtCase, err := s.courtRepo.GetCaseByID(txCtx, caseID)
 		if err != nil {
 			return err
 		}
 
-		if err := s.courtCaseRepo.UpdateStatus(txCtx, caseID, status); err != nil {
+		if err := s.courtRepo.UpdateCaseStatus(txCtx, caseID, models.CourtCaseStatus(status)); err != nil {
 			return err
 		}
 

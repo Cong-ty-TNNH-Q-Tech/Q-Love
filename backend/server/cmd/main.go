@@ -5,6 +5,10 @@
 package main
 
 import (
+	"context"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
@@ -23,7 +27,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func setupApp(cfg *config.Config) (*fiber.App, error) {
+func setupApp(ctx context.Context, cfg *config.Config) (*fiber.App, error) {
 	// Init Logger & Sentry
 	logger.InitLogger(cfg.Environment, cfg.SentryDSN)
 
@@ -81,14 +85,19 @@ func setupApp(cfg *config.Config) (*fiber.App, error) {
 	})
 
 	// Register API Routes
-	api.RegisterRoutes(app, db, r2Client, redisClient, cfg)
+	api.RegisterRoutes(ctx, app, db, r2Client, redisClient, cfg)
 
 	return app, nil
 }
 
 func main() {
 	cfg := config.LoadConfig()
-	app, err := setupApp(cfg)
+	
+	// Setup context that cancels on interrupt
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	
+	app, err := setupApp(ctx, cfg)
 	if err != nil {
 		logger.Log.Fatal("Failed to setup app", zap.Error(err))
 	}
@@ -101,6 +110,15 @@ func main() {
 	if port == "" {
 		port = "3000"
 	}
+
+	go func() {
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+		<-sigChan
+		logger.Log.Info("Gracefully shutting down...")
+		cancel()
+		_ = app.Shutdown()
+	}()
 
 	logger.Log.Info("Starting server...", zap.String("port", port))
 	if err := app.Listen(":" + port); err != nil {

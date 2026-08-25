@@ -46,21 +46,28 @@ func (m *mockUserViolationRepo) DeleteViolation(ctx context.Context, id uuid.UUI
 	return nil
 }
 
-type mockCourtCaseRepo struct {
-	UpdateStatusFn func(ctx context.Context, id uuid.UUID, status string) error
-	FindByIDFn     func(ctx context.Context, id uuid.UUID) (*models.CourtCase, error)
+type mockCourtRepoAdmin struct {
+	UpdateCaseStatusFn func(ctx context.Context, id uuid.UUID, status models.CourtCaseStatus) error
+	GetCaseByIDFn     func(ctx context.Context, id uuid.UUID) (*models.CourtCase, error)
 }
 
-func (m *mockCourtCaseRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status string) error {
-	if m.UpdateStatusFn != nil {
-		return m.UpdateStatusFn(ctx, id, status)
+func (m *mockCourtRepoAdmin) CreateCase(ctx context.Context, courtCase *models.CourtCase) error { return nil }
+func (m *mockCourtRepoAdmin) GetActiveCases(ctx context.Context, jurorID uuid.UUID, limit int) ([]models.CourtCase, error) { return nil, nil }
+func (m *mockCourtRepoAdmin) GetExpiredVotingCases(ctx context.Context) ([]models.CourtCase, error) { return nil, nil }
+func (m *mockCourtRepoAdmin) CreateVote(ctx context.Context, vote *models.CourtVote) error { return nil }
+func (m *mockCourtRepoAdmin) HasUserVoted(ctx context.Context, caseID uuid.UUID, jurorID uuid.UUID) (bool, error) { return false, nil }
+func (m *mockCourtRepoAdmin) CountVotesByCase(ctx context.Context, caseID uuid.UUID) (int64, int64, error) { return 0, 0, nil }
+
+func (m *mockCourtRepoAdmin) UpdateCaseStatus(ctx context.Context, id uuid.UUID, status models.CourtCaseStatus) error {
+	if m.UpdateCaseStatusFn != nil {
+		return m.UpdateCaseStatusFn(ctx, id, status)
 	}
 	return nil
 }
 
-func (m *mockCourtCaseRepo) FindByID(ctx context.Context, id uuid.UUID) (*models.CourtCase, error) {
-	if m.FindByIDFn != nil {
-		return m.FindByIDFn(ctx, id)
+func (m *mockCourtRepoAdmin) GetCaseByID(ctx context.Context, id uuid.UUID) (*models.CourtCase, error) {
+	if m.GetCaseByIDFn != nil {
+		return m.GetCaseByIDFn(ctx, id)
 	}
 	return &models.CourtCase{}, nil
 }
@@ -126,8 +133,8 @@ func TestAdminService_DeleteViolationMedia(t *testing.T) {
 }
 
 func TestAdminService_OverrideCourtCase(t *testing.T) {
-	mockRepo := &mockCourtCaseRepo{
-		FindByIDFn: func(ctx context.Context, id uuid.UUID) (*models.CourtCase, error) {
+	mockRepo := &mockCourtRepoAdmin{
+		GetCaseByIDFn: func(ctx context.Context, id uuid.UUID) (*models.CourtCase, error) {
 			return &models.CourtCase{
 				PlaintiffID: uuid.New(),
 				DefendantID: uuid.New(),
@@ -167,18 +174,18 @@ func TestAdminService_Errors(t *testing.T) {
 	assert.Contains(t, err.Error(), "db error")
 }
 
-type mockCourtCaseRepoError struct {
-	mockCourtCaseRepo
+type mockCourtRepoAdminError struct {
+	mockCourtRepoAdmin
 }
-func (m *mockCourtCaseRepoError) UpdateStatus(ctx context.Context, id uuid.UUID, status string) error {
+func (m *mockCourtRepoAdminError) UpdateCaseStatus(ctx context.Context, id uuid.UUID, status models.CourtCaseStatus) error {
 	return errors.New("db error")
 }
-func (m *mockCourtCaseRepoError) FindByID(ctx context.Context, id uuid.UUID) (*models.CourtCase, error) {
+func (m *mockCourtRepoAdminError) GetCaseByID(ctx context.Context, id uuid.UUID) (*models.CourtCase, error) {
 	return nil, errors.New("db error")
 }
 
 func TestAdminService_OverrideCourtCase_Error(t *testing.T) {
-	mockCourtRepo := &mockCourtCaseRepoError{}
+	mockCourtRepo := &mockCourtRepoAdminError{}
 	mockTx := &mockTxManagerAdmin{}
 	service := NewAdminService(nil, mockCourtRepo, nil, nil, mockTx)
 	
