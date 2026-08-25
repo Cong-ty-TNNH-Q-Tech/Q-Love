@@ -13,6 +13,7 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
+	"database/sql"
 )
 
 type CourtWorker struct {
@@ -109,7 +110,7 @@ func (w *CourtWorker) evaluateExpiredCases(ctx context.Context) {
 				}
 			}
 			return nil
-		})
+		}, &sql.TxOptions{Isolation: sql.LevelSerializable})
 
 		if err != nil {
 			w.logger.Error("Failed to resolve court case", zap.Error(err))

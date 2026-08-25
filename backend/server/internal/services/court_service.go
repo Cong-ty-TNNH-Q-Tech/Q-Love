@@ -94,7 +94,7 @@ func (s *courtService) FileLawsuit(ctx context.Context, plaintiffID, defendantID
 			return err
 		}
 		return nil
-	})
+	}, &sql.TxOptions{Isolation: sql.LevelSerializable})
 
 	if err != nil {
 		return nil, err
