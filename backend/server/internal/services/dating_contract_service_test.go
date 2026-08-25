@@ -98,13 +98,14 @@ func (m *mockChatRepo) CountMessagesByMatchID(ctx context.Context, matchID uuid.
 
 type mockPremiumRepo struct{ mock.Mock }
 func (m *mockPremiumRepo) Upsert(ctx context.Context, p *models.UserPremium) error { return nil }
+func (m *mockPremiumRepo) ActivatePremium(ctx context.Context, userID uuid.UUID, expiresAt time.Time) error { return nil }
+func (m *mockPremiumRepo) IsUserPremium(ctx context.Context, userID uuid.UUID) (bool, error) { return false, nil }
 func (m *mockPremiumRepo) FindByUserID(ctx context.Context, id uuid.UUID) (*models.UserPremium, error) {
 	args := m.Called(ctx, id)
-	var p *models.UserPremium
 	if args.Get(0) != nil {
-		p = args.Get(0).(*models.UserPremium)
+		return args.Get(0).(*models.UserPremium), args.Error(1)
 	}
-	return p, args.Error(1)
+	return nil, args.Error(1)
 }
 func (m *mockPremiumRepo) Update(ctx context.Context, p *models.UserPremium) error {
 	args := m.Called(ctx, p)
