@@ -1,5 +1,6 @@
-// Copyright (c) 2026 Q-Tech. All rights reserved.
+// Copyright 2026 Q-Tech Team
 // Licensed under the GNU AGPLv3 License.
+// See LICENSE file in the project root for full license information.
 
 package repository
 
@@ -41,13 +42,69 @@ func TestAuctionRepository_GetActiveAuctions(t *testing.T) {
 	assert.NoError(t, err)
 
 	repo := NewAuctionRepository(db)
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "blind_auctions" WHERE status = $1`)).
-		WithArgs("active").
+	mock.ExpectQuery(`(?i)SELECT \* FROM "blind_auctions" WHERE status = \$1`).
+		WithArgs("active", 100).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "status"}).AddRow(uuid.New(), "active"))
 
-	auctions, err := repo.GetActiveAuctions(context.Background())
+	auctions, err := repo.GetActiveAuctions(context.Background(), 0, 100)
 	assert.NoError(t, err)
 	assert.Len(t, auctions, 1)
+}
+
+func TestAuctionRepository_GetActiveAuctions_Error(t *testing.T) {
+	db, mock, err := setupTestDB()
+	assert.NoError(t, err)
+
+	repo := NewAuctionRepository(db)
+	mock.ExpectQuery(`(?i)SELECT \* FROM "blind_auctions" WHERE status = \$1`).
+		WithArgs("active", 100).
+		WillReturnError(assert.AnError)
+
+	auctions, err := repo.GetActiveAuctions(context.Background(), 0, 100)
+	assert.Error(t, err)
+	assert.Nil(t, auctions)
+}
+
+func TestAuctionRepository_GetActiveAuctionsCursor(t *testing.T) {
+	db, mock, err := setupTestDB()
+	assert.NoError(t, err)
+
+	repo := NewAuctionRepository(db)
+	
+	// Test with nil lastID
+	mock.ExpectQuery(`(?i)SELECT \* FROM "blind_auctions" WHERE status = \$1 ORDER BY id ASC LIMIT \$2`).
+		WithArgs("active", 100).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "status"}).AddRow(uuid.New(), "active"))
+
+	auctions, err := repo.GetActiveAuctionsCursor(context.Background(), uuid.Nil, 100)
+	assert.NoError(t, err)
+	assert.Len(t, auctions, 1)
+
+	// Test with non-nil lastID
+	lastID := uuid.New()
+	mock.ExpectQuery(`(?i)SELECT \* FROM "blind_auctions" WHERE status = \$1 AND id > \$2 ORDER BY id ASC LIMIT \$3`).
+		WithArgs("active", lastID, 100).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "status"}).AddRow(uuid.New(), "active"))
+
+	auctions2, err := repo.GetActiveAuctionsCursor(context.Background(), lastID, 100)
+	assert.NoError(t, err)
+	assert.Len(t, auctions2, 1)
+}
+
+func TestAuctionRepository_GetBidsForAuctions(t *testing.T) {
+	db, mock, err := setupTestDB()
+	assert.NoError(t, err)
+
+	repo := NewAuctionRepository(db)
+	auctionID := uuid.New()
+	mock.ExpectQuery(`(?i)SELECT .* FROM "auction_bids"`).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "auction_id", "amount"}).AddRow(uuid.New(), auctionID, float64(1500)).AddRow(uuid.New(), auctionID, float64(2000)))
+
+	bids, err := repo.GetBidsForAuctions(context.Background(), []uuid.UUID{auctionID})
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+	assert.Len(t, bids, 2)
 }
 
 func TestAuctionRepository_PlaceBid(t *testing.T) {
@@ -85,6 +142,8 @@ func TestAuctionRepository_UpdateAuctionStatus(t *testing.T) {
 	err = repo.UpdateAuctionStatus(context.Background(), auctionID, "completed", &winnerID, 2000)
 	assert.NoError(t, err)
 }
+
+
 
 
 func TestAuctionRepository_GetAuctionForUpdate(t *testing.T) {
