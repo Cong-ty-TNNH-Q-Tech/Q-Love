@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
-	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/redis"
 	"github.com/alicebob/miniredis/v2"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
