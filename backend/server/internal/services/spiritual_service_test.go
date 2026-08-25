@@ -105,8 +105,6 @@ func TestSpiritualService_CalculateZodiac_AllMonths(t *testing.T) {
 
 func TestSpiritualService_CalculateNumerology_22(t *testing.T) {
 	service := NewSpiritualService()
-	// 22 master number
-	dob, _ := time.Parse("2006-01-02", "1993-11-22") // Wait, need exact 22 sum. 2+2+1+1+1+9+9+3 = 28 -> 10 -> 1.
 	// Let's use something that sums to 22. 29/09/2000 -> 2+9+0+9+2+0+0+0 = 22
 	dob22, _ := time.Parse("2006-01-02", "2000-09-29")
 	assert.Equal(t, 22, service.CalculateNumerology(dob22))
