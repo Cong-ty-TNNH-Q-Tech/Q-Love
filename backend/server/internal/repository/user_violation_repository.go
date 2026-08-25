@@ -6,6 +6,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/google/uuid"
@@ -18,6 +19,7 @@ type UserViolationRepository interface {
 	BanUser(ctx context.Context, userID uuid.UUID) error
 	GetViolations(ctx context.Context, page, limit int) ([]models.UserViolation, int64, error)
 	DeleteViolation(ctx context.Context, id uuid.UUID) error
+	HasActiveFakeGPSBan(ctx context.Context, userID uuid.UUID) (bool, *time.Time, error)
 }
 
 type userViolationRepository struct {
@@ -65,5 +67,26 @@ func (r *userViolationRepository) GetViolations(ctx context.Context, page, limit
 
 func (r *userViolationRepository) DeleteViolation(ctx context.Context, id uuid.UUID) error {
 	return GetDB(ctx, r.db).Model(&models.UserViolation{}).Where("id = ?", id).Update("is_active", false).Error
+}
+
+func (r *userViolationRepository) HasActiveFakeGPSBan(ctx context.Context, userID uuid.UUID) (bool, *time.Time, error) {
+	var violation models.UserViolation
+	
+	// Ban duration is 7 days. Find if there's any fake_gps violation in the last 7 days.
+	sevenDaysAgo := time.Now().Add(-7 * 24 * time.Hour)
+	err := GetDB(ctx, r.db).Model(&models.UserViolation{}).
+		Where("user_id = ? AND type = 'fake_gps' AND created_at > ?", userID, sevenDaysAgo).
+		Order("created_at DESC").
+		First(&violation).Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, nil, nil
+		}
+		return false, nil, err
+	}
+
+	banUntil := violation.CreatedAt.Add(7 * 24 * time.Hour)
+	return true, &banUntil, nil
 }
 

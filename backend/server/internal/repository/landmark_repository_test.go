@@ -55,3 +55,79 @@ func TestLandmarkRepository_UpdateAllOwners(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
+
+func TestLandmarkRepository_FindByID(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+	defer db.Close()
+
+	gormDB, err := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{})
+	assert.NoError(t, err)
+
+	repo := NewLandmarkRepository(gormDB)
+	landmarkID := uuid.New()
+
+	t.Run("success", func(t *testing.T) {
+		mock.ExpectQuery(`SELECT \* FROM "landmarks" WHERE .*`).
+			WithArgs(landmarkID, 1).
+			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(landmarkID))
+
+		res, err := repo.FindByID(context.Background(), landmarkID)
+		assert.NoError(t, err)
+		assert.NotNil(t, res)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		mock.ExpectQuery(`SELECT \* FROM "landmarks" WHERE .*`).
+			WithArgs(landmarkID, 1).
+			WillReturnError(assert.AnError)
+
+		res, err := repo.FindByID(context.Background(), landmarkID)
+		assert.Error(t, err)
+		assert.Nil(t, res)
+	})
+}
+
+func TestLandmarkRepository_CheckDistance(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+	defer db.Close()
+
+	gormDB, err := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{})
+	assert.NoError(t, err)
+
+	repo := NewLandmarkRepository(gormDB)
+	landmarkID := uuid.New()
+	lat := 10.0
+	lng := 106.0
+
+	t.Run("success true", func(t *testing.T) {
+		mock.ExpectQuery(`SELECT ST_DWithin\(.*`).
+			WithArgs(lng, lat, landmarkID).
+			WillReturnRows(sqlmock.NewRows([]string{"is_within"}).AddRow(true))
+
+		res, err := repo.CheckDistance(context.Background(), landmarkID, lat, lng)
+		assert.NoError(t, err)
+		assert.True(t, res)
+	})
+
+	t.Run("success false", func(t *testing.T) {
+		mock.ExpectQuery(`SELECT ST_DWithin\(.*`).
+			WithArgs(lng, lat, landmarkID).
+			WillReturnRows(sqlmock.NewRows([]string{"is_within"}).AddRow(false))
+
+		res, err := repo.CheckDistance(context.Background(), landmarkID, lat, lng)
+		assert.NoError(t, err)
+		assert.False(t, res)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		mock.ExpectQuery(`SELECT ST_DWithin\(.*`).
+			WithArgs(lng, lat, landmarkID).
+			WillReturnError(assert.AnError)
+
+		res, err := repo.CheckDistance(context.Background(), landmarkID, lat, lng)
+		assert.Error(t, err)
+		assert.False(t, res)
+	})
+}

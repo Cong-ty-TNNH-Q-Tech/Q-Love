@@ -111,6 +111,13 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 	clanGroup := v1.Group("/clans", middleware.JWTMiddleware(cfg.JWTSecret))
 	clanGroup.Post("/", clanHandler.CreateClan)
 
+	// Landmark routes
+	landmarkRepo := repository.NewLandmarkRepository(db)
+	landmarkService := services.NewLandmarkService(landmarkRepo, violationRepo, clanRepo, userRepo)
+	landmarkHandler := handlers.NewLandmarkHandler(landmarkService)
+	landmarkGroup := v1.Group("/landmarks", middleware.JWTMiddleware(cfg.JWTSecret))
+	landmarkGroup.Post("/:landmark_id/checkin", landmarkHandler.CheckIn)
+
 	// Chat routes
 	chatGroup := v1.Group("/chat")
 	chatGroup.Get("/ws", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.Upgrade, websocket.New(chatHandler.WSHandler))

@@ -89,6 +89,9 @@ func (m *mockViolationRepo) GetViolations(ctx context.Context, page, limit int) 
 func (m *mockViolationRepo) DeleteViolation(ctx context.Context, violationID uuid.UUID) error {
 	return nil
 }
+func (m *mockViolationRepo) HasActiveFakeGPSBan(ctx context.Context, userID uuid.UUID) (bool, *time.Time, error) {
+	return false, nil, nil
+}
 
 
 type mockNSFWService struct {

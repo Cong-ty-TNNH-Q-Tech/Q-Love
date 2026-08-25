@@ -155,3 +155,18 @@ func TestClanRepository_GetMembers(t *testing.T) {
 	assert.Equal(t, userID, members[0].UserID)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestClanRepository_AddScore(t *testing.T) {
+	_, mock, repo := setupClanRepoTest(t)
+	ctx := context.Background()
+	clanID := uuid.New()
+
+	mock.ExpectBegin()
+	mock.ExpectExec(`UPDATE "clans" SET .* WHERE .*`).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
+	err := repo.AddScore(ctx, clanID, 10)
+	assert.NoError(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}

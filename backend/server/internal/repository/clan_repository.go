@@ -19,6 +19,7 @@ type ClanRepository interface {
 	GetTopWeeklyClan(ctx context.Context) (*models.Clan, error)
 	ResetWeeklyScores(ctx context.Context) error
 	GetMembers(ctx context.Context, clanID uuid.UUID) ([]models.ClanMember, error)
+	AddScore(ctx context.Context, clanID uuid.UUID, score int) error
 }
 
 type clanRepository struct {
@@ -66,4 +67,12 @@ func (r *clanRepository) GetMembers(ctx context.Context, clanID uuid.UUID) ([]mo
 		return nil, err
 	}
 	return members, nil
+}
+
+func (r *clanRepository) AddScore(ctx context.Context, clanID uuid.UUID, score int) error {
+	return GetDB(ctx, r.db).WithContext(ctx).Model(&models.Clan{}).Where("id = ?", clanID).
+		Updates(map[string]interface{}{
+			"total_score": gorm.Expr("total_score + ?", score),
+			"weekly_score": gorm.Expr("weekly_score + ?", score),
+		}).Error
 }
