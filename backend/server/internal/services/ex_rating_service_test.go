@@ -68,6 +68,7 @@ func (m *mockMatchRepoForExRating) Create(ctx context.Context, match *models.Mat
 func (m *mockMatchRepoForExRating) UpdateLastInteraction(ctx context.Context, matchID uuid.UUID, t time.Time) error { return nil }
 func (m *mockMatchRepoForExRating) ResetStreakForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
 func (m *mockMatchRepoForExRating) ResetIslandLevelForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
+func (m *mockMatchRepoForExRating) FindByUsers(ctx context.Context, u1, u2 uuid.UUID) (*models.Match, error) { return nil, nil }
 
 type mockWalletRepoForExRating struct {
 	balance   float64
@@ -92,6 +93,12 @@ func (m *mockWalletRepoForExRating) CreateTransaction(ctx context.Context, txn *
 }
 func (m *mockWalletRepoForExRating) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) {
 	return false, nil
+}
+func (m *mockWalletRepoForExRating) HoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error {
+	return nil
+}
+func (m *mockWalletRepoForExRating) ReleaseHoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error {
+	return nil
 }
 
 type mockTxManagerForExRating struct{}

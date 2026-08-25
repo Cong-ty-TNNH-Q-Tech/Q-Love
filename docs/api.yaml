@@ -269,6 +269,90 @@ components:
 security:
   - bearerAuth: []
 paths:
+  /contracts:
+    post:
+      summary: Tạo khế ước hẹn hò (Trừ xu cọc của người tạo)
+      tags:
+        - Dating Contract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - partner_id
+                - deposit_amount
+                - appointment_time
+              properties:
+                partner_id:
+                  type: string
+                  format: uuid
+                deposit_amount:
+                  type: number
+                  example: 50.0
+                appointment_time:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Khế ước được tạo thành công
+  /contracts/{contract_id}/accept:
+    post:
+      summary: Đối tác chấp nhận khế ước (Trừ xu cọc của đối tác)
+      tags:
+        - Dating Contract
+      parameters:
+        - name: contract_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Thành công
+  /contracts/{contract_id}/cancel:
+    post:
+      summary: Hủy khế ước (Xử lý hoàn cọc hoặc phạt)
+      tags:
+        - Dating Contract
+      parameters:
+        - name: contract_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Thành công
+  /contracts/{contract_id}/scan:
+    post:
+      summary: Quét mã QR check-in hẹn hò (Trả lại cọc cho cả hai)
+      tags:
+        - Dating Contract
+      parameters:
+        - name: contract_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - qr_token
+              properties:
+                qr_token:
+                  type: string
+      responses:
+        '200':
+          description: Check-in thành công
   /auth/send-otp:
     post:
       summary: Gửi mã OTP về số điện thoại

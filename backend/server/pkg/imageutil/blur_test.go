@@ -48,7 +48,19 @@ func TestApplyGaussianBlur(t *testing.T) {
 	grayImg := image.NewGray(image.Rect(0, 0, 10, 10))
 	blurredGray := ApplyGaussianBlur(grayImg, 100)
 	if blurredGray == grayImg {
-		t.Errorf("Expected non-RGBA image to be converted and blurred")
+		t.Errorf("Expected Gray image to be processed and return a new image")
+	}
+
+	// Test fast resize code path
+	imgBig := image.NewRGBA(image.Rect(0, 0, 200, 200))
+	for y := 0; y < 200; y++ {
+		for x := 0; x < 200; x++ {
+			imgBig.Set(x, y, color.White)
+		}
+	}
+	blurredBig := ApplyGaussianBlur(imgBig, 50)
+	if blurredBig.Bounds().Dx() > 150 {
+		t.Errorf("Expected image to be resized to max width 150")
 	}
 
 	// Test small radius calculation resulting in <= 0

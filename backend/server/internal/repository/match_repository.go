@@ -17,6 +17,7 @@ type MatchRepository interface {
 	Create(ctx context.Context, match *models.Match) error
 	FindByID(ctx context.Context, id uuid.UUID) (*models.Match, error)
 	FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error)
+	FindByUsers(ctx context.Context, user1ID, user2ID uuid.UUID) (*models.Match, error)
 	UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error
 	SoftDelete(ctx context.Context, id uuid.UUID) error
 	ResetStreakForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error
@@ -58,6 +59,17 @@ func (r *matchRepository) UpdateLastInteraction(ctx context.Context, id uuid.UUI
 		Model(&models.Match{}).
 		Where("id = ?", id).
 		Update("last_interaction_at", t).Error
+}
+
+func (r *matchRepository) FindByUsers(ctx context.Context, user1ID, user2ID uuid.UUID) (*models.Match, error) {
+	var match models.Match
+	err := GetDB(ctx, r.db).
+		Where("(user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)", user1ID, user2ID, user2ID, user1ID).
+		First(&match).Error
+	if err != nil {
+		return nil, err
+	}
+	return &match, nil
 }
 
 func (r *matchRepository) SoftDelete(ctx context.Context, id uuid.UUID) error {

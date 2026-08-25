@@ -8,6 +8,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -15,6 +16,8 @@ import (
 type UserPremiumRepository interface {
 	IsUserPremium(ctx context.Context, userID uuid.UUID) (bool, error)
 	ActivatePremium(ctx context.Context, userID uuid.UUID, expiresAt time.Time) error
+	FindByUserID(ctx context.Context, userID uuid.UUID) (*models.UserPremium, error)
+	Update(ctx context.Context, premium *models.UserPremium) error
 }
 
 type userPremiumRepository struct {
@@ -59,4 +62,19 @@ func (r *userPremiumRepository) ActivatePremium(ctx context.Context, userID uuid
 		userID, expiresAt).Error
 		
 	return err
+}
+
+func (r *userPremiumRepository) FindByUserID(ctx context.Context, userID uuid.UUID) (*models.UserPremium, error) {
+	db := GetDB(ctx, r.db)
+	var premium models.UserPremium
+	err := db.WithContext(ctx).First(&premium, "user_id = ?", userID).Error
+	if err != nil {
+		return nil, err
+	}
+	return &premium, nil
+}
+
+func (r *userPremiumRepository) Update(ctx context.Context, premium *models.UserPremium) error {
+	db := GetDB(ctx, r.db)
+	return db.WithContext(ctx).Save(premium).Error
 }

@@ -31,6 +31,8 @@ func (m *mockWalletRepoCourt) GetWalletForUpdate(ctx context.Context, userID uui
 func (m *mockWalletRepoCourt) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
 func (m *mockWalletRepoCourt) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
 func (m *mockWalletRepoCourt) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error { return nil }
+func (m *mockWalletRepoCourt) HoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
+func (m *mockWalletRepoCourt) ReleaseHoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
 
 type mockTxManagerCourt struct{}
 func (m *mockTxManagerCourt) WithTransaction(ctx context.Context, fn func(txCtx context.Context) error, opts ...*sql.TxOptions) error {
@@ -127,6 +129,9 @@ func (m *mockMatchRepoForCourt) UpdateLastInteraction(ctx context.Context, id uu
 
 func (m *mockMatchRepoForCourt) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
+}
+func (m *mockMatchRepoForCourt) FindByUsers(ctx context.Context, u1, u2 uuid.UUID) (*models.Match, error) {
+	return nil, nil
 }
 
 func (m *mockMatchRepoForCourt) ResetStreakForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
@@ -531,6 +536,8 @@ func (m *mockWalletRepoCourtFail) GetWalletForUpdate(ctx context.Context, userID
 func (m *mockWalletRepoCourtFail) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
 func (m *mockWalletRepoCourtFail) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
 func (m *mockWalletRepoCourtFail) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error { return nil }
+func (m *mockWalletRepoCourtFail) HoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
+func (m *mockWalletRepoCourtFail) ReleaseHoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
 
 func TestCourtService_FileLawsuit_WalletFail(t *testing.T) {
 	mockCourt := new(mockCourtRepo)

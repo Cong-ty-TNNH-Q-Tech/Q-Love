@@ -223,3 +223,93 @@ func TestWalletRepository_CheckTransactionExists(t *testing.T) {
 		t.Errorf("Expected error, got nil")
 	}
 }
+
+func TestWalletRepository_HoldBalance(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Failed to create sqlmock: %v", err)
+	}
+	defer db.Close()
+
+	gormDB, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: db,
+	}), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("Failed to open gorm db: %v", err)
+	}
+
+	repo := NewWalletRepository(gormDB)
+	userID := uuid.New()
+	amount := 50.0
+
+	mock.ExpectBegin()
+	mock.ExpectExec(`UPDATE "user_wallets" SET .* WHERE .*`).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
+	err = repo.HoldBalance(context.Background(), userID, amount)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+}
+
+func TestWalletRepository_ReleaseHoldBalance(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Failed to create sqlmock: %v", err)
+	}
+	defer db.Close()
+
+	gormDB, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: db,
+	}), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("Failed to open gorm db: %v", err)
+	}
+
+	repo := NewWalletRepository(gormDB)
+	userID := uuid.New()
+	amount := 50.0
+
+	mock.ExpectBegin()
+	mock.ExpectExec(`UPDATE "user_wallets" SET .* WHERE .*`).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
+	err = repo.ReleaseHoldBalance(context.Background(), userID, amount)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+}
+
+func TestWalletRepository_HoldBalance_Error(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil { t.Fatalf("Failed to create sqlmock: %v", err) }
+	defer db.Close()
+	gormDB, _ := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{})
+	repo := NewWalletRepository(gormDB)
+
+	mock.ExpectBegin()
+	mock.ExpectExec(`UPDATE "user_wallets" SET .* WHERE .*`).
+		WillReturnError(gorm.ErrInvalidDB)
+	mock.ExpectRollback()
+
+	err = repo.HoldBalance(context.Background(), uuid.New(), 50)
+	if err == nil { t.Errorf("Expected error, got nil") }
+}
+
+func TestWalletRepository_ReleaseHoldBalance_Error(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil { t.Fatalf("Failed to create sqlmock: %v", err) }
+	defer db.Close()
+	gormDB, _ := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{})
+	repo := NewWalletRepository(gormDB)
+
+	mock.ExpectBegin()
+	mock.ExpectExec(`UPDATE "user_wallets" SET .* WHERE .*`).
+		WillReturnError(gorm.ErrInvalidDB)
+	mock.ExpectRollback()
+
+	err = repo.ReleaseHoldBalance(context.Background(), uuid.New(), 50)
+	if err == nil { t.Errorf("Expected error, got nil") }
+}

@@ -76,6 +76,12 @@ func (m *mockWalletRepoClan) UpdateBalance(ctx context.Context, userID uuid.UUID
 func (m *mockWalletRepoClan) CreateTransaction(ctx context.Context, transaction *models.WalletTransaction) error {
 	return m.createTxErr
 }
+func (m *mockWalletRepoClan) HoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error {
+	return nil
+}
+func (m *mockWalletRepoClan) ReleaseHoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error {
+	return nil
+}
 
 type mockTxManagerClan struct{}
 

@@ -77,3 +77,38 @@ func TestClient_SendOTP_HTTPError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "ESMS returned HTTP 500", err.Error())
 }
+
+func TestClient_SendOTP_DecodeError(t *testing.T) {
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`invalid json`))
+	}))
+	defer mockServer.Close()
+
+	c := &client{
+		apiKey:    "test-key",
+		secretKey: "test-secret",
+		baseURL:   mockServer.URL,
+		hc:        mockServer.Client(),
+	}
+
+	err := c.SendOTP(context.Background(), "0901234567", "123456")
+	assert.Error(t, err)
+}
+
+func TestClient_SendOTP_NetworkError(t *testing.T) {
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	mockServer.Close() // Close immediately to simulate network error
+
+	c := &client{
+		apiKey:    "test-key",
+		secretKey: "test-secret",
+		baseURL:   mockServer.URL,
+		hc:        mockServer.Client(),
+	}
+
+	err := c.SendOTP(context.Background(), "0901234567", "123456")
+	assert.Error(t, err)
+}

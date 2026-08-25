@@ -89,6 +89,8 @@ func (m *mockWalletRepoAdmin) GetWalletForUpdate(ctx context.Context, userID uui
 func (m *mockWalletRepoAdmin) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
 func (m *mockWalletRepoAdmin) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
 func (m *mockWalletRepoAdmin) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error { return nil }
+func (m *mockWalletRepoAdmin) HoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
+func (m *mockWalletRepoAdmin) ReleaseHoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
 
 type mockTxManagerAdmin struct{}
 func (m *mockTxManagerAdmin) WithTransaction(ctx context.Context, fn func(txCtx context.Context) error, opts ...*sql.TxOptions) error {

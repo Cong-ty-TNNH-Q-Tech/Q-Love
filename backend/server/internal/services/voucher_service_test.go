@@ -60,6 +60,8 @@ func (m *mockWalletRepoForVoucher) CreateTransaction(ctx context.Context, txn *m
 	return m.txnErr
 }
 func (m *mockWalletRepoForVoucher) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
+func (m *mockWalletRepoForVoucher) HoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
+func (m *mockWalletRepoForVoucher) ReleaseHoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
 
 type mockTxManagerForVoucher struct{}
 

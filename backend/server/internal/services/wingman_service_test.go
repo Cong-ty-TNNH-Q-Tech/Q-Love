@@ -61,6 +61,12 @@ func (m *mockWalletRepo) UpdateBalance(ctx context.Context, userID uuid.UUID, de
 func (m *mockWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) {
 	return false, nil
 }
+func (m *mockWalletRepo) HoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error {
+	return nil
+}
+func (m *mockWalletRepo) ReleaseHoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error {
+	return nil
+}
 
 type mockTxManager struct{}
 
@@ -85,6 +91,7 @@ func (m *mockWingmanMatchRepo) SoftDelete(ctx context.Context, id uuid.UUID) err
 func (m *mockWingmanMatchRepo) UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error { return nil }
 func (m *mockWingmanMatchRepo) ResetStreakForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
 func (m *mockWingmanMatchRepo) ResetIslandLevelForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
+func (m *mockWingmanMatchRepo) FindByUsers(ctx context.Context, u1, u2 uuid.UUID) (*models.Match, error) { return nil, nil }
 
 // --- Tests ---
 

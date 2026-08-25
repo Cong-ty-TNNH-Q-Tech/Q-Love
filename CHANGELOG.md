@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [backend/server/api] Thêm API Cọc tiền Khế ước Hẹn hò và cơ chế chống Race Condition (Issue #8).
 - [backend/server/api] Thêm API Check-in Landmark & Anti-Fake GPS (Issue #10).
 - [backend/server/models] Thêm thuộc tính `ClanID` vào model `User` và `Location` (PostGIS) vào model `Landmark`.
 - [frontend/app] UI Quẹt Thẻ (Tinder-like swipe) bằng thư viện `flutter_card_swiper` (Issue #14).
