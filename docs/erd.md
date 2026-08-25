@@ -110,7 +110,15 @@ erDiagram
         varchar type
         text payload
         varchar status
+        uuid reference_id
         timestamp created_at
+    }
+    LANDMARKS {
+        uuid id PK
+        varchar name
+        geometry location "PostGIS"
+        int radius_meters
+        uuid current_owner_clan_id FK
     }
     USER_VIOLATIONS {
         uuid id PK
@@ -460,6 +468,7 @@ erDiagram
 
 | Version | Ngày | Thay đổi |
 | :--- | :--- | :--- |
+| v1.3 | 2026-08-20 | Áp dụng Clan Cronjob cho các model `Landmark`, `Notification`. |
 | v1.2 | 2026-08-20 | Áp dụng Soft Delete (`deleted_at`) cho `users`, `dating_contracts`, `court_cases`, `wallet_transactions`. Bỏ `ON DELETE CASCADE` ở các bảng nhạy cảm. |
 | v1.1 | 2026-08-11 | Thêm bảng `notifications`, `user_violations`; Bổ sung cột `created_at` vào `chat_messages`; Thêm `available_cards` vào `card_profiles`; Thêm `radius_meters` vào `landmarks`. |
 | v1.0 | 2026-08-11 | Khởi tạo schema ban đầu. |
