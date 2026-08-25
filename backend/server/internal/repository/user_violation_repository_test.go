@@ -65,6 +65,28 @@ func TestUserViolationRepository(t *testing.T) {
 		t.Fatalf("Failed to ban user: %v", err)
 	}
 
+	// Test GetViolations
+	mock.ExpectQuery(`SELECT count\(\*\) FROM "user_violations" WHERE is_active = true`).
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+	mock.ExpectQuery(`SELECT \* FROM "user_violations" WHERE is_active = true ORDER BY created_at DESC LIMIT \? OFFSET \?`).
+		WithArgs(10, 0).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(violation.ID))
+
+	violations, total, err := repo.GetViolations(ctx, 1, 10)
+	if err != nil || total != 1 || len(violations) != 1 {
+		t.Fatalf("Failed to get violations: %v", err)
+	}
+
+	// Test DeleteViolation
+	mock.ExpectExec(`UPDATE "user_violations" SET "is_active"=\$1 WHERE id = \$2`).
+		WithArgs(false, violation.ID).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err = repo.DeleteViolation(ctx, violation.ID)
+	if err != nil {
+		t.Fatalf("Failed to delete violation: %v", err)
+	}
+
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
