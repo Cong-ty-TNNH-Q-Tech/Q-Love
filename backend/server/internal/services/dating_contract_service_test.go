@@ -258,3 +258,62 @@ func TestDatingContractService_ScanContract(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "completed", contract.Status)
 }
+
+func TestDatingContractService_AcceptContract_Errors(t *testing.T) {
+	contractRepo := new(mockDatingContractRepo)
+	walletRepo := new(mockWalletRepo)
+	matchRepo := new(mockMatchRepo)
+	chatRepo := new(mockChatRepo)
+	premiumRepo := new(mockPremiumRepo)
+	txManager := new(mockTxManager)
+
+	service := services.NewDatingContractService(contractRepo, walletRepo, matchRepo, chatRepo, premiumRepo, txManager)
+	ctx := context.Background()
+	userB := uuid.New()
+	contractID := uuid.New()
+
+	t.Run("Forbidden", func(t *testing.T) {
+		contractRepo.On("GetByIDForUpdate", ctx, contractID).Return(&models.DatingContract{UserBID: uuid.New()}, nil).Once()
+		_, err := service.AcceptContract(ctx, contractID, userB)
+		assert.ErrorContains(t, err, "forbidden")
+	})
+
+	t.Run("NotPending", func(t *testing.T) {
+		contractRepo.On("GetByIDForUpdate", ctx, contractID).Return(&models.DatingContract{UserBID: userB, Status: "active"}, nil).Once()
+		_, err := service.AcceptContract(ctx, contractID, userB)
+		assert.ErrorContains(t, err, "not in pending state")
+	})
+
+	t.Run("InsufficientBalance", func(t *testing.T) {
+		contractRepo.On("GetByIDForUpdate", ctx, contractID).Return(&models.DatingContract{UserBID: userB, Status: "pending", DepositAmount: 100}, nil).Once()
+		walletRepo.On("GetWalletForUpdate", ctx, userB).Return(&models.UserWallet{UserID: userB, Balance: 50}, nil).Once()
+		_, err := service.AcceptContract(ctx, contractID, userB)
+		assert.ErrorContains(t, err, "insufficient balance")
+	})
+}
+
+func TestDatingContractService_CancelContract_Errors(t *testing.T) {
+	contractRepo := new(mockDatingContractRepo)
+	walletRepo := new(mockWalletRepo)
+	matchRepo := new(mockMatchRepo)
+	chatRepo := new(mockChatRepo)
+	premiumRepo := new(mockPremiumRepo)
+	txManager := new(mockTxManager)
+
+	service := services.NewDatingContractService(contractRepo, walletRepo, matchRepo, chatRepo, premiumRepo, txManager)
+	ctx := context.Background()
+	userID := uuid.New()
+	contractID := uuid.New()
+
+	t.Run("InvalidState", func(t *testing.T) {
+		contractRepo.On("GetByIDForUpdate", ctx, contractID).Return(&models.DatingContract{Status: "completed"}, nil).Once()
+		err := service.CancelContract(ctx, contractID, userID, "reason")
+		assert.ErrorContains(t, err, "current state")
+	})
+
+	t.Run("Forbidden", func(t *testing.T) {
+		contractRepo.On("GetByIDForUpdate", ctx, contractID).Return(&models.DatingContract{Status: "active", UserAID: uuid.New(), UserBID: uuid.New()}, nil).Once()
+		err := service.CancelContract(ctx, contractID, userID, "reason")
+		assert.ErrorContains(t, err, "forbidden")
+	})
+}
