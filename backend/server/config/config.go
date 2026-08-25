@@ -28,6 +28,8 @@ type Config struct {
 	JWTSecret               string
 	OpenAIAPIKey            string
 	FCMKey                  string
+	ESMSAPIKey              string
+	ESMSSecretKey           string
 }
 
 func LoadConfig() *Config {
@@ -75,6 +77,8 @@ func LoadConfig() *Config {
 		JWTSecret:               jwtSecret,
 		OpenAIAPIKey:            getEnv("OPENAI_API_KEY", ""),
 		FCMKey:                  getEnv("FCM_KEY", ""),
+		ESMSAPIKey:              getEnv("ESMS_API_KEY", ""),
+		ESMSSecretKey:           getEnv("ESMS_SECRET_KEY", ""),
 	}
 }
 
