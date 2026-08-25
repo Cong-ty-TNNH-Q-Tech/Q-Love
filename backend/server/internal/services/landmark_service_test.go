@@ -162,5 +162,96 @@ func TestLandmarkService_CheckIn_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
 	assert.Equal(t, landmarkID, res.ID)
+
+	violationRepo.AssertExpectations(t)
+	landmarkRepo.AssertExpectations(t)
+	userRepo.AssertExpectations(t)
 	clanRepo.AssertExpectations(t)
+}
+
+func TestLandmarkService_CheckIn_Errors(t *testing.T) {
+	landmarkRepo := new(mockLandmarkRepo)
+	violationRepo := new(mockUserViolationRepoForLandmark)
+	clanRepo := new(mockClanRepo)
+	userRepo := new(mockUserRepoForLandmark)
+
+	service := services.NewLandmarkService(landmarkRepo, violationRepo, clanRepo, userRepo)
+	ctx := context.Background()
+	userID := uuid.New()
+	landmarkID := uuid.New()
+	clanID := uuid.New()
+
+	t.Run("HasActiveFakeGPSBan Error", func(t *testing.T) {
+		violationRepo.ExpectedCalls = nil
+		violationRepo.On("HasActiveFakeGPSBan", ctx, userID).Return(false, nil, errors.New("db error")).Once()
+		_, err := service.CheckIn(ctx, userID, landmarkID, 10.0, 106.0, false)
+		assert.EqualError(t, err, "db error")
+	})
+
+	t.Run("CreateViolation Error", func(t *testing.T) {
+		violationRepo.ExpectedCalls = nil
+		violationRepo.On("HasActiveFakeGPSBan", ctx, userID).Return(false, nil, nil).Once()
+		violationRepo.On("Create", ctx, mock.AnythingOfType("*models.UserViolation")).Return(errors.New("db error")).Once()
+		_, err := service.CheckIn(ctx, userID, landmarkID, 10.0, 106.0, true)
+		assert.EqualError(t, err, "db error")
+	})
+
+	t.Run("CheckDistance Error", func(t *testing.T) {
+		violationRepo.ExpectedCalls = nil
+		landmarkRepo.ExpectedCalls = nil
+		violationRepo.On("HasActiveFakeGPSBan", ctx, userID).Return(false, nil, nil).Once()
+		landmarkRepo.On("CheckDistance", ctx, landmarkID, 10.0, 106.0).Return(false, errors.New("db error")).Once()
+		_, err := service.CheckIn(ctx, userID, landmarkID, 10.0, 106.0, false)
+		assert.EqualError(t, err, "db error")
+	})
+
+	t.Run("FindByID Error", func(t *testing.T) {
+		violationRepo.ExpectedCalls = nil
+		landmarkRepo.ExpectedCalls = nil
+		violationRepo.On("HasActiveFakeGPSBan", ctx, userID).Return(false, nil, nil).Once()
+		landmarkRepo.On("CheckDistance", ctx, landmarkID, 10.0, 106.0).Return(true, nil).Once()
+		landmarkRepo.On("FindByID", ctx, landmarkID).Return(nil, errors.New("db error")).Once()
+		_, err := service.CheckIn(ctx, userID, landmarkID, 10.0, 106.0, false)
+		assert.EqualError(t, err, "db error")
+	})
+
+	t.Run("UserFindByID Error", func(t *testing.T) {
+		violationRepo.ExpectedCalls = nil
+		landmarkRepo.ExpectedCalls = nil
+		userRepo.ExpectedCalls = nil
+		violationRepo.On("HasActiveFakeGPSBan", ctx, userID).Return(false, nil, nil).Once()
+		landmarkRepo.On("CheckDistance", ctx, landmarkID, 10.0, 106.0).Return(true, nil).Once()
+		landmarkRepo.On("FindByID", ctx, landmarkID).Return(&models.Landmark{ID: landmarkID}, nil).Once()
+		userRepo.On("FindByID", ctx, userID).Return(nil, errors.New("db error")).Once()
+		_, err := service.CheckIn(ctx, userID, landmarkID, 10.0, 106.0, false)
+		assert.EqualError(t, err, "db error")
+	})
+
+	t.Run("AddScore Error", func(t *testing.T) {
+		violationRepo.ExpectedCalls = nil
+		landmarkRepo.ExpectedCalls = nil
+		userRepo.ExpectedCalls = nil
+		clanRepo.ExpectedCalls = nil
+		violationRepo.On("HasActiveFakeGPSBan", ctx, userID).Return(false, nil, nil).Once()
+		landmarkRepo.On("CheckDistance", ctx, landmarkID, 10.0, 106.0).Return(true, nil).Once()
+		landmarkRepo.On("FindByID", ctx, landmarkID).Return(&models.Landmark{ID: landmarkID}, nil).Once()
+		userRepo.On("FindByID", ctx, userID).Return(&models.User{ID: userID, ClanID: &clanID}, nil).Once()
+		clanRepo.On("AddScore", ctx, clanID, 10).Return(errors.New("db error")).Once()
+		_, err := service.CheckIn(ctx, userID, landmarkID, 10.0, 106.0, false)
+		assert.EqualError(t, err, "db error")
+	})
+
+	t.Run("No ClanID Success", func(t *testing.T) {
+		violationRepo.ExpectedCalls = nil
+		landmarkRepo.ExpectedCalls = nil
+		userRepo.ExpectedCalls = nil
+		clanRepo.ExpectedCalls = nil
+		violationRepo.On("HasActiveFakeGPSBan", ctx, userID).Return(false, nil, nil).Once()
+		landmarkRepo.On("CheckDistance", ctx, landmarkID, 10.0, 106.0).Return(true, nil).Once()
+		landmarkRepo.On("FindByID", ctx, landmarkID).Return(&models.Landmark{ID: landmarkID}, nil).Once()
+		userRepo.On("FindByID", ctx, userID).Return(&models.User{ID: userID, ClanID: nil}, nil).Once()
+		res, err := service.CheckIn(ctx, userID, landmarkID, 10.0, 106.0, false)
+		assert.NoError(t, err)
+		assert.NotNil(t, res)
+	})
 }
