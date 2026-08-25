@@ -255,7 +255,7 @@ func TestCourtService_WithdrawCase_NotPlaintiff(t *testing.T) {
 
 	err := svc.WithdrawCase(context.Background(), caseID, wrongID)
 	assert.Error(t, err)
-	assert.Equal(t, "only the plaintiff can withdraw the case", err.Error())
+	assert.Equal(t, "unauthorized to withdraw this case", err.Error())
 }
 
 func TestCourtService_FileLawsuit_CannotSueYourself(t *testing.T) {
