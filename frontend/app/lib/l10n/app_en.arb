@@ -7,5 +7,17 @@
     "login": "Login",
     "@login": {
         "description": "Login button text"
+    },
+    "filter": "Filter",
+    "@filter": {
+        "description": "Filter button text"
+    },
+    "spiritualFilter": "Spiritual Match \ud83d\udd2e",
+    "@spiritualFilter": {
+        "description": "Spiritual filter section title"
+    },
+    "expandRadius": "Expand Radius",
+    "@expandRadius": {
+        "description": "Expand radius toggle label"
     }
 }
