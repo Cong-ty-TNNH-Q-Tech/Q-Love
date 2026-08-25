@@ -9,6 +9,9 @@ import (
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/api"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/cron"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/database"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/redis"
@@ -57,6 +60,17 @@ func setupApp(cfg *config.Config) (*fiber.App, error) {
 		Repanic:         true,
 		WaitForDelivery: true,
 	}))
+
+	// Cron Scheduler
+	clanRepo := repository.NewClanRepository(db)
+	landmarkRepo := repository.NewLandmarkRepository(db)
+	notifRepo := repository.NewNotificationRepository(db)
+	pushService := services.NewPushService()
+	walletRepo := repository.NewWalletRepository(db)
+	txManager := repository.NewTransactionManager(db)
+	clanCronService := services.NewClanCronService(clanRepo, landmarkRepo, notifRepo, pushService, walletRepo, txManager)
+	scheduler := cron.NewScheduler(clanCronService)
+	scheduler.Start()
 
 	// Health Check
 	app.Get("/health", func(c *fiber.Ctx) error {

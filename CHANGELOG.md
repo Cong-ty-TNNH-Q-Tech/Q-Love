@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [backend/server/api] Thêm endpoint `GET /api/v1/users/feed` hỗ trợ quét profile bán kính 50km (Issue #6).
 - [backend/server/services] Thêm thuật toán tương hợp `SpiritualService` dựa trên Cung hoàng đạo và Thần số học.
+- [backend/server/cron] Thêm `ClanCronService` để chạy Cronjob hàng tuần Reset điểm clan.
+- [backend/server/repository] Thêm `LandmarkRepository` và `PushService` mock.
 - [backend/server/api] Thêm endpoints Admin `/admin/v1` (Issue #40) để xem danh sách vi phạm, xoá ảnh, cấm người dùng và quản lý Tòa án.
 - [backend/server/models] Thêm model `CourtCase` và repository tương ứng.
 - [backend/server/api] Thêm JWT Middleware và cấu trúc API cho hệ thống.

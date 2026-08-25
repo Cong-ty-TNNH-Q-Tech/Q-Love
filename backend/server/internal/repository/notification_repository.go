@@ -13,7 +13,7 @@ import (
 )
 
 type NotificationRepository interface {
-	Create(ctx context.Context, notif *models.Notification) error
+	Create(ctx context.Context, notification *models.Notification) error
 	UpdateStatus(ctx context.Context, id uuid.UUID, status string) error
 }
 
@@ -25,10 +25,10 @@ func NewNotificationRepository(db *gorm.DB) NotificationRepository {
 	return &notificationRepository{db: db}
 }
 
-func (r *notificationRepository) Create(ctx context.Context, notif *models.Notification) error {
-	return GetDB(ctx, r.db).Create(notif).Error
+func (r *notificationRepository) Create(ctx context.Context, notification *models.Notification) error {
+	return GetDB(ctx, r.db).WithContext(ctx).Create(notification).Error
 }
 
 func (r *notificationRepository) UpdateStatus(ctx context.Context, id uuid.UUID, status string) error {
-	return GetDB(ctx, r.db).Model(&models.Notification{}).Where("id = ?", id).Update("status", status).Error
+	return GetDB(ctx, r.db).WithContext(ctx).Model(&models.Notification{}).Where("id = ?", id).Update("status", status).Error
 }
