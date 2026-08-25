@@ -45,6 +45,9 @@ func (m *mockUserViolationRepo) DeleteViolation(ctx context.Context, id uuid.UUI
 	}
 	return nil
 }
+func (m *mockUserViolationRepo) HasActiveFakeGPSBan(ctx context.Context, userID uuid.UUID) (bool, error) {
+	return false, nil
+}
 
 type mockCourtRepoAdmin struct {
 	UpdateCaseStatusFn func(ctx context.Context, id uuid.UUID, status models.CourtCaseStatus) error
