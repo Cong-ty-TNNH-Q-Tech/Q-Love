@@ -142,7 +142,7 @@ func TestUserPremiumRepository_FindByUserID(t *testing.T) {
 	repo := NewUserPremiumRepository(gormDB)
 	userID := uuid.New()
 
-	mock.ExpectQuery(`SELECT \* FROM "user_premiums" WHERE user_id = \$1 .*`).
+	mock.ExpectQuery(`SELECT \* FROM "user_premia" WHERE user_id = \$1 .*`).
 		WithArgs(userID, 1).
 		WillReturnRows(sqlmock.NewRows([]string{"user_id"}).AddRow(userID))
 
@@ -166,7 +166,7 @@ func TestUserPremiumRepository_Update(t *testing.T) {
 	}
 
 	mock.ExpectBegin()
-	mock.ExpectExec(`UPDATE "user_premiums" SET .*`).
+	mock.ExpectExec(`UPDATE "user_premia" SET .*`).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
