@@ -133,3 +133,39 @@ func TestUserRepository_Create(t *testing.T) {
 	err := repo.Create(context.Background(), user)
 	assert.NoError(t, err)
 }
+
+func TestUserRepository_GetFeed(t *testing.T) {
+	repo, mock := setupUserRepoMock(t)
+	userID := uuid.New()
+	
+	// mock FindByID
+	mock.ExpectQuery(`SELECT \* FROM "users" WHERE id = \$1.*`).
+		WithArgs(userID.String(), 1).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "location"}).AddRow(userID.String(), "POINT(0 0)"))
+
+	mock.ExpectQuery(`SELECT \* FROM "users" WHERE id != \$1 AND is_shadowbanned = \$2 AND ST_DWithin.*`).
+		WithArgs(userID.String(), false, "POINT(0 0)", 10).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(uuid.New().String()))
+
+	users, err := repo.GetFeed(context.Background(), userID, 10)
+	assert.NoError(t, err)
+	assert.Len(t, users, 1)
+}
+
+func TestUserRepository_GetSpiritualFeed(t *testing.T) {
+	repo, mock := setupUserRepoMock(t)
+	userID := uuid.New()
+	
+	// mock FindByID
+	mock.ExpectQuery(`SELECT \* FROM "users" WHERE id = \$1.*`).
+		WithArgs(userID.String(), 1).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "location"}).AddRow(userID.String(), "POINT(0 0)"))
+
+	mock.ExpectQuery(`SELECT \* FROM "users" WHERE id != \$1 AND is_shadowbanned = \$2 AND ST_DWithin.*`).
+		WithArgs(userID.String(), false, "POINT(0 0)", 10).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(uuid.New().String()))
+
+	users, err := repo.GetSpiritualFeed(context.Background(), userID, 10)
+	assert.NoError(t, err)
+	assert.Len(t, users, 1)
+}
