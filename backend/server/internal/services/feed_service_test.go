@@ -74,11 +74,14 @@ func TestFeedService_GetFeed_Default(t *testing.T) {
 
 func TestFeedService_GetFeed_Spiritual(t *testing.T) {
 	dob := time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)
+	dobLow := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) // Should have low score
 	repo := &mockUserRepository{
 		user: models.User{ID: uuid.New(), DOB: &dob},
 		feed: []models.User{
 			{ID: uuid.New(), DOB: &dob},
 			{ID: uuid.New(), DOB: &dob},
+			{ID: uuid.New(), DOB: &dobLow},
+			{ID: uuid.New(), DOB: nil},
 		},
 	}
 	spiritual := NewSpiritualService()
@@ -86,6 +89,7 @@ func TestFeedService_GetFeed_Spiritual(t *testing.T) {
 
 	res, err := svc.GetFeed(context.Background(), uuid.New(), "spiritual", 50)
 	assert.NoError(t, err)
+	// We expect 2 matches because dobLow will get score <= 70 and nil dob gets score <= 70
 	assert.Len(t, res, 2)
 }
 
@@ -97,6 +101,38 @@ func TestFeedService_GetFeed_UserErr(t *testing.T) {
 	svc := NewFeedService(repo, spiritual)
 
 	res, err := svc.GetFeed(context.Background(), uuid.New(), "default", 50)
+	assert.Error(t, err)
+	assert.Nil(t, res)
+}
+
+type mockUserRepositoryFeedErr struct {
+	mockUserRepository
+}
+
+func (m *mockUserRepositoryFeedErr) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+	return &m.user, nil
+}
+
+func TestFeedService_GetFeed_FeedErr(t *testing.T) {
+	repo := &mockUserRepositoryFeedErr{
+		mockUserRepository{err: errors.New("db error")},
+	}
+	spiritual := NewSpiritualService()
+	svc := NewFeedService(repo, spiritual)
+
+	res, err := svc.GetFeed(context.Background(), uuid.New(), "default", 50)
+	assert.Error(t, err)
+	assert.Nil(t, res)
+}
+
+func TestFeedService_GetFeed_SpiritualErr(t *testing.T) {
+	repo := &mockUserRepositoryFeedErr{
+		mockUserRepository{err: errors.New("db error")},
+	}
+	spiritual := NewSpiritualService()
+	svc := NewFeedService(repo, spiritual)
+
+	res, err := svc.GetFeed(context.Background(), uuid.New(), "spiritual", 50)
 	assert.Error(t, err)
 	assert.Nil(t, res)
 }
