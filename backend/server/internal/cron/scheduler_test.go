@@ -66,22 +66,22 @@ func TestScheduler_CronJob(t *testing.T) {
 	entries := scheduler.c.Entries()
 	assert.Len(t, entries, 2)
 
-	// Execute the clan job directly
-	entries[0].Job.Run()
+	// Execute all jobs directly
+	for _, entry := range entries {
+		entry.Job.Run()
+	}
 	assert.True(t, mockService.called)
-
-	// Execute the island job directly
-	entries[1].Job.Run()
 	assert.True(t, mockIslandService.called)
 
 	// Test error case
 	mockService.called = false
 	mockService.err = assert.AnError
-	entries[0].Job.Run()
-	assert.True(t, mockService.called)
-
 	mockIslandService.called = false
 	mockIslandService.err = assert.AnError
-	entries[1].Job.Run()
+
+	for _, entry := range entries {
+		entry.Job.Run()
+	}
+	assert.True(t, mockService.called)
 	assert.True(t, mockIslandService.called)
 }
