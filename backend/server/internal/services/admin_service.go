@@ -6,6 +6,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
@@ -98,5 +99,5 @@ func (s *adminService) OverrideCourtCase(ctx context.Context, caseID uuid.UUID, 
 		}
 
 		return nil
-	})
+	}, &sql.TxOptions{Isolation: sql.LevelSerializable})
 }
