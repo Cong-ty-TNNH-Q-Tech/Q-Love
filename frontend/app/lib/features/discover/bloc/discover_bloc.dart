@@ -40,14 +40,6 @@ class DiscoverBloc extends Bloc<DiscoverEvent, DiscoverState> {
     final currentState = state;
     if (currentState is DiscoverLoaded) {
       try {
-        final remainingProfiles = List<UserModel>.from(currentState.profiles)
-          ..removeWhere((p) => p.id == event.targetId);
-        
-        // Optimistic update
-        emit(DiscoverLoaded(
-            profiles: remainingProfiles,
-            hasReachedMax: remainingProfiles.isEmpty));
-
         final isMatch = await discoverRepository.swipe(event.targetId, event.action);
         
         if (isMatch && event.action == 'like') {
@@ -55,11 +47,10 @@ class DiscoverBloc extends Bloc<DiscoverEvent, DiscoverState> {
           final matchedUser = currentState.profiles.firstWhere((p) => p.id == event.targetId);
           emit(DiscoverMatch(
             matchedUser: matchedUser,
-            remainingProfiles: remainingProfiles,
+            remainingProfiles: currentState.profiles,
           ));
         }
       } catch (e) {
-        // Handle error if necessary, maybe revert optimistic update
         emit(DiscoverError(e.toString()));
       }
     }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:qlove/features/discover/bloc/discover_bloc.dart';
 import 'package:qlove/features/discover/bloc/discover_event.dart';
 import 'package:qlove/features/discover/bloc/discover_state.dart';
@@ -60,7 +61,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Bộ lọc',
+                AppLocalizations.of(context)!.filter,
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 20,
@@ -78,7 +79,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 },
               ),
               ListTile(
-                title: Text('Hệ Tâm linh 🔮', style: GoogleFonts.inter(color: Colors.white)),
+                title: Text(AppLocalizations.of(context)!.spiritualFilter, style: GoogleFonts.inter(color: Colors.white)),
                 trailing: _currentFilter == 'spiritual' ? const Icon(Icons.check, color: Color(0xFFFF3D6B)) : null,
                 onTap: () {
                   setState(() => _currentFilter = 'spiritual');
@@ -200,7 +201,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           const Icon(Icons.person_search, size: 100, color: Colors.white24),
           const SizedBox(height: 24),
           Text(
-            'Bút đã quẹt hết người rồi...\nMở rộng bán kính?',
+            'Bút đã quẹt hết người rồi...\n${AppLocalizations.of(context)!.expandRadius}?',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: Colors.white,
@@ -219,7 +220,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
             ),
             child: Text(
-              'Mở rộng bán kính',
+              AppLocalizations.of(context)!.expandRadius,
               style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
