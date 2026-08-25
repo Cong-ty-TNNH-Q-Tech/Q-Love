@@ -30,6 +30,11 @@ func (m *mockUserViolationRepoCourt) DeleteViolation(ctx context.Context, id uui
 	return args.Error(0)
 }
 
+func (m *mockUserViolationRepoCourt) GetViolations(ctx context.Context, page, limit int) ([]models.UserViolation, int64, error) {
+	args := m.Called(ctx, page, limit)
+	return args.Get(0).([]models.UserViolation), args.Get(1).(int64), args.Error(2)
+}
+
 func (m *mockUserViolationRepoCourt) CountActiveViolationsByType(ctx context.Context, userID uuid.UUID, vType string) (int64, error) {
 	return 0, nil
 }
