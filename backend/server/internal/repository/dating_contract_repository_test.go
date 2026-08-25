@@ -31,13 +31,14 @@ func setupDatingContractRepoMock(t *testing.T) (DatingContractRepository, sqlmoc
 func TestDatingContractRepository_Create(t *testing.T) {
 	repo, mock := setupDatingContractRepoMock(t)
 
+	appointmentTime := time.Now().Add(24 * time.Hour)
 	contract := &models.DatingContract{
 		ID:              uuid.New(),
-		UserID:          uuid.New(),
-		TargetUserID:    uuid.New(),
+		UserAID:         uuid.New(),
+		UserBID:         uuid.New(),
 		DepositAmount:   500.0,
 		Status:          "pending",
-		AppointmentTime: time.Now().Add(24 * time.Hour),
+		AppointmentTime: &appointmentTime,
 		CreatedAt:       time.Now(),
 		UpdatedAt:       time.Now(),
 	}
