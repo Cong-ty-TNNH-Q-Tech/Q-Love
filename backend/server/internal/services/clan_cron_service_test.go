@@ -6,6 +6,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"testing"
 
@@ -57,7 +58,7 @@ func (m *mockCronWalletRepo) CheckTransactionExists(ctx context.Context, txID uu
 func (m *mockCronWalletRepo) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error { return nil }
 
 type mockCronTxManager struct{}
-func (m *mockCronTxManager) WithTransaction(ctx context.Context, fn func(txCtx context.Context) error) error {
+func (m *mockCronTxManager) WithTransaction(ctx context.Context, fn func(txCtx context.Context) error, opts ...*sql.TxOptions) error {
 	return fn(ctx)
 }
 
