@@ -84,6 +84,7 @@ func (m *mockAuctionWalletRepo) UpdateBalance(ctx context.Context, userID uuid.U
 	return nil
 }
 func (m *mockAuctionWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
+func (m *mockAuctionWalletRepo) HoldBalance(ctx context.Context, userID uuid.UUID, amount float64, lock bool) error { return nil }
 
 type mockUserRepo struct {
 	users map[uuid.UUID]*models.User
