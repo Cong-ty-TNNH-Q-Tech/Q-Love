@@ -447,3 +447,64 @@ func TestCourtService_WithdrawCase_NotInVotingPhase(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "can only withdraw cases that are currently in voting phase", err.Error())
 }
+
+func TestCourtService_VoteCase_CreateVoteError(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	svc := NewCourtService(mockCourt, nil, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
+	
+	caseID := uuid.New()
+	jurorID := uuid.New()
+	
+	courtCase := &models.CourtCase{
+		ID:          caseID,
+		Status:      models.CourtCaseStatusVoting,
+		ExpiresAt:   time.Now().Add(10 * time.Hour),
+	}
+	
+	mockCourt.On("GetCaseByID", mock.Anything, caseID).Return(courtCase, nil)
+	mockCourt.On("HasUserVoted", mock.Anything, caseID, jurorID).Return(false, nil)
+	mockCourt.On("CreateVote", mock.Anything, mock.AnythingOfType("*models.CourtVote")).Return(errors.New("db error"))
+	
+	err := svc.VoteCase(context.Background(), caseID, jurorID, models.CourtVoteGuilty)
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+}
+
+func TestCourtService_WithdrawCase_UpdateError(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	svc := NewCourtService(mockCourt, nil, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
+	
+	caseID := uuid.New()
+	pID := uuid.New()
+	courtCase := &models.CourtCase{
+		PlaintiffID: pID,
+		Status: models.CourtCaseStatusVoting,
+	}
+	mockCourt.On("GetCaseByID", mock.Anything, mock.Anything).Return(courtCase, nil)
+	mockCourt.On("UpdateCaseStatus", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("db error"))
+	
+	err := svc.WithdrawCase(context.Background(), caseID, pID)
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+}
+
+func TestCourtService_FileLawsuit_TxFail(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	mockMatch := new(mockMatchRepoForCourt)
+	svc := NewCourtService(mockCourt, mockMatch, nil, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
+	
+	pID := uuid.New()
+	dID := uuid.New()
+	match := &models.Match{
+		User1ID: pID,
+		User2ID: dID,
+		StreakScore: 10,
+		LastInteractionAt: time.Now().Add(-50 * time.Hour),
+	}
+	mockMatch.On("FindByID", mock.Anything, mock.Anything).Return(match, nil)
+	mockCourt.On("CreateCase", mock.Anything, mock.Anything).Return(errors.New("db error"))
+	
+	_, err := svc.FileLawsuit(context.Background(), pID, dID, uuid.New(), "Ghosting")
+	assert.Error(t, err)
+	assert.Equal(t, "db error", err.Error())
+}
