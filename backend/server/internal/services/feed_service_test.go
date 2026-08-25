@@ -73,8 +73,8 @@ func TestFeedService_GetFeed_Default(t *testing.T) {
 }
 
 func TestFeedService_GetFeed_Spiritual(t *testing.T) {
-	dob := time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC)
-	dobLow := time.Date(2000, 8, 15, 0, 0, 0, 0, time.UTC) // Leo (Fire) -> score +5. Numerology 7 -> score +20. Total 65 <= 70.
+	dob := time.Date(1995, 5, 5, 0, 0, 0, 0, time.UTC) // Numerology 7
+	dobLow := time.Date(2007, 8, 15, 0, 0, 0, 0, time.UTC) // Leo (Fire) -> score +5. Numerology 5 -> score +20. Total 65 <= 70.
 	repo := &mockUserRepository{
 		user: models.User{ID: uuid.New(), DOB: &dob},
 		feed: []models.User{
