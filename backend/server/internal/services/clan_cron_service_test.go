@@ -56,6 +56,8 @@ func (m *mockCronWalletRepo) GetWalletForUpdate(ctx context.Context, userID uuid
 func (m *mockCronWalletRepo) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
 func (m *mockCronWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
 func (m *mockCronWalletRepo) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error { return nil }
+func (m *mockCronWalletRepo) HoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
+func (m *mockCronWalletRepo) ReleaseHoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
 
 type mockCronTxManager struct{}
 func (m *mockCronTxManager) WithTransaction(ctx context.Context, fn func(txCtx context.Context) error, opts ...*sql.TxOptions) error {
