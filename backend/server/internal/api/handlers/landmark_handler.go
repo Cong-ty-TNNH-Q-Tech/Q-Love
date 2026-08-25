@@ -5,10 +5,8 @@
 package handlers
 
 import (
-	"net/http"
-
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
@@ -20,53 +18,47 @@ func NewLandmarkHandler(landmarkService services.LandmarkService) *LandmarkHandl
 	return &LandmarkHandler{landmarkService: landmarkService}
 }
 
-func (h *LandmarkHandler) CheckIn(c *gin.Context) {
-	userIDStr := c.GetString("user_id")
+func (h *LandmarkHandler) CheckIn(c *fiber.Ctx) error {
+	userIDStr := c.Locals("user_id").(string)
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
-	landmarkIDStr := c.Param("landmark_id")
+	landmarkIDStr := c.Params("landmark_id")
 	landmarkID, err := uuid.Parse(landmarkIDStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid landmark_id format"})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid landmark_id format"})
 	}
 
 	var req struct {
-		Latitude  float64 `json:"latitude" binding:"required"`
-		Longitude float64 `json:"longitude" binding:"required"`
+		Latitude  float64 `json:"latitude"`
+		Longitude float64 `json:"longitude"`
 		IsMocked  bool    `json:"is_mocked"`
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	_, err = h.landmarkService.CheckIn(c.Request.Context(), userID, landmarkID, req.Latitude, req.Longitude, req.IsMocked)
+	_, err = h.landmarkService.CheckIn(c.Context(), userID, landmarkID, req.Latitude, req.Longitude, req.IsMocked)
 	if err != nil {
 		if err == services.ErrFakeGPS {
-			c.JSON(http.StatusForbidden, gin.H{
-				"code":      403,
-				"message":   "ERR_FAKE_GPS_DETECTED",
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"code":    403,
+				"message": "ERR_FAKE_GPS_DETECTED",
 			})
-			return
 		}
 		if err == services.ErrOutOfRange {
-			c.JSON(http.StatusBadRequest, gin.H{
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"code":    400,
 				"message": "ERR_OUT_OF_RANGE",
 			})
-			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message":           "Check-in successful. +10 points",
+	return c.JSON(fiber.Map{
+		"message": "Check-in successful. +10 points",
 	})
 }
