@@ -121,4 +121,32 @@ func TestClanCronService_RunWeeklyReset(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, "db error", err.Error())
 	})
+
+	t.Run("error updating landmarks", func(t *testing.T) {
+		topClan := &models.Clan{ID: uuid.New(), Name: "Top Clan"}
+		mockClanRepo := &mockCronClanRepo{topClan: topClan}
+		mockLandmarkRepo := &mockCronLandmarkRepo{updateErr: errors.New("landmark error")}
+		mockNotifRepo := &mockCronNotifRepo{}
+		mockPushService := &mockCronPushService{}
+
+		service := NewClanCronService(mockClanRepo, mockLandmarkRepo, mockNotifRepo, mockPushService)
+
+		err := service.RunWeeklyReset(context.Background())
+		assert.Error(t, err)
+		assert.Equal(t, "landmark error", err.Error())
+	})
+
+	t.Run("error resetting scores", func(t *testing.T) {
+		topClan := &models.Clan{ID: uuid.New(), Name: "Top Clan"}
+		mockClanRepo := &mockCronClanRepo{topClan: topClan, resetScoreErr: errors.New("reset error")}
+		mockLandmarkRepo := &mockCronLandmarkRepo{}
+		mockNotifRepo := &mockCronNotifRepo{}
+		mockPushService := &mockCronPushService{}
+
+		service := NewClanCronService(mockClanRepo, mockLandmarkRepo, mockNotifRepo, mockPushService)
+
+		err := service.RunWeeklyReset(context.Background())
+		assert.Error(t, err)
+		assert.Equal(t, "reset error", err.Error())
+	})
 }
