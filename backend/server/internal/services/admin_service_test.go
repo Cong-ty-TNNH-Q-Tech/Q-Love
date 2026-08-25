@@ -47,6 +47,7 @@ func (m *mockUserViolationRepo) DeleteViolation(ctx context.Context, id uuid.UUI
 
 type mockCourtCaseRepo struct {
 	UpdateStatusFn func(ctx context.Context, id uuid.UUID, status string) error
+	FindByIDFn     func(ctx context.Context, id uuid.UUID) (*models.CourtCase, error)
 }
 
 func (m *mockCourtCaseRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status string) error {
@@ -56,13 +57,39 @@ func (m *mockCourtCaseRepo) UpdateStatus(ctx context.Context, id uuid.UUID, stat
 	return nil
 }
 
+func (m *mockCourtCaseRepo) FindByID(ctx context.Context, id uuid.UUID) (*models.CourtCase, error) {
+	if m.FindByIDFn != nil {
+		return m.FindByIDFn(ctx, id)
+	}
+	return &models.CourtCase{}, nil
+}
+
+type mockWalletRepoAdmin struct {
+	UpdateBalanceFn func(ctx context.Context, userID uuid.UUID, amount float64) error
+}
+func (m *mockWalletRepoAdmin) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error {
+	if m.UpdateBalanceFn != nil {
+		return m.UpdateBalanceFn(ctx, userID, delta)
+	}
+	return nil
+}
+func (m *mockWalletRepoAdmin) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) { return nil, nil }
+func (m *mockWalletRepoAdmin) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
+func (m *mockWalletRepoAdmin) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
+func (m *mockWalletRepoAdmin) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error { return nil }
+
+type mockTxManagerAdmin struct{}
+func (m *mockTxManagerAdmin) WithTransaction(ctx context.Context, fn func(txCtx context.Context) error) error {
+	return fn(ctx)
+}
+
 func TestAdminService_GetViolations(t *testing.T) {
 	mockRepo := &mockUserViolationRepo{
 		GetViolationsFn: func(ctx context.Context, page, limit int) ([]models.UserViolation, int64, error) {
 			return []models.UserViolation{{ID: uuid.New()}}, 1, nil
 		},
 	}
-	service := NewAdminService(mockRepo, nil, nil)
+	service := NewAdminService(mockRepo, nil, nil, nil, nil)
 	
 	// Test normal case
 	violations, total, err := service.GetViolations(context.Background(), 1, 10)
@@ -85,23 +112,35 @@ func TestAdminService_GetViolations(t *testing.T) {
 
 func TestAdminService_BanUser(t *testing.T) {
 	mockRepo := &mockUserViolationRepo{}
-	service := NewAdminService(mockRepo, nil, nil)
+	service := NewAdminService(mockRepo, nil, nil, nil, nil)
 	err := service.BanUser(context.Background(), uuid.New())
 	assert.NoError(t, err)
 }
 
 func TestAdminService_DeleteViolationMedia(t *testing.T) {
 	mockRepo := &mockUserViolationRepo{}
-	service := NewAdminService(mockRepo, nil, nil)
+	service := NewAdminService(mockRepo, nil, nil, nil, nil)
 	err := service.DeleteViolationMedia(context.Background(), uuid.New(), "")
 	assert.NoError(t, err)
 }
 
 func TestAdminService_OverrideCourtCase(t *testing.T) {
-	mockRepo := &mockCourtCaseRepo{}
-	service := NewAdminService(nil, mockRepo, nil)
-	err := service.OverrideCourtCase(context.Background(), uuid.New(), "dismissed")
+	mockRepo := &mockCourtCaseRepo{
+		FindByIDFn: func(ctx context.Context, id uuid.UUID) (*models.CourtCase, error) {
+			return &models.CourtCase{
+				PlaintiffID: uuid.New(),
+				DefendantID: uuid.New(),
+			}, nil
+		},
+	}
+	mockWallet := &mockWalletRepoAdmin{}
+	mockTx := &mockTxManagerAdmin{}
+	service := NewAdminService(nil, mockRepo, nil, mockWallet, mockTx)
+	err := service.OverrideCourtCase(context.Background(), uuid.New(), "guilty")
 	assert.NoError(t, err)
+
+	err2 := service.OverrideCourtCase(context.Background(), uuid.New(), "innocent")
+	assert.NoError(t, err2)
 }
 
 type mockUserViolationRepoError struct {
@@ -116,7 +155,7 @@ func (m *mockUserViolationRepoError) DeleteViolation(ctx context.Context, id uui
 
 func TestAdminService_Errors(t *testing.T) {
 	mockUserRepo := &mockUserViolationRepoError{}
-	service := NewAdminService(mockUserRepo, nil, nil)
+	service := NewAdminService(mockUserRepo, nil, nil, nil, nil)
 	
 	err := service.BanUser(context.Background(), uuid.New())
 	assert.Error(t, err)
@@ -133,10 +172,14 @@ type mockCourtCaseRepoError struct {
 func (m *mockCourtCaseRepoError) UpdateStatus(ctx context.Context, id uuid.UUID, status string) error {
 	return errors.New("db error")
 }
+func (m *mockCourtCaseRepoError) FindByID(ctx context.Context, id uuid.UUID) (*models.CourtCase, error) {
+	return nil, errors.New("db error")
+}
 
 func TestAdminService_OverrideCourtCase_Error(t *testing.T) {
 	mockCourtRepo := &mockCourtCaseRepoError{}
-	service := NewAdminService(nil, mockCourtRepo, nil)
+	mockTx := &mockTxManagerAdmin{}
+	service := NewAdminService(nil, mockCourtRepo, nil, nil, mockTx)
 	
 	err := service.OverrideCourtCase(context.Background(), uuid.New(), "dismissed")
 	assert.Error(t, err)

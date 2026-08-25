@@ -14,6 +14,7 @@ import (
 
 type CourtCaseRepository interface {
 	UpdateStatus(ctx context.Context, id uuid.UUID, status string) error
+	FindByID(ctx context.Context, id uuid.UUID) (*models.CourtCase, error)
 }
 
 type courtCaseRepository struct {
@@ -26,4 +27,12 @@ func NewCourtCaseRepository(db *gorm.DB) CourtCaseRepository {
 
 func (r *courtCaseRepository) UpdateStatus(ctx context.Context, id uuid.UUID, status string) error {
 	return GetDB(ctx, r.db).Model(&models.CourtCase{}).Where("id = ?", id).Update("status", status).Error
+}
+
+func (r *courtCaseRepository) FindByID(ctx context.Context, id uuid.UUID) (*models.CourtCase, error) {
+	var courtCase models.CourtCase
+	if err := GetDB(ctx, r.db).Where("id = ?", id).First(&courtCase).Error; err != nil {
+		return nil, err
+	}
+	return &courtCase, nil
 }

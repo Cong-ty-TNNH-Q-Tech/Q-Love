@@ -119,7 +119,7 @@ func RegisterRoutes(app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, red
 
 	// Admin routes
 	courtCaseRepo := repository.NewCourtCaseRepository(db)
-	adminService := services.NewAdminService(violationRepo, courtCaseRepo, r2Client)
+	adminService := services.NewAdminService(violationRepo, courtCaseRepo, r2Client, walletRepo, txManager)
 	adminHandler := handlers.NewAdminHandler(adminService)
 	adminGroup := app.Group("/admin/v1", middleware.AdminMiddleware(cfg.JWTSecret))
 	adminGroup.Get("/violations", adminHandler.GetViolations)
