@@ -91,3 +91,67 @@ func TestClanRepository_FindByName(t *testing.T) {
 	assert.Equal(t, "Test Clan", clan.Name)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestClanRepository_GetTopWeeklyClan(t *testing.T) {
+	_, mock, repo := setupClanRepoTest(t)
+	ctx := context.Background()
+	clanID := uuid.New()
+
+	mock.ExpectQuery(`SELECT \* FROM "clans" ORDER BY weekly_score DESC LIMIT \$1`).
+		WithArgs(1).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "weekly_score"}).
+			AddRow(clanID, 100))
+
+	clan, err := repo.GetTopWeeklyClan(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, clan)
+	assert.Equal(t, clanID, clan.ID)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestClanRepository_GetTopWeeklyClan_NotFound(t *testing.T) {
+	_, mock, repo := setupClanRepoTest(t)
+	ctx := context.Background()
+
+	mock.ExpectQuery(`SELECT \* FROM "clans" ORDER BY weekly_score DESC LIMIT \$1`).
+		WithArgs(1).
+		WillReturnError(gorm.ErrRecordNotFound)
+
+	clan, err := repo.GetTopWeeklyClan(ctx)
+	assert.NoError(t, err)
+	assert.Nil(t, clan)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestClanRepository_ResetWeeklyScores(t *testing.T) {
+	_, mock, repo := setupClanRepoTest(t)
+	ctx := context.Background()
+
+	mock.ExpectBegin()
+	mock.ExpectExec(`UPDATE "clans" SET "weekly_score"=\$1,"updated_at"=\$2 WHERE weekly_score > 0`).
+		WithArgs(0, sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
+	err := repo.ResetWeeklyScores(ctx)
+	assert.NoError(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestClanRepository_GetMembers(t *testing.T) {
+	_, mock, repo := setupClanRepoTest(t)
+	ctx := context.Background()
+	clanID := uuid.New()
+	userID := uuid.New()
+
+	mock.ExpectQuery(`SELECT \* FROM "clan_members" WHERE clan_id = \$1`).
+		WithArgs(clanID).
+		WillReturnRows(sqlmock.NewRows([]string{"clan_id", "user_id", "role"}).
+			AddRow(clanID, userID, "leader"))
+
+	members, err := repo.GetMembers(ctx, clanID)
+	assert.NoError(t, err)
+	assert.Len(t, members, 1)
+	assert.Equal(t, userID, members[0].UserID)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
