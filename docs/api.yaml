@@ -1098,6 +1098,7 @@ paths:
               required:
                 - latitude
                 - longitude
+                - is_mocked
               properties:
                 latitude:
                   type: number
@@ -1105,6 +1106,9 @@ paths:
                 longitude:
                   type: number
                   example: 106.7009
+                is_mocked:
+                  type: boolean
+                  example: false
       responses:
         '200':
           description: Check-in hợp lệ — cộng 10 điểm cho Clan

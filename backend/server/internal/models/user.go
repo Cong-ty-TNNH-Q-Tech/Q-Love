@@ -20,6 +20,7 @@ type User struct {
 	Location       string         `gorm:"type:geometry(Point,4326)" json:"-"` // We ignore json export for raw WKB geometry
 	Level          int            `gorm:"default:1" json:"level"`
 	IsShadowbanned bool           `gorm:"default:false" json:"is_shadowbanned"`
+	ClanID         *uuid.UUID     `gorm:"type:uuid" json:"clan_id,omitempty"`
 	CreatedAt      time.Time      `json:"created_at"`
 	UpdatedAt      time.Time      `json:"updated_at"`
 	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`

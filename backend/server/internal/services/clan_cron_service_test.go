@@ -46,6 +46,10 @@ func (m *mockCronClanRepo) GetMembers(ctx context.Context, clanID uuid.UUID) ([]
 	return []models.ClanMember{{UserID: uuid.New()}}, nil
 }
 
+func (m *mockCronClanRepo) AddScore(ctx context.Context, clanID uuid.UUID, score int) error {
+	return nil
+}
+
 type mockCronWalletRepo struct {
 	updateErr error
 }
@@ -69,6 +73,12 @@ type mockCronLandmarkRepo struct {
 
 func (m *mockCronLandmarkRepo) UpdateAllOwners(ctx context.Context, ownerClan *models.Clan) error {
 	return m.updateErr
+}
+func (m *mockCronLandmarkRepo) CheckDistance(ctx context.Context, landmarkID uuid.UUID, lat, lng float64) (bool, error) {
+	return true, nil
+}
+func (m *mockCronLandmarkRepo) FindByID(ctx context.Context, id uuid.UUID) (*models.Landmark, error) {
+	return nil, nil
 }
 
 // Mock NotificationRepository

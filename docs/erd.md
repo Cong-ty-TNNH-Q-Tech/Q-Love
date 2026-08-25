@@ -147,6 +147,7 @@ erDiagram
 | `gender` | VARCHAR(10) | | Giới tính |
 | `location` | GEOMETRY(Point, 4326) | PostGIS | Tọa độ GPS hiện tại (dùng cho map) |
 | `level` | INT | Default 1 | Cấp độ người dùng |
+| `clan_id` | UUID | FK(clans.id), Nullable | Bang hội người dùng đang tham gia |
 | `is_shadowbanned` | BOOLEAN | Default false | Bị phạt bóp tương tác do Tòa án |
 | `created_at` | TIMESTAMP | Default NOW() | |
 | `deleted_at` | TIMESTAMP | | Hỗ trợ Xóa mềm (Soft Delete) |

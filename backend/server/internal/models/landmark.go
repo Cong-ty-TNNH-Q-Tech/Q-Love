@@ -11,6 +11,7 @@ import (
 type Landmark struct {
 	ID                 uuid.UUID `json:"id" gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
 	Name               string    `json:"name" gorm:"type:varchar(100)"`
+	Location           string    `json:"-" gorm:"type:geometry(Point,4326)"`
 	RadiusMeters       int       `json:"radius_meters" gorm:"default:200"`
 	CurrentOwnerClanID *uuid.UUID `json:"current_owner_clan_id" gorm:"type:uuid"`
 }

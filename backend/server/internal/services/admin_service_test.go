@@ -9,6 +9,7 @@ import (
 	"database/sql"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/google/uuid"
@@ -44,6 +45,9 @@ func (m *mockUserViolationRepo) DeleteViolation(ctx context.Context, id uuid.UUI
 		return m.DeleteViolationFn(ctx, id)
 	}
 	return nil
+}
+func (m *mockUserViolationRepo) HasActiveFakeGPSBan(ctx context.Context, userID uuid.UUID) (bool, *time.Time, error) {
+	return false, nil, nil
 }
 
 type mockCourtRepoAdmin struct {
