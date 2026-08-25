@@ -16,27 +16,27 @@ import (
 	"go.uber.org/zap"
 )
 
-type mockUserViolationRepo struct {
+type mockUserViolationRepoCourt struct {
 	mock.Mock
 }
 
-func (m *mockUserViolationRepo) Create(ctx context.Context, violation *models.UserViolation) error {
+func (m *mockUserViolationRepoCourt) Create(ctx context.Context, violation *models.UserViolation) error {
 	args := m.Called(ctx, violation)
 	return args.Error(0)
 }
 
-func (m *mockUserViolationRepo) CountActiveViolationsByType(ctx context.Context, userID uuid.UUID, vType string) (int64, error) {
+func (m *mockUserViolationRepoCourt) CountActiveViolationsByType(ctx context.Context, userID uuid.UUID, vType string) (int64, error) {
 	return 0, nil
 }
 
-func (m *mockUserViolationRepo) BanUser(ctx context.Context, userID uuid.UUID) error {
+func (m *mockUserViolationRepoCourt) BanUser(ctx context.Context, userID uuid.UUID) error {
 	args := m.Called(ctx, userID)
 	return args.Error(0)
 }
 
 func TestCourtWorker_EvaluateExpiredCases_Guilty(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
-	mockViolation := new(mockUserViolationRepo)
+	mockViolation := new(mockUserViolationRepoCourt)
 	logger := zap.NewNop()
 
 	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
@@ -70,7 +70,7 @@ func TestCourtWorker_EvaluateExpiredCases_Guilty(t *testing.T) {
 
 func TestCourtWorker_EvaluateExpiredCases_NotGuilty(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
-	mockViolation := new(mockUserViolationRepo)
+	mockViolation := new(mockUserViolationRepoCourt)
 	logger := zap.NewNop()
 
 	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
@@ -103,7 +103,7 @@ func TestCourtWorker_EvaluateExpiredCases_NotGuilty(t *testing.T) {
 
 func TestCourtWorker_Start(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
-	mockViolation := new(mockUserViolationRepo)
+	mockViolation := new(mockUserViolationRepoCourt)
 	logger := zap.NewNop()
 
 	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
@@ -119,7 +119,7 @@ func TestCourtWorker_Start(t *testing.T) {
 }
 func TestCourtWorker_EvaluateExpiredCases_RepoErrors(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
-	mockViolation := new(mockUserViolationRepo)
+	mockViolation := new(mockUserViolationRepoCourt)
 	logger := zap.NewNop()
 
 	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger, &mockWalletRepoCourt{}, &mockTxManagerCourt{})
@@ -138,7 +138,7 @@ func TestCourtWorker_EvaluateExpiredCases_RepoErrors(t *testing.T) {
 
 func TestCourtWorker_EvaluateExpiredCases_ViolationErrors(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
-	mockViolation := new(mockUserViolationRepo)
+	mockViolation := new(mockUserViolationRepoCourt)
 	logger := zap.NewNop()
 
 	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger, &mockWalletRepoCourt{}, &mockTxManagerCourt{})

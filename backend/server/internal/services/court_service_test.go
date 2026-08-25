@@ -14,12 +14,25 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"database/sql"
 )
 
 // Mocks
 
 type mockCourtRepo struct {
 	mock.Mock
+}
+
+type mockWalletRepoCourt struct{}
+func (m *mockWalletRepoCourt) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error { return nil }
+func (m *mockWalletRepoCourt) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) { return nil, nil }
+func (m *mockWalletRepoCourt) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
+func (m *mockWalletRepoCourt) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
+func (m *mockWalletRepoCourt) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error { return nil }
+
+type mockTxManagerCourt struct{}
+func (m *mockTxManagerCourt) WithTransaction(ctx context.Context, fn func(txCtx context.Context) error, opts ...*sql.TxOptions) error {
+	return fn(ctx)
 }
 
 func (m *mockCourtRepo) CreateCase(ctx context.Context, courtCase *models.CourtCase) error {
