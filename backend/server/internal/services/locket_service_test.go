@@ -49,6 +49,11 @@ func (m *mockMatchRepo) FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*mo
 	}
 	return m.match, nil
 }
+
+func (m *mockMatchRepo) FindByUsers(ctx context.Context, u1, u2 uuid.UUID) (*models.Match, error) {
+	return nil, nil
+}
+
 type mockChatRepo struct {
 	err error
 }

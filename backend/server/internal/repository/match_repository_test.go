@@ -156,3 +156,20 @@ func TestMatchRepository_SoftDelete(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestMatchRepository_FindByUsers(t *testing.T) {
+	repo, mock := setupMatchRepoMock(t)
+
+	user1ID := uuid.New()
+	user2ID := uuid.New()
+	matchID := uuid.New()
+
+	mock.ExpectQuery(`SELECT \* FROM "matches" WHERE .*`).
+		WithArgs(user1ID, user2ID, user2ID, user1ID, 1).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(matchID))
+
+	match, err := repo.FindByUsers(context.Background(), user1ID, user2ID)
+	assert.NoError(t, err)
+	assert.NotNil(t, match)
+	assert.Equal(t, matchID, match.ID)
+}
+

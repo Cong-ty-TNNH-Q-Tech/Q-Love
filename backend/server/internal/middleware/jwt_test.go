@@ -164,4 +164,35 @@ func TestAdminMiddleware(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, fiber.StatusUnauthorized, resp.StatusCode)
 	})
+
+	t.Run("Missing Auth Header", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/admin", nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusUnauthorized, resp.StatusCode)
+	})
+
+	t.Run("Invalid Auth Header Format", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/admin", nil)
+		req.Header.Set("Authorization", "Basic token123")
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusUnauthorized, resp.StatusCode)
+	})
+
+	t.Run("Invalid Algorithm", func(t *testing.T) {
+		token := jwt.NewWithClaims(jwt.SigningMethodNone, jwt.MapClaims{"sub": uuid.New().String(), "role": "admin"})
+		tokenString, _ := token.SignedString(jwt.UnsafeAllowNoneSignatureType)
+		req := httptest.NewRequest("GET", "/admin", nil)
+		req.Header.Set("Authorization", "Bearer "+tokenString)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusUnauthorized, resp.StatusCode)
+	})
+
+	t.Run("Empty Secret Panic", func(t *testing.T) {
+		assert.Panics(t, func() {
+			AdminMiddleware("")
+		})
+	})
 }

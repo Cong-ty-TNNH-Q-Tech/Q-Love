@@ -17,6 +17,8 @@ type WalletRepository interface {
 	CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error
 	GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error)
 	UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error
+	HoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error
+	ReleaseHoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error
 	CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error)
 }
 
@@ -55,6 +57,28 @@ func (r *walletRepository) UpdateBalance(ctx context.Context, userID uuid.UUID, 
 		Model(&models.UserWallet{}).
 		Where("user_id = ?", userID).
 		UpdateColumn("balance", gorm.Expr("balance + ?", delta)).Error
+}
+
+func (r *walletRepository) HoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error {
+	db := GetDB(ctx, r.db)
+	return db.WithContext(ctx).
+		Model(&models.UserWallet{}).
+		Where("user_id = ?", userID).
+		Updates(map[string]interface{}{
+			"balance":      gorm.Expr("balance - ?", amount),
+			"hold_balance": gorm.Expr("hold_balance + ?", amount),
+		}).Error
+}
+
+func (r *walletRepository) ReleaseHoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error {
+	db := GetDB(ctx, r.db)
+	return db.WithContext(ctx).
+		Model(&models.UserWallet{}).
+		Where("user_id = ?", userID).
+		Updates(map[string]interface{}{
+			"hold_balance": gorm.Expr("hold_balance - ?", amount),
+			"balance":      gorm.Expr("balance + ?", amount),
+		}).Error
 }
 
 func (r *walletRepository) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) {

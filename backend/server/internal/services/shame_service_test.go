@@ -65,6 +65,12 @@ func (m *shameMockWalletRepo) AddCommission(ctx context.Context, userID uuid.UUI
 func (m *shameMockWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) {
 	return false, nil
 }
+func (m *shameMockWalletRepo) HoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error {
+	return nil
+}
+func (m *shameMockWalletRepo) ReleaseHoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error {
+	return nil
+}
 
 // --- Tests ---
 

@@ -250,7 +250,7 @@ erDiagram
 
 ### 2.3. O2O & Gamification (Khế Ước, Bản Đồ, Tòa Án)
 
-**Bảng `dating_contracts`** (Khế ước đi Date)
+**Bảng `dating_contracts`** (Khế ước Hẹn hò - Dating Contract)
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | UUID | Primary Key | |
