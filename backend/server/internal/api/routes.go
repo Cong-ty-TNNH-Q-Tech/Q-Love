@@ -131,8 +131,8 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 	auctionGroup.Post("/:id/bid", auctionHandler.PlaceBid)
 
 	// Admin routes
-	courtCaseRepo := repository.NewCourtCaseRepository(db)
-	adminService := services.NewAdminService(violationRepo, courtCaseRepo, r2Client, walletRepo, txManager)
+	courtRepo := repository.NewCourtRepository(db)
+	adminService := services.NewAdminService(violationRepo, courtRepo, r2Client, walletRepo, txManager)
 	adminHandler := handlers.NewAdminHandler(adminService)
 	adminGroup := app.Group("/admin/v1", middleware.AdminMiddleware(cfg.JWTSecret))
 	adminGroup.Get("/violations", adminHandler.GetViolations)
@@ -164,7 +164,6 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 	matchGroup.Delete("/:match_id", matchHandler.Unmatch)
 
 	// Court System
-	courtRepo := repository.NewCourtRepository(db)
 	courtService := services.NewCourtService(courtRepo, matchRepo, redisClient, walletRepo, txManager)
 	courtHandler := handlers.NewCourtHandler(courtService)
 
