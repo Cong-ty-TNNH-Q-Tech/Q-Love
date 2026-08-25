@@ -193,6 +193,38 @@ func TestDatingContractService_CancelContract_FreePremium(t *testing.T) {
 	assert.Equal(t, 0, premium.FreeCancelLeft)
 }
 
+func TestDatingContractService_AcceptContract(t *testing.T) {
+	contractRepo := new(mockDatingContractRepo)
+	walletRepo := new(mockWalletRepo)
+	matchRepo := new(mockMatchRepo)
+	chatRepo := new(mockChatRepo)
+	premiumRepo := new(mockPremiumRepo)
+	txManager := new(mockTxManager)
+
+	service := services.NewDatingContractService(contractRepo, walletRepo, matchRepo, chatRepo, premiumRepo, txManager)
+	ctx := context.Background()
+	userB := uuid.New()
+	contractID := uuid.New()
+
+	contract := &models.DatingContract{
+		ID:            contractID,
+		UserBID:       userB,
+		DepositAmount: 100.0,
+		Status:        "pending",
+	}
+
+	contractRepo.On("GetByIDForUpdate", ctx, contractID).Return(contract, nil)
+	walletRepo.On("GetWalletForUpdate", ctx, userB).Return(&models.UserWallet{UserID: userB, Balance: 500}, nil)
+	walletRepo.On("HoldBalance", ctx, userB, 100.0).Return(nil)
+	walletRepo.On("CreateTransaction", ctx, mock.AnythingOfType("*models.WalletTransaction")).Return(nil)
+	contractRepo.On("Update", ctx, mock.AnythingOfType("*models.DatingContract")).Return(nil)
+
+	acceptedContract, err := service.AcceptContract(ctx, contractID, userB)
+	assert.NoError(t, err)
+	assert.NotNil(t, acceptedContract)
+	assert.Equal(t, "active", acceptedContract.Status)
+}
+
 func TestDatingContractService_ScanContract(t *testing.T) {
 	contractRepo := new(mockDatingContractRepo)
 	walletRepo := new(mockWalletRepo)
