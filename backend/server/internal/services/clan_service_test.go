@@ -44,7 +44,7 @@ func (m *mockClanRepo) GetTopWeeklyClan(ctx context.Context) (*models.Clan, erro
 }
 
 func (m *mockClanRepo) ResetWeeklyScores(ctx context.Context) error {
-	return m.resetWeeklyErr
+	return nil
 }
 func (m *mockClanRepo) AddScore(ctx context.Context, clanID uuid.UUID, score int) error {
 	return nil

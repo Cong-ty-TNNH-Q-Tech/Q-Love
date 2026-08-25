@@ -43,6 +43,9 @@ func (m *mockUserViolationRepoCourt) BanUser(ctx context.Context, userID uuid.UU
 	args := m.Called(ctx, userID)
 	return args.Error(0)
 }
+func (m *mockUserViolationRepoCourt) HasActiveFakeGPSBan(ctx context.Context, userID uuid.UUID) (bool, *time.Time, error) {
+	return false, nil, nil
+}
 
 func TestCourtWorker_EvaluateExpiredCases_Guilty(t *testing.T) {
 	mockCourt := new(mockCourtRepo)
