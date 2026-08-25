@@ -90,6 +90,8 @@ func (s *authService) SendOTP(ctx context.Context, phone string) error {
 
 func (s *authService) VerifyOTP(ctx context.Context, phone, otp string) (*models.User, string, string, bool, error) {
 	otpKey := fmt.Sprintf("otp:%s", phone)
+	attemptsKey := fmt.Sprintf("otp_attempts:%s", phone)
+
 	cachedOTP, err := s.redis.Get(ctx, otpKey).Result()
 	if err == redis.Nil {
 		return nil, "", "", false, errors.New("ERR_INVALID_OTP")
@@ -98,11 +100,19 @@ func (s *authService) VerifyOTP(ctx context.Context, phone, otp string) (*models
 	}
 
 	if cachedOTP != otp {
+		attempts, _ := s.redis.Incr(ctx, attemptsKey).Result()
+		s.redis.Expire(ctx, attemptsKey, 120*time.Second)
+		if attempts >= 3 {
+			s.redis.Del(ctx, otpKey)
+			s.redis.Del(ctx, attemptsKey)
+			return nil, "", "", false, errors.New("ERR_TOO_MANY_ATTEMPTS")
+		}
 		return nil, "", "", false, errors.New("ERR_INVALID_OTP")
 	}
 
 	// Remove OTP after successful verification
 	s.redis.Del(ctx, otpKey)
+	s.redis.Del(ctx, attemptsKey)
 
 	// Check if user exists
 	user, err := s.userRepo.FindByPhone(ctx, phone)

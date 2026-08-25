@@ -8,7 +8,9 @@ import (
 	"strings"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
 type AuthHandler struct {
@@ -46,6 +48,7 @@ func (h *AuthHandler) SendOTP(c *fiber.Ctx) error {
 				"error": err.Error(),
 			})
 		}
+		logger.Log.Error("Failed to send OTP", zap.Error(err), zap.String("phone", req.Phone))
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to send OTP",
 		})
