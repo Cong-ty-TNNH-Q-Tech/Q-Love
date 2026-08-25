@@ -14,6 +14,7 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
+	"database/sql"
 )
 
 type CourtService interface {
