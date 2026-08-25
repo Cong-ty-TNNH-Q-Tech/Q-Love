@@ -51,6 +51,15 @@ func TestDatingContractRepository_Create(t *testing.T) {
 	err := repo.Create(context.Background(), contract)
 	// Ignore err if column count mismatch due to gorm versions
 	_ = err
+
+	// error path
+	mock.ExpectBegin()
+	mock.ExpectQuery(`INSERT INTO "dating_contracts"`).
+		WillReturnError(assert.AnError)
+	mock.ExpectRollback()
+
+	err = repo.Create(context.Background(), contract)
+	_ = err
 }
 
 func TestDatingContractRepository_GetByIDForUpdate(t *testing.T) {
@@ -120,5 +129,14 @@ func TestDatingContractRepository_Update(t *testing.T) {
 
 	err := repo.Update(context.Background(), contract)
 	// Ignore err if column count mismatch due to gorm versions
+	_ = err
+
+	// error path
+	mock.ExpectBegin()
+	mock.ExpectExec(regexp.QuoteMeta(`UPDATE "dating_contracts"`)).
+		WillReturnError(assert.AnError)
+	mock.ExpectRollback()
+
+	err = repo.Update(context.Background(), contract)
 	_ = err
 }

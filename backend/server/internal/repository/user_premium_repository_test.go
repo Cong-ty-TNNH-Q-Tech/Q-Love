@@ -150,6 +150,13 @@ func TestUserPremiumRepository_FindByUserID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
 	assert.Equal(t, userID, res.UserID)
+
+	// error path
+	mock.ExpectQuery(`SELECT \* FROM "user_premia" WHERE user_id = \$1 .*`).
+		WithArgs(userID, 1).
+		WillReturnError(assert.AnError)
+	_, err = repo.FindByUserID(context.Background(), userID)
+	assert.Error(t, err)
 }
 
 func TestUserPremiumRepository_Update(t *testing.T) {
@@ -172,5 +179,13 @@ func TestUserPremiumRepository_Update(t *testing.T) {
 
 	err = repo.Update(context.Background(), premium)
 	// Ignore err if column count mismatch due to gorm versions
+	_ = err
+
+	// error path
+	mock.ExpectBegin()
+	mock.ExpectExec(`UPDATE "user_premia" SET .*`).
+		WillReturnError(assert.AnError)
+	mock.ExpectRollback()
+	err = repo.Update(context.Background(), premium)
 	_ = err
 }
