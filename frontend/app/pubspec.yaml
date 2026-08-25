@@ -27,7 +27,7 @@ dependencies:
   app_links: ^6.1.1
   fl_chart: ^0.66.0
   just_audio: ^0.9.36
-  flutter_card_swiper: any
+  flutter_card_swiper: ^3.0.0
   home_widget: ^0.3.1
   firebase_core: ^2.24.2
   firebase_messaging: ^14.7.9
