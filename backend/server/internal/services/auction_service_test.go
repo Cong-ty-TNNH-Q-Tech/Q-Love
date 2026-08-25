@@ -92,6 +92,9 @@ func (m *mockUserRepo) GetTopUsersByScore(ctx context.Context, limit int) ([]uui
 	}
 	return users, nil
 }
+func (m *mockUserRepo) Create(ctx context.Context, user *models.User) error { return nil }
+func (m *mockUserRepo) FindByPhone(ctx context.Context, phone string) (*models.User, error) { return nil, nil }
+func (m *mockUserRepo) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error) { return nil, nil }
 
 type mockChatLockRepo struct {
 	err error
@@ -183,6 +186,9 @@ type mockUserRepoError struct{}
 func (m *mockUserRepoError) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) {
 	return nil, assert.AnError
 }
+func (m *mockUserRepoError) Create(ctx context.Context, user *models.User) error { return nil }
+func (m *mockUserRepoError) FindByPhone(ctx context.Context, phone string) (*models.User, error) { return nil, nil }
+func (m *mockUserRepoError) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error) { return nil, nil }
 
 func TestAuctionService_StartDailyAuctions_UserRepoError(t *testing.T) {
 	auctionRepo := &mockAuctionRepo{}

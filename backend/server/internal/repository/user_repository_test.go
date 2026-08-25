@@ -14,6 +14,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 )
 
 func setupUserRepoMock(t *testing.T) (UserRepository, sqlmock.Sqlmock) {
@@ -59,4 +61,75 @@ func TestUserRepository_GetTopUsersByScore_Error(t *testing.T) {
 	users, err := repo.GetTopUsersByScore(context.Background(), 5)
 	assert.Error(t, err)
 	assert.Nil(t, users)
+}
+
+func TestUserRepository_FindByPhone(t *testing.T) {
+	repo, mock := setupUserRepoMock(t)
+	phone := "0901234567"
+	userID := uuid.New()
+
+	rows := sqlmock.NewRows([]string{"id", "phone"}).
+		AddRow(userID.String(), phone)
+
+	mock.ExpectQuery(`SELECT \* FROM "users" WHERE phone = \$1.*`).
+		WithArgs(phone, 1).
+		WillReturnRows(rows)
+
+	user, err := repo.FindByPhone(context.Background(), phone)
+	assert.NoError(t, err)
+	if user != nil {
+		assert.Equal(t, userID, user.ID)
+		assert.Equal(t, phone, user.Phone)
+	}
+}
+
+func TestUserRepository_FindByPhone_NotFound(t *testing.T) {
+	repo, mock := setupUserRepoMock(t)
+	phone := "0901234567"
+
+	mock.ExpectQuery(`SELECT \* FROM "users" WHERE phone = \$1.*`).
+		WithArgs(phone, 1).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "phone"})) // Empty rows
+
+	user, err := repo.FindByPhone(context.Background(), phone)
+	assert.NoError(t, err)
+	assert.Nil(t, user) // Should return nil if not found
+}
+
+func TestUserRepository_FindByID(t *testing.T) {
+	repo, mock := setupUserRepoMock(t)
+	userID := uuid.New()
+
+	rows := sqlmock.NewRows([]string{"id"}).
+		AddRow(userID.String())
+
+	mock.ExpectQuery(`SELECT \* FROM "users" WHERE id = \$1.*`).
+		WithArgs(userID.String(), 1).
+		WillReturnRows(rows)
+
+	user, err := repo.FindByID(context.Background(), userID)
+	assert.NoError(t, err)
+	if user != nil {
+		assert.Equal(t, userID, user.ID)
+	}
+}
+
+func TestUserRepository_Create(t *testing.T) {
+	repo, mock := setupUserRepoMock(t)
+	userID := uuid.New()
+	
+	// Create doesn't use ExpectQuery, it uses ExpectExec unless RETURNING is used, but gorm often uses RETURNING id for postgres.
+	// We'll just mock the BEGIN and COMMIT, and the INSERT
+	mock.ExpectBegin()
+	mock.ExpectQuery("^INSERT INTO \"users\"").
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(userID.String()))
+	mock.ExpectCommit()
+
+	user := &models.User{
+		ID:    userID,
+		Phone: "0901234567",
+	}
+
+	err := repo.Create(context.Background(), user)
+	assert.NoError(t, err)
 }
