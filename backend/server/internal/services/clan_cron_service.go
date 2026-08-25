@@ -22,6 +22,8 @@ type clanCronService struct {
 	landmarkRepo repository.LandmarkRepository
 	notifRepo    repository.NotificationRepository
 	pushService  PushService
+	walletRepo   repository.WalletRepository
+	txManager    repository.TransactionManager
 }
 
 func NewClanCronService(
@@ -29,12 +31,16 @@ func NewClanCronService(
 	landmarkRepo repository.LandmarkRepository,
 	notifRepo repository.NotificationRepository,
 	pushService PushService,
+	walletRepo repository.WalletRepository,
+	txManager repository.TransactionManager,
 ) ClanCronService {
 	return &clanCronService{
 		clanRepo:     clanRepo,
 		landmarkRepo: landmarkRepo,
 		notifRepo:    notifRepo,
 		pushService:  pushService,
+		walletRepo:   walletRepo,
+		txManager:    txManager,
 	}
 }
 
@@ -48,9 +54,36 @@ func (s *clanCronService) RunWeeklyReset(ctx context.Context) error {
 		return err
 	}
 
-	// 2. Update Landmarks owner
-	if err := s.landmarkRepo.UpdateAllOwners(ctx, topClan); err != nil {
-		logger.Log.Error("Failed to update landmarks owner", zap.Error(err))
+	// 2. Use Transaction to reward members and reset scores
+	err = s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
+		// Reward members of top clan
+		if topClan != nil {
+			members, err := s.clanRepo.GetMembers(txCtx, topClan.ID)
+			if err != nil {
+				return err
+			}
+			for _, m := range members {
+				if err := s.walletRepo.UpdateBalance(txCtx, m.UserID, 100); err != nil { // 100 Xu reward
+					return err
+				}
+			}
+		}
+
+		// Update Landmarks owner
+		if err := s.landmarkRepo.UpdateAllOwners(txCtx, topClan); err != nil {
+			return err
+		}
+
+		// Reset scores
+		if err := s.clanRepo.ResetWeeklyScores(txCtx); err != nil {
+			return err
+		}
+		
+		return nil
+	})
+
+	if err != nil {
+		logger.Log.Error("Failed to process weekly reset in transaction", zap.Error(err))
 		return err
 	}
 
@@ -61,12 +94,6 @@ func (s *clanCronService) RunWeeklyReset(ctx context.Context) error {
 			"type": "clan_weekly_result",
 			"clan_id": topClan.ID.String(),
 		})
-	}
-
-	// 4. Reset scores
-	if err := s.clanRepo.ResetWeeklyScores(ctx); err != nil {
-		logger.Log.Error("Failed to reset weekly scores", zap.Error(err))
-		return err
 	}
 
 	logger.Log.Info("Finished Clan Weekly Reset Cronjob successfully")

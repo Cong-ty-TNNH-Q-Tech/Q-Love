@@ -41,6 +41,26 @@ func (m *mockCronClanRepo) FindByName(ctx context.Context, name string) (*models
 	return nil, nil
 }
 
+func (m *mockCronClanRepo) GetMembers(ctx context.Context, clanID uuid.UUID) ([]models.ClanMember, error) {
+	return []models.ClanMember{{UserID: uuid.New()}}, nil
+}
+
+type mockCronWalletRepo struct {
+	updateErr error
+}
+func (m *mockCronWalletRepo) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error {
+	return m.updateErr
+}
+func (m *mockCronWalletRepo) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) { return nil, nil }
+func (m *mockCronWalletRepo) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
+func (m *mockCronWalletRepo) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
+func (m *mockCronWalletRepo) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error { return nil }
+
+type mockCronTxManager struct{}
+func (m *mockCronTxManager) WithTransaction(ctx context.Context, fn func(txCtx context.Context) error) error {
+	return fn(ctx)
+}
+
 // Mock LandmarkRepository
 type mockCronLandmarkRepo struct {
 	updateErr error
@@ -89,7 +109,7 @@ func TestClanCronService_RunWeeklyReset(t *testing.T) {
 		mockNotifRepo := &mockCronNotifRepo{}
 		mockPushService := &mockCronPushService{}
 
-		service := NewClanCronService(mockClanRepo, mockLandmarkRepo, mockNotifRepo, mockPushService)
+		service := NewClanCronService(mockClanRepo, mockLandmarkRepo, mockNotifRepo, mockPushService, &mockCronWalletRepo{}, &mockCronTxManager{})
 
 		err := service.RunWeeklyReset(context.Background())
 		assert.NoError(t, err)
@@ -102,7 +122,7 @@ func TestClanCronService_RunWeeklyReset(t *testing.T) {
 		mockNotifRepo := &mockCronNotifRepo{}
 		mockPushService := &mockCronPushService{}
 
-		service := NewClanCronService(mockClanRepo, mockLandmarkRepo, mockNotifRepo, mockPushService)
+		service := NewClanCronService(mockClanRepo, mockLandmarkRepo, mockNotifRepo, mockPushService, &mockCronWalletRepo{}, &mockCronTxManager{})
 
 		err := service.RunWeeklyReset(context.Background())
 		assert.NoError(t, err)
@@ -115,7 +135,7 @@ func TestClanCronService_RunWeeklyReset(t *testing.T) {
 		mockNotifRepo := &mockCronNotifRepo{}
 		mockPushService := &mockCronPushService{}
 
-		service := NewClanCronService(mockClanRepo, mockLandmarkRepo, mockNotifRepo, mockPushService)
+		service := NewClanCronService(mockClanRepo, mockLandmarkRepo, mockNotifRepo, mockPushService, &mockCronWalletRepo{}, &mockCronTxManager{})
 
 		err := service.RunWeeklyReset(context.Background())
 		assert.Error(t, err)
@@ -129,7 +149,7 @@ func TestClanCronService_RunWeeklyReset(t *testing.T) {
 		mockNotifRepo := &mockCronNotifRepo{}
 		mockPushService := &mockCronPushService{}
 
-		service := NewClanCronService(mockClanRepo, mockLandmarkRepo, mockNotifRepo, mockPushService)
+		service := NewClanCronService(mockClanRepo, mockLandmarkRepo, mockNotifRepo, mockPushService, &mockCronWalletRepo{}, &mockCronTxManager{})
 
 		err := service.RunWeeklyReset(context.Background())
 		assert.Error(t, err)
@@ -143,10 +163,23 @@ func TestClanCronService_RunWeeklyReset(t *testing.T) {
 		mockNotifRepo := &mockCronNotifRepo{}
 		mockPushService := &mockCronPushService{}
 
-		service := NewClanCronService(mockClanRepo, mockLandmarkRepo, mockNotifRepo, mockPushService)
+		service := NewClanCronService(mockClanRepo, mockLandmarkRepo, mockNotifRepo, mockPushService, &mockCronWalletRepo{}, &mockCronTxManager{})
 
 		err := service.RunWeeklyReset(context.Background())
 		assert.Error(t, err)
 		assert.Equal(t, "reset error", err.Error())
+	})
+
+	t.Run("error updating wallet balance", func(t *testing.T) {
+		topClan := &models.Clan{ID: uuid.New(), Name: "Top Clan"}
+		mockClanRepo := &mockCronClanRepo{topClan: topClan}
+		mockWalletRepo := &mockCronWalletRepo{updateErr: errors.New("wallet update err")}
+		mockLandmarkRepo := &mockCronLandmarkRepo{}
+		
+		service := NewClanCronService(mockClanRepo, mockLandmarkRepo, &mockCronNotifRepo{}, &mockCronPushService{}, mockWalletRepo, &mockCronTxManager{})
+		
+		err := service.RunWeeklyReset(context.Background())
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "wallet update err")
 	})
 }
