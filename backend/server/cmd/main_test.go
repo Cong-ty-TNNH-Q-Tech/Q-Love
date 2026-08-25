@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -25,7 +26,7 @@ func TestMainServer(t *testing.T) {
 	cfg.DatabaseDSN = "skip"
 	cfg.RedisURL = "skip"
 
-	app, err := setupApp(cfg)
+	app, err := setupApp(context.Background(), cfg)
 	if err != nil {
 		t.Fatalf("setupApp failed: %v", err)
 	}

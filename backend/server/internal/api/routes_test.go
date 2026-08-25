@@ -5,6 +5,7 @@
 package api
 
 import (
+	"context"
 	"net/http/httptest"
 	"testing"
 
@@ -29,7 +30,7 @@ func TestRegisterRoutes(t *testing.T) {
 	var db *gorm.DB
 	var redisClient *redis.Client
 
-	RegisterRoutes(app, db, r2Client, redisClient, cfg)
+	RegisterRoutes(context.Background(), app, db, r2Client, redisClient, cfg)
 
 	// test wingmans route
 	req := httptest.NewRequest("POST", "/api/v1/wingman/referrals", nil)

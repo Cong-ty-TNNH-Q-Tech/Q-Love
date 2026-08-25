@@ -299,6 +299,7 @@ erDiagram
 | `reason` | VARCHAR(100) | | Lý do kiện (Ghosting, Trap...) |
 | `status` | VARCHAR(20) | | `voting`, `guilty`, `not_guilty`, `settled` (Hòa giải) |
 | `created_at` | TIMESTAMP | Default NOW() | |
+| `expires_at` | TIMESTAMP | | Thời điểm kết thúc vụ kiện (12h) |
 | `deleted_at` | TIMESTAMP | | Hỗ trợ Xóa mềm (Soft Delete) |
 
 **Bảng `court_votes`** (Phiếu bầu của Bồi thẩm đoàn)
