@@ -79,8 +79,7 @@ func (r *userRepository) GetSpiritualFeed(ctx context.Context, userID uuid.UUID,
 		Where("id != ?", userID).
 		Where("is_shadowbanned = ?", false).
 		Where("ST_DWithin(location::geography, ?::geography, ?)", user.Location, radius).
-		Where("calculate_spiritual_match_score(dob, ?) > 70", user.DOB).
-		Limit(50).
+		Limit(1000).
 		Find(&feed).Error
 		
 	return feed, err

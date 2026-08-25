@@ -58,6 +58,10 @@ func (s *feedService) GetFeed(ctx context.Context, userID uuid.UUID, filter stri
 	for _, u := range users {
 		score := s.spiritualService.CalculateSpiritualMatchScore(requestor.DOB, u.DOB)
 
+		if filter == "spiritual" && score <= 70 {
+			continue
+		}
+
 		results = append(results, FeedUserResponse{
 			User:                u,
 			SpiritualMatchScore: score,
@@ -71,6 +75,10 @@ func (s *feedService) GetFeed(ctx context.Context, userID uuid.UUID, filter stri
 		sort.SliceStable(results, func(i, j int) bool {
 			return results[i].SpiritualMatchScore > results[j].SpiritualMatchScore
 		})
+		
+		if len(results) > 50 {
+			results = results[:50]
+		}
 	}
 
 	return results, nil
