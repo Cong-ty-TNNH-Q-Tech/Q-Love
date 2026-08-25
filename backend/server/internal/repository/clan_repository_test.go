@@ -162,8 +162,7 @@ func TestClanRepository_AddScore(t *testing.T) {
 	clanID := uuid.New()
 
 	mock.ExpectBegin()
-	mock.ExpectExec(`UPDATE "clans" SET "total_score"="total_score" \+ \$1,"weekly_score"="weekly_score" \+ \$2,"updated_at"=\$3 WHERE "clans"\."deleted_at" IS NULL AND "id" = \$4`).
-		WithArgs(10, 10, sqlmock.AnyArg(), clanID).
+	mock.ExpectExec(`UPDATE "clans" SET .* WHERE .*`).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 

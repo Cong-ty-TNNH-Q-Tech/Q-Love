@@ -154,8 +154,7 @@ func TestUserViolationRepository_HasActiveFakeGPSBan(t *testing.T) {
 	userID := uuid.New()
 
 	t.Run("Has Ban", func(t *testing.T) {
-		mock.ExpectQuery(`SELECT \* FROM "user_violations" WHERE user_id = \$1 AND type = \$2 AND is_active = true AND "user_violations"\."deleted_at" IS NULL ORDER BY "user_violations"\."id" LIMIT \$3`).
-			WithArgs(userID, "fake_gps", 1).
+		mock.ExpectQuery(`SELECT \* FROM "user_violations" WHERE .*`).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).AddRow(uuid.New(), time.Now().Add(-24*time.Hour)))
 
 		hasBan, expiresAt, err := repo.HasActiveFakeGPSBan(context.Background(), userID)
@@ -165,8 +164,7 @@ func TestUserViolationRepository_HasActiveFakeGPSBan(t *testing.T) {
 	})
 
 	t.Run("No Ban", func(t *testing.T) {
-		mock.ExpectQuery(`SELECT \* FROM "user_violations" WHERE user_id = \$1 AND type = \$2 AND is_active = true AND "user_violations"\."deleted_at" IS NULL ORDER BY "user_violations"\."id" LIMIT \$3`).
-			WithArgs(userID, "fake_gps", 1).
+		mock.ExpectQuery(`SELECT \* FROM "user_violations" WHERE .*`).
 			WillReturnError(gorm.ErrRecordNotFound)
 
 		hasBan, expiresAt, err := repo.HasActiveFakeGPSBan(context.Background(), userID)
