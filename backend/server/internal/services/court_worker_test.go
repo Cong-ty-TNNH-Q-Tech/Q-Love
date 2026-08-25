@@ -1,4 +1,4 @@
-// Copyright 2026 Q-Tech Team
+﻿// Copyright 2026 Q-Tech Team
 // Licensed under the GNU AGPLv3 License.
 // See LICENSE file in the project root for full license information.
 
@@ -6,6 +6,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -115,4 +116,42 @@ func TestCourtWorker_Start(t *testing.T) {
 	cancel()
 	// Give it a moment to stop
 	time.Sleep(100 * time.Millisecond)
+}
+func TestCourtWorker_EvaluateExpiredCases_RepoErrors(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	mockViolation := new(mockUserViolationRepo)
+	logger := zap.NewNop()
+
+	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger)
+
+	// 1. GetExpiredVotingCases returns error
+	mockCourt.On("GetExpiredVotingCases", mock.Anything).Return([]models.CourtCase{}, errors.New("db error")).Once()
+	worker.evaluateExpiredCases(context.Background())
+
+	// 2. CountVotesByCase returns error
+	caseID := uuid.New()
+	cases := []models.CourtCase{{ID: caseID, Status: models.CourtCaseStatusVoting}}
+	mockCourt.On("GetExpiredVotingCases", mock.Anything).Return(cases, nil).Once()
+	mockCourt.On("CountVotesByCase", mock.Anything, caseID).Return(int64(0), int64(0), errors.New("count error")).Once()
+	worker.evaluateExpiredCases(context.Background())
+}
+
+func TestCourtWorker_EvaluateExpiredCases_ViolationErrors(t *testing.T) {
+	mockCourt := new(mockCourtRepo)
+	mockViolation := new(mockUserViolationRepo)
+	logger := zap.NewNop()
+
+	worker := NewCourtWorker(mockCourt, mockViolation, nil, logger)
+
+	caseID := uuid.New()
+	cases := []models.CourtCase{{ID: caseID, DefendantID: uuid.New(), Status: models.CourtCaseStatusVoting}}
+	
+	// Create violation error
+	mockCourt.On("GetExpiredVotingCases", mock.Anything).Return(cases, nil).Once()
+	mockCourt.On("CountVotesByCase", mock.Anything, caseID).Return(int64(50), int64(35), nil).Once()
+	mockViolation.On("Create", mock.Anything, mock.Anything).Return(errors.New("create err")).Once()
+	mockViolation.On("BanUser", mock.Anything, mock.Anything).Return(errors.New("ban err")).Once()
+	mockCourt.On("UpdateCaseStatus", mock.Anything, caseID, models.CourtCaseStatusGuilty).Return(errors.New("update err")).Once()
+	
+	worker.evaluateExpiredCases(context.Background())
 }
