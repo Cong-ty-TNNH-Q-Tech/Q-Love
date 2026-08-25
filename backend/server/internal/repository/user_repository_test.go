@@ -144,7 +144,7 @@ func TestUserRepository_GetFeed(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"id", "location"}).AddRow(userID.String(), "POINT(0 0)"))
 
 	mock.ExpectQuery(`SELECT \* FROM "users" WHERE id != \$1 AND is_shadowbanned = \$2 AND ST_DWithin.*`).
-		WithArgs(userID.String(), false, "POINT(0 0)", 10).
+		WithArgs(userID.String(), false, "POINT(0 0)", 10, 50).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(uuid.New().String()))
 
 	users, err := repo.GetFeed(context.Background(), userID, 10)
@@ -162,7 +162,7 @@ func TestUserRepository_GetSpiritualFeed(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"id", "location"}).AddRow(userID.String(), "POINT(0 0)"))
 
 	mock.ExpectQuery(`SELECT \* FROM "users" WHERE id != \$1 AND is_shadowbanned = \$2 AND ST_DWithin.*`).
-		WithArgs(userID.String(), false, "POINT(0 0)", 10).
+		WithArgs(userID.String(), false, "POINT(0 0)", 10, 1000).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(uuid.New().String()))
 
 	users, err := repo.GetSpiritualFeed(context.Background(), userID, 10)
