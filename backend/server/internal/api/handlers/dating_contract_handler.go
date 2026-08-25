@@ -5,12 +5,10 @@
 package handlers
 
 import (
-	"net/http"
-	"time"
-
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"time"
 )
 
 type DatingContractHandler struct {
@@ -21,123 +19,110 @@ func NewDatingContractHandler(contractService services.DatingContractService) *D
 	return &DatingContractHandler{contractService: contractService}
 }
 
-func (h *DatingContractHandler) CreateContract(c *gin.Context) {
-	userIDStr := c.GetString("user_id")
+func (h *DatingContractHandler) CreateContract(c *fiber.Ctx) error {
+	userIDStr := c.Locals("user_id").(string)
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
 	var req struct {
-		TargetUserID    string    `json:"target_user_id" binding:"required"`
-		DepositAmount   float64   `json:"deposit_amount" binding:"required"`
-		AppointmentTime time.Time `json:"appointment_time" binding:"required"`
+		TargetUserID    string    `json:"target_user_id"`
+		DepositAmount   float64   `json:"deposit_amount"`
+		AppointmentTime time.Time `json:"appointment_time"`
 		LocationNote    string    `json:"location_note"`
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	targetUserID, err := uuid.Parse(req.TargetUserID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid target_user_id format"})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid target_user_id format"})
 	}
 
-	contract, err := h.contractService.CreateContract(c.Request.Context(), userID, targetUserID, req.DepositAmount, req.AppointmentTime)
+	contract, err := h.contractService.CreateContract(c.Context(), userID, targetUserID, req.DepositAmount, req.AppointmentTime)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	c.JSON(http.StatusCreated, contract)
+	return c.Status(fiber.StatusCreated).JSON(contract)
 }
 
-func (h *DatingContractHandler) AcceptContract(c *gin.Context) {
-	userIDStr := c.GetString("user_id")
+func (h *DatingContractHandler) AcceptContract(c *fiber.Ctx) error {
+	userIDStr := c.Locals("user_id").(string)
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
-	contractIDStr := c.Param("contract_id")
+	contractIDStr := c.Params("contract_id")
 	contractID, err := uuid.Parse(contractIDStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid contract_id format"})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid contract_id format"})
 	}
 
-	contract, err := h.contractService.AcceptContract(c.Request.Context(), contractID, userID)
+	contract, err := h.contractService.AcceptContract(c.Context(), contractID, userID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, contract)
+	return c.JSON(contract)
 }
 
-func (h *DatingContractHandler) CancelContract(c *gin.Context) {
-	userIDStr := c.GetString("user_id")
+func (h *DatingContractHandler) CancelContract(c *fiber.Ctx) error {
+	userIDStr := c.Locals("user_id").(string)
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
-	contractIDStr := c.Param("contract_id")
+	contractIDStr := c.Params("contract_id")
 	contractID, err := uuid.Parse(contractIDStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid contract_id format"})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid contract_id format"})
 	}
 
 	var req struct {
 		Reason string `json:"reason"`
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.BodyParser(&req); err != nil {
 		// reason is optional
 	}
 
-	err = h.contractService.CancelContract(c.Request.Context(), contractID, userID, req.Reason)
+	err = h.contractService.CancelContract(c.Context(), contractID, userID, req.Reason)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	return c.JSON(fiber.Map{
 		"cancelled_by":    userID.String(),
 		"penalty_applied": true,
 		"message":         "Cancelled successfully",
 	})
 }
 
-func (h *DatingContractHandler) ScanContract(c *gin.Context) {
-	contractIDStr := c.Param("contract_id")
+func (h *DatingContractHandler) ScanContract(c *fiber.Ctx) error {
+	contractIDStr := c.Params("contract_id")
 	contractID, err := uuid.Parse(contractIDStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid contract_id format"})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid contract_id format"})
 	}
 
 	var req struct {
-		QRToken string `json:"qr_token" binding:"required"`
+		QRToken string `json:"qr_token"`
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	err = h.contractService.ScanContract(c.Request.Context(), contractID, req.QRToken)
+	err = h.contractService.ScanContract(c.Context(), contractID, req.QRToken)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "completed"})
+	return c.JSON(fiber.Map{"status": "completed"})
 }
