@@ -117,11 +117,12 @@ func TestAuthService_VerifyOTP_Success(t *testing.T) {
 
 	svc := NewAuthService(userRepo, esmsClient, rdb, "secret")
 
-	user, accessToken, refreshToken, err := svc.VerifyOTP(context.Background(), "0901234567", "123456")
+	user, accessToken, refreshToken, isNewUser, err := svc.VerifyOTP(context.Background(), "0901234567", "123456")
 	assert.NoError(t, err)
 	assert.NotNil(t, user)
 	assert.NotEmpty(t, accessToken)
 	assert.NotEmpty(t, refreshToken)
+	assert.False(t, isNewUser)
 
 	userRepo.AssertExpectations(t)
 }
@@ -140,11 +141,12 @@ func TestAuthService_VerifyOTP_CreateNewUser(t *testing.T) {
 
 	svc := NewAuthService(userRepo, esmsClient, rdb, "secret")
 
-	user, accessToken, refreshToken, err := svc.VerifyOTP(context.Background(), "0901234567", "123456")
+	user, accessToken, refreshToken, isNewUser, err := svc.VerifyOTP(context.Background(), "0901234567", "123456")
 	assert.NoError(t, err)
 	assert.NotNil(t, user)
 	assert.NotEmpty(t, accessToken)
 	assert.NotEmpty(t, refreshToken)
+	assert.True(t, isNewUser)
 
 	userRepo.AssertExpectations(t)
 }
@@ -158,13 +160,13 @@ func TestAuthService_VerifyOTP_InvalidOTP(t *testing.T) {
 	svc := NewAuthService(userRepo, esmsClient, rdb, "secret")
 
 	// Missing OTP
-	_, _, _, err := svc.VerifyOTP(context.Background(), "0901234567", "123456")
+	_, _, _, _, err := svc.VerifyOTP(context.Background(), "0901234567", "123456")
 	assert.Error(t, err)
 	assert.Equal(t, "ERR_INVALID_OTP", err.Error())
 
 	// Wrong OTP
 	rdb.Set(context.Background(), "otp:0901234567", "654321", 5*time.Minute)
-	_, _, _, err = svc.VerifyOTP(context.Background(), "0901234567", "123456")
+	_, _, _, _, err = svc.VerifyOTP(context.Background(), "0901234567", "123456")
 	assert.Error(t, err)
 	assert.Equal(t, "ERR_INVALID_OTP", err.Error())
 }
@@ -180,9 +182,10 @@ func TestAuthService_RefreshToken_Success(t *testing.T) {
 	// Generate refresh token manually
 	rt, _ := svc.(*authService).generateRefreshToken(uuid.New())
 
-	newAT, err := svc.RefreshToken(context.Background(), rt)
+	newAT, newRT, err := svc.RefreshToken(context.Background(), rt)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, newAT)
+	assert.NotEmpty(t, newRT)
 }
 
 func TestAuthService_RefreshToken_Invalid(t *testing.T) {
@@ -196,7 +199,7 @@ func TestAuthService_RefreshToken_Invalid(t *testing.T) {
 	// Use access token instead of refresh
 	at, _ := svc.(*authService).generateAccessToken(uuid.New())
 
-	_, err := svc.RefreshToken(context.Background(), at)
+	_, _, err := svc.RefreshToken(context.Background(), at)
 	assert.Error(t, err)
 	assert.Equal(t, "invalid token type", err.Error())
 }

@@ -31,17 +31,17 @@ func (m *mockAuthService) SendOTP(ctx context.Context, phone string) error {
 	return args.Error(0)
 }
 
-func (m *mockAuthService) VerifyOTP(ctx context.Context, phone, otp string) (*models.User, string, string, error) {
+func (m *mockAuthService) VerifyOTP(ctx context.Context, phone, otp string) (*models.User, string, string, bool, error) {
 	args := m.Called(ctx, phone, otp)
 	if args.Get(0) == nil {
-		return nil, "", "", args.Error(3)
+		return nil, "", "", false, args.Error(4)
 	}
-	return args.Get(0).(*models.User), args.String(1), args.String(2), args.Error(3)
+	return args.Get(0).(*models.User), args.String(1), args.String(2), args.Bool(3), args.Error(4)
 }
 
-func (m *mockAuthService) RefreshToken(ctx context.Context, refreshToken string) (string, error) {
+func (m *mockAuthService) RefreshToken(ctx context.Context, refreshToken string) (string, string, error) {
 	args := m.Called(ctx, refreshToken)
-	return args.String(0), args.Error(1)
+	return args.String(0), args.String(1), args.Error(2)
 }
 
 func setupAuthTestApp(svc *mockAuthService) *fiber.App {
@@ -97,7 +97,7 @@ func TestAuthHandler_VerifyOTP_Success(t *testing.T) {
 	app := setupAuthTestApp(svc)
 
 	user := &models.User{ID: uuid.New(), Phone: "0901234567"}
-	svc.On("VerifyOTP", mock.Anything, "0901234567", "123456").Return(user, "access", "refresh", nil)
+	svc.On("VerifyOTP", mock.Anything, "0901234567", "123456").Return(user, "access", "refresh", false, nil)
 
 	reqBody, _ := json.Marshal(map[string]string{"phone": "0901234567", "otp": "123456"})
 	req := httptest.NewRequest(http.MethodPost, "/auth/verify-otp", bytes.NewBuffer(reqBody))
@@ -111,7 +111,7 @@ func TestAuthHandler_VerifyOTP_InvalidOTP(t *testing.T) {
 	svc := new(mockAuthService)
 	app := setupAuthTestApp(svc)
 
-	svc.On("VerifyOTP", mock.Anything, "0901234567", "123456").Return(nil, "", "", errors.New("ERR_INVALID_OTP"))
+	svc.On("VerifyOTP", mock.Anything, "0901234567", "123456").Return(nil, "", "", false, errors.New("ERR_INVALID_OTP"))
 
 	reqBody, _ := json.Marshal(map[string]string{"phone": "0901234567", "otp": "123456"})
 	req := httptest.NewRequest(http.MethodPost, "/auth/verify-otp", bytes.NewBuffer(reqBody))
@@ -125,7 +125,7 @@ func TestAuthHandler_RefreshToken_Success(t *testing.T) {
 	svc := new(mockAuthService)
 	app := setupAuthTestApp(svc)
 
-	svc.On("RefreshToken", mock.Anything, "old-refresh").Return("new-access", nil)
+	svc.On("RefreshToken", mock.Anything, "old-refresh").Return("new-access", "new-refresh", nil)
 
 	reqBody, _ := json.Marshal(map[string]string{"refresh_token": "old-refresh"})
 	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", bytes.NewBuffer(reqBody))
@@ -139,7 +139,7 @@ func TestAuthHandler_RefreshToken_Invalid(t *testing.T) {
 	svc := new(mockAuthService)
 	app := setupAuthTestApp(svc)
 
-	svc.On("RefreshToken", mock.Anything, "bad").Return("", errors.New("invalid"))
+	svc.On("RefreshToken", mock.Anything, "bad").Return("", "", errors.New("invalid"))
 
 	reqBody, _ := json.Marshal(map[string]string{"refresh_token": "bad"})
 	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", bytes.NewBuffer(reqBody))
