@@ -64,3 +64,82 @@ func TestSpiritualService_CalculateSpiritualMatchScore(t *testing.T) {
 	// Base (40) + Fire/Water (5) + Odd/Even (10) = 55
 	assert.Equal(t, 55, score2)
 }
+func TestSpiritualService_CalculateZodiac_AllMonths(t *testing.T) {
+	service := NewSpiritualService()
+
+	tests := []struct {
+		date     string
+		expected string
+	}{
+		{"2000-01-10", "Capricorn"},
+		{"2000-01-25", "Aquarius"},
+		{"2000-02-10", "Aquarius"},
+		{"2000-02-20", "Pisces"},
+		{"2000-03-10", "Pisces"},
+		{"2000-03-22", "Aries"},
+		{"2000-04-10", "Aries"},
+		{"2000-04-22", "Taurus"},
+		{"2000-05-10", "Taurus"},
+		{"2000-05-22", "Gemini"},
+		{"2000-06-10", "Gemini"},
+		{"2000-06-25", "Cancer"},
+		{"2000-07-10", "Cancer"},
+		{"2000-07-25", "Leo"},
+		{"2000-08-10", "Leo"},
+		{"2000-08-25", "Virgo"},
+		{"2000-09-10", "Virgo"},
+		{"2000-09-25", "Libra"},
+		{"2000-10-10", "Libra"},
+		{"2000-10-25", "Scorpio"},
+		{"2000-11-10", "Scorpio"},
+		{"2000-11-25", "Sagittarius"},
+		{"2000-12-10", "Sagittarius"},
+		{"2000-12-25", "Capricorn"},
+	}
+
+	for _, tc := range tests {
+		dob, _ := time.Parse("2006-01-02", tc.date)
+		assert.Equal(t, tc.expected, service.CalculateZodiac(dob))
+	}
+}
+
+func TestSpiritualService_CalculateNumerology_22(t *testing.T) {
+	service := NewSpiritualService()
+	// 22 master number
+	dob, _ := time.Parse("2006-01-02", "1993-11-22") // Wait, need exact 22 sum. 2+2+1+1+1+9+9+3 = 28 -> 10 -> 1.
+	// Let's use something that sums to 22. 29/09/2000 -> 2+9+0+9+2+0+0+0 = 22
+	dob22, _ := time.Parse("2006-01-02", "2000-09-29")
+	assert.Equal(t, 22, service.CalculateNumerology(dob22))
+}
+
+func TestSpiritualService_CalculateSpiritualMatchScore_Elements(t *testing.T) {
+	service := NewSpiritualService()
+	
+	// Earth vs Water (Taurus vs Cancer)
+	dobTaurus, _ := time.Parse("2006-01-02", "2000-05-10") // 10/05/2000 = 1+0+0+5+2+0+0+0 = 8
+	dobCancer, _ := time.Parse("2006-01-02", "2000-07-10") // 10/07/2000 = 1+0+0+7+2+0+0+0 = 10 -> 1
+	
+	// score: Base(40) + Earth/Water(20) + Even/Odd(10) = 70
+	score1 := service.CalculateSpiritualMatchScore(dobTaurus, dobCancer)
+	assert.Equal(t, 70, score1)
+	
+	// Fire vs Air (Aries vs Gemini)
+	dobAries, _ := time.Parse("2006-01-02", "2000-04-10") // 10/04/2000 = 1+0+0+4+2+0+0+0 = 7
+	dobGemini, _ := time.Parse("2006-01-02", "2000-06-10") // 10/06/2000 = 1+0+0+6+2+0+0+0 = 9
+	// score: Base(40) + Fire/Air(20) + Odd/Odd(20) = 80
+	score2 := service.CalculateSpiritualMatchScore(dobAries, dobGemini)
+	assert.Equal(t, 80, score2)
+	
+	// Same Element (Earth vs Earth: Taurus vs Virgo)
+	dobVirgo, _ := time.Parse("2006-01-02", "2000-09-10") // 10/09/2000 = 1+0+0+9+2+0+0+0 = 12 -> 3
+	// Taurus(8) vs Virgo(3)
+	// score: Base(40) + Same Element(30) + Even/Odd(10) = 80
+	score3 := service.CalculateSpiritualMatchScore(dobTaurus, dobVirgo)
+	assert.Equal(t, 80, score3)
+	
+	// Same Numerology (score capped to 100)
+	// Taurus vs Taurus (same zodiac: +25), same numerology (+30), base (40) -> 95
+	dobTaurus2, _ := time.Parse("2006-01-02", "2000-05-10")
+	score4 := service.CalculateSpiritualMatchScore(dobTaurus, dobTaurus2)
+	assert.Equal(t, 95, score4)
+}
