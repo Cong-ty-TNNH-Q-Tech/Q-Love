@@ -35,6 +35,8 @@ func NewPostgresDB(cfg *config.Config) (*gorm.DB, error) {
 		return nil, err
 	}
 
+
+
 	sqlDB, err := db.DB()
 	if err != nil {
 		logger.Log.Error("Failed to get database connection pool", zap.Error(err))
