@@ -163,6 +163,12 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 	matchGroup := v1.Group("/matches", middleware.JWTMiddleware(cfg.JWTSecret))
 	matchGroup.Delete("/:match_id", matchHandler.Unmatch)
 
+	// Feed API
+	spiritualService := services.NewSpiritualService()
+	feedService := services.NewFeedService(userRepo, spiritualService)
+	feedHandler := handlers.NewFeedHandler(feedService)
+	v1.Get("/users/feed", middleware.JWTMiddleware(cfg.JWTSecret), feedHandler.GetFeed)
+
 	// Court System
 	courtService := services.NewCourtService(courtRepo, matchRepo, redisClient, walletRepo, txManager)
 	courtHandler := handlers.NewCourtHandler(courtService)

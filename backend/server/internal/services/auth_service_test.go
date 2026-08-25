@@ -46,6 +46,14 @@ func (m *mockUserRepoForAuth) FindByID(ctx context.Context, id uuid.UUID) (*mode
 	return nil, nil
 }
 
+func (m *mockUserRepoForAuth) GetFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
+	return nil, nil
+}
+
+func (m *mockUserRepoForAuth) GetSpiritualFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) {
+	return nil, nil
+}
+
 type mockESMSClient struct {
 	mock.Mock
 }

@@ -39,6 +39,7 @@ erDiagram
         varchar name
         geometry location "PostGIS"
         int level
+        boolean is_shadowbanned
     }
     USER_WALLETS {
         uuid user_id FK
@@ -468,6 +469,7 @@ erDiagram
 
 | Version | Ngày | Thay đổi |
 | :--- | :--- | :--- |
+| v1.4 | 2026-08-25 | Cập nhật `location`, `level`, `is_shadowbanned` cho `USERS` (Spiritual Match). |
 | v1.3 | 2026-08-20 | Áp dụng Clan Cronjob cho các model `Landmark`, `Notification`. |
 | v1.2 | 2026-08-20 | Áp dụng Soft Delete (`deleted_at`) cho `users`, `dating_contracts`, `court_cases`, `wallet_transactions`. Bỏ `ON DELETE CASCADE` ở các bảng nhạy cảm. |
 | v1.1 | 2026-08-11 | Thêm bảng `notifications`, `user_violations`; Bổ sung cột `created_at` vào `chat_messages`; Thêm `available_cards` vào `card_profiles`; Thêm `radius_meters` vào `landmarks`. |
