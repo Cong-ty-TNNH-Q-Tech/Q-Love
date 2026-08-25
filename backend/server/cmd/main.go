@@ -66,7 +66,9 @@ func setupApp(cfg *config.Config) (*fiber.App, error) {
 	landmarkRepo := repository.NewLandmarkRepository(db)
 	notifRepo := repository.NewNotificationRepository(db)
 	pushService := services.NewPushService()
-	clanCronService := services.NewClanCronService(clanRepo, landmarkRepo, notifRepo, pushService)
+	walletRepo := repository.NewWalletRepository(db)
+	txManager := repository.NewTransactionManager(db)
+	clanCronService := services.NewClanCronService(clanRepo, landmarkRepo, notifRepo, pushService, walletRepo, txManager)
 	scheduler := cron.NewScheduler(clanCronService)
 	scheduler.Start()
 
