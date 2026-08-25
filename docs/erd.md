@@ -110,7 +110,15 @@ erDiagram
         varchar type
         text payload
         varchar status
+        uuid reference_id
         timestamp created_at
+    }
+    LANDMARKS {
+        uuid id PK
+        varchar name
+        geometry location "PostGIS"
+        int radius_meters
+        uuid current_owner_clan_id FK
     }
     USER_VIOLATIONS {
         uuid id PK

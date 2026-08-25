@@ -6,10 +6,13 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -80,7 +83,7 @@ func (s *clanCronService) RunWeeklyReset(ctx context.Context) error {
 		}
 		
 		return nil
-	})
+	}, &sql.TxOptions{Isolation: sql.LevelSerializable})
 
 	if err != nil {
 		logger.Log.Error("Failed to process weekly reset in transaction", zap.Error(err))
@@ -90,6 +93,16 @@ func (s *clanCronService) RunWeeklyReset(ctx context.Context) error {
 	// 3. Broadcast notification
 	if topClan != nil {
 		body := fmt.Sprintf("Bang hội %s đã chiếm lĩnh toàn bộ bản đồ tuần này với %d điểm!", topClan.Name, topClan.WeeklyScore)
+		
+		notification := &models.Notification{
+			ID:          uuid.New(),
+			UserID:      uuid.Nil, // global notification
+			Type:        "clan_weekly_result",
+			Payload:     body,
+			ReferenceID: &topClan.ID,
+		}
+		_ = s.notifRepo.Create(ctx, notification)
+
 		_ = s.pushService.BroadcastToAll(ctx, "👑 Vị Vua Mới Của Tuần", body, map[string]string{
 			"type": "clan_weekly_result",
 			"clan_id": topClan.ID.String(),
