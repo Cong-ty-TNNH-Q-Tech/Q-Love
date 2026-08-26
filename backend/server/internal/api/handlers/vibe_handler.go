@@ -35,11 +35,11 @@ func (h *VibeHandler) CurrentTrack(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Vibe Check is currently locked"})
 	}
 
-	userID, ok := c.Locals("userID").(string)
-	if !ok || userID == "" {
+	userID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
-	track, err := h.SpotifyService.GetCurrentTrack(userID)
+	track, err := h.SpotifyService.GetCurrentTrack(userID.String())
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch Spotify track"})
 	}
@@ -66,15 +66,10 @@ func (h *VibeHandler) Match(c *fiber.Ctx) error {
 	// Mock match logic: we just create a mock room with a random user
 	roomID := uuid.New().String()
 	
-	userID, ok := c.Locals("userID").(string)
-	if !ok || userID == "" {
+	userAUUID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
-	userAUUID, err := uuid.Parse(userID)
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid user ID"})
-	}
-
 	// Create VibeMatch model
 	match := models.VibeMatch{
 		ID:      uuid.New(),

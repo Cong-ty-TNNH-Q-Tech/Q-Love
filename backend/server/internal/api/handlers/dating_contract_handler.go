@@ -20,12 +20,10 @@ func NewDatingContractHandler(contractService services.DatingContractService) *D
 }
 
 func (h *DatingContractHandler) CreateContract(c *fiber.Ctx) error {
-	userIDStr := c.Locals("user_id").(string)
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	userID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid user id"})
 	}
-
 	var req struct {
 		TargetUserID    string    `json:"target_user_id"`
 		DepositAmount   float64   `json:"deposit_amount"`
@@ -51,12 +49,10 @@ func (h *DatingContractHandler) CreateContract(c *fiber.Ctx) error {
 }
 
 func (h *DatingContractHandler) AcceptContract(c *fiber.Ctx) error {
-	userIDStr := c.Locals("user_id").(string)
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	userID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid user id"})
 	}
-
 	contractIDStr := c.Params("contract_id")
 	contractID, err := uuid.Parse(contractIDStr)
 	if err != nil {
@@ -72,12 +68,10 @@ func (h *DatingContractHandler) AcceptContract(c *fiber.Ctx) error {
 }
 
 func (h *DatingContractHandler) CancelContract(c *fiber.Ctx) error {
-	userIDStr := c.Locals("user_id").(string)
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	userID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid user id"})
 	}
-
 	contractIDStr := c.Params("contract_id")
 	contractID, err := uuid.Parse(contractIDStr)
 	if err != nil {
