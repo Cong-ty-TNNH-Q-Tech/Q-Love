@@ -6,15 +6,16 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
-	"database/sql"
+	"go.uber.org/zap"
 )
 
 type CourtService interface {
@@ -111,7 +112,7 @@ func (s *courtService) FileLawsuit(ctx context.Context, plaintiffID, defendantID
 		}).Err()
 		if err != nil {
 			// Just log the error, don't fail the lawsuit creation
-			fmt.Printf("Failed to push case to redis stream: %v\n", err)
+			logger.Log.Error("Failed to push case to redis stream", zap.Error(err))
 		}
 	}
 
