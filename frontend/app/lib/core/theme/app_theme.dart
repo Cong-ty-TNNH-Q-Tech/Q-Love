@@ -10,6 +10,9 @@ class AppTheme {
   static const Color secondaryColor = Color(0xFF00F0FF); // Neon Cyan
   static const Color scaffoldBackground = Color(0xFF0A0A0A); // Deep dark
   static const Color surfaceColor = Color(0xFF1C1C1E); // Elevated dark
+  static const Color errorColor = Color(0xFFFF453A); // Soft Neon Red
+  static const Color successColor = Color(0xFF32D74B); // Emerald Green
+  static const Color warningColor = Color(0xFFFF9F0A); // Warm Orange
 
   static ThemeData get darkTheme {
     return ThemeData(
@@ -20,6 +23,7 @@ class AppTheme {
         primary: primaryColor,
         secondary: secondaryColor,
         surface: surfaceColor,
+        error: errorColor,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,

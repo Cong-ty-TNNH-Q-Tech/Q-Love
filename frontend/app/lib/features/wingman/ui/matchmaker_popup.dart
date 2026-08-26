@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart';
 import '../bloc/wingman_bloc.dart';
 import '../repository/wingman_repository.dart';
+import 'package:app/core/theme/app_theme.dart';
 
 class MatchmakerPopup extends StatelessWidget {
   final String targetId;
@@ -94,7 +95,7 @@ class MatchmakerPopup extends StatelessWidget {
                       );
                     } else if (state is WingmanError) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+                        SnackBar(content: Text(state.message), backgroundColor: Theme.of(context).colorScheme.error),
                       );
                     }
                   },

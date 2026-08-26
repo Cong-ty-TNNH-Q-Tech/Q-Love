@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'widgets/propose_date_modal.dart';
 import 'widgets/qr_display_widget.dart';
 import 'qr_scanner_screen.dart';
+import 'package:app/core/theme/app_theme.dart';
 
 class DatingContractScreen extends StatelessWidget {
   const DatingContractScreen({super.key});
@@ -65,7 +66,7 @@ class DatingContractScreen extends StatelessWidget {
             subtitle: const Text('Cọc: 200 Xu - Đợi phản hồi'),
             trailing: TextButton(
               onPressed: () {},
-              child: const Text('Hủy', style: TextStyle(color: Colors.red)),
+              child: const Text('Hủy', style: TextStyle(color: Theme.of(context).colorScheme.error)),
             ),
           ),
         ),

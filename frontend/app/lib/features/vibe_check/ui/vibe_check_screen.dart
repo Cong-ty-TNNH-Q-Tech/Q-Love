@@ -9,6 +9,7 @@ import '../bloc/vibe_check_state.dart';
 import '../data/vibe_api_client.dart';
 import '../data/vibe_repository.dart';
 import 'widgets/spotify_card_widget.dart';
+import 'package:app/core/theme/app_theme.dart';
 
 class VibeCheckScreen extends StatefulWidget {
   const VibeCheckScreen({super.key});
@@ -69,7 +70,7 @@ class _VibeCheckScreenState extends State<VibeCheckScreen> {
                       } else if (state is VibeCheckError) {
                         return Text(
                           state.message,
-                          style: const TextStyle(color: Colors.redAccent, fontSize: 16),
+                          style: const TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 16),
                           textAlign: TextAlign.center,
                         );
                       } else if (state is VibeCheckLoaded) {

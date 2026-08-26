@@ -8,6 +8,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:dio/dio.dart';
 import '../bloc/wingman_bloc.dart';
 import '../repository/wingman_repository.dart';
+import 'package:app/core/theme/app_theme.dart';
 
 class WingmanDashboardScreen extends StatelessWidget {
   const WingmanDashboardScreen({super.key});
@@ -59,7 +60,7 @@ class WingmanDashboardScreen extends StatelessWidget {
                   ),
                 );
               } else if (state is WingmanError) {
-                return Center(child: Text(state.message, style: const TextStyle(color: Colors.red)));
+                return Center(child: Text(state.message, style: const TextStyle(color: Theme.of(context).colorScheme.error)));
               }
               return const SizedBox.shrink();
             },

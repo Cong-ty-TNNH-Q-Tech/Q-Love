@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart';
 import '../bloc/shame_wall_bloc.dart';
 import '../repositories/shame_repository.dart';
+import 'package:app/core/theme/app_theme.dart';
 
 class ShameWallScreen extends StatelessWidget {
   const ShameWallScreen({super.key});
@@ -55,7 +56,7 @@ class ShameWallScreen extends StatelessWidget {
                   },
                 );
               } else if (state is ShameWallError) {
-                return Center(child: Text(state.message, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)));
+                return Center(child: Text(state.message, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.error)));
               }
               return const SizedBox.shrink();
             },
