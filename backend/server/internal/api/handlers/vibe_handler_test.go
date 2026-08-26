@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
 )
@@ -26,7 +27,7 @@ func setupVibeApp() (*fiber.App, *VibeHandler) {
 	handler := NewVibeHandler(service)
 
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("userID", "123e4567-e89b-12d3-a456-426614174000")
+		c.Locals("user_id", uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"))
 		return c.Next()
 	})
 
@@ -104,7 +105,7 @@ func TestVibeHandler_InvalidUser(t *testing.T) {
 	handler := NewVibeHandler(service)
 
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("userID", "invalid-uuid")
+		c.Locals("user_id", "invalid-uuid")
 		return c.Next()
 	})
 

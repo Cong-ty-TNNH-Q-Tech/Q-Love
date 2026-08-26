@@ -71,7 +71,7 @@ func TestAuctionHandler_PlaceBid(t *testing.T) {
 
 	app.Post("/api/v1/auctions/:id/bid", func(c *fiber.Ctx) error {
 		// Mock JWT middleware
-		c.Locals("userID", uuid.New())
+		c.Locals("user_id", uuid.New())
 		return h.PlaceBid(c)
 	})
 
@@ -103,7 +103,7 @@ func TestAuctionHandler_PlaceBid_InvalidInput(t *testing.T) {
 	h := NewAuctionHandler(svc)
 
 	app.Post("/api/v1/auctions/:id/bid", func(c *fiber.Ctx) error {
-		c.Locals("userID", uuid.New())
+		c.Locals("user_id", uuid.New())
 		return h.PlaceBid(c)
 	})
 
@@ -122,7 +122,7 @@ func TestAuctionHandler_PlaceBid_ServiceError(t *testing.T) {
 	h := NewAuctionHandler(svc)
 
 	app.Post("/api/v1/auctions/:id/bid", func(c *fiber.Ctx) error {
-		c.Locals("userID", uuid.New())
+		c.Locals("user_id", uuid.New())
 		return h.PlaceBid(c)
 	})
 
