@@ -167,9 +167,9 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (st
 		return "", "", errors.New("invalid token type")
 	}
 
-	userIDStr, ok := claims["user_id"].(string)
+	userIDStr, ok := claims["sub"].(string)
 	if !ok {
-		return "", "", errors.New("missing user_id in claims")
+		return "", "", errors.New("missing sub in claims")
 	}
 
 	userID, err := uuid.Parse(userIDStr)
@@ -192,7 +192,7 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (st
 
 func (s *authService) generateAccessToken(userID uuid.UUID) (string, error) {
 	claims := jwt.MapClaims{
-		"user_id": userID.String(),
+		"sub": userID.String(),
 		"type":    "access",
 		"exp":     time.Now().Add(15 * time.Minute).Unix(),
 	}
@@ -203,7 +203,7 @@ func (s *authService) generateAccessToken(userID uuid.UUID) (string, error) {
 
 func (s *authService) generateRefreshToken(userID uuid.UUID) (string, error) {
 	claims := jwt.MapClaims{
-		"user_id": userID.String(),
+		"sub": userID.String(),
 		"type":    "refresh",
 		"exp":     time.Now().Add(30 * 24 * time.Hour).Unix(),
 	}
