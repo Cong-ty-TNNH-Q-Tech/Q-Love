@@ -79,6 +79,8 @@ func (m *mockMatchRepo) FindByID(ctx context.Context, id uuid.UUID) (*models.Mat
 func (m *mockMatchRepo) FindByIDUnscoped(ctx context.Context, id uuid.UUID) (*models.Match, error) { return nil, nil }
 func (m *mockMatchRepo) UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error { return nil }
 func (m *mockMatchRepo) SoftDelete(ctx context.Context, id uuid.UUID) error { return nil }
+func (m *mockMatchRepo) ResetStreakForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
+func (m *mockMatchRepo) ResetIslandLevelForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
 func (m *mockMatchRepo) FindByUsers(ctx context.Context, u1, u2 uuid.UUID) (*models.Match, error) {
 	args := m.Called(ctx, u1, u2)
 	var match *models.Match
