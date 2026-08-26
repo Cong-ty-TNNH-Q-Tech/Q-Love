@@ -1,8 +1,8 @@
-openapi: 3.0.3
+﻿openapi: 3.0.3
 info:
   title: Q-Love API Documentation
-  description: RESTful API Specification for Q-Love - Super App Hẹn Hò & Mạng Xã Hội
-    Giải Trí. Tất cả các endpoint (trừ Auth) yêu cầu JWT Bearer Token.
+  description: RESTful API Specification for Q-Love - Super App Háº¹n HÃ² & Máº¡ng XÃ£ Há»™i
+    Giáº£i TrÃ­. Táº¥t cáº£ cÃ¡c endpoint (trá»« Auth) yÃªu cáº§u JWT Bearer Token.
   version: 1.1.0
   contact:
     name: Q-Love Engineering Team
@@ -19,7 +19,7 @@ components:
       bearerFormat: JWT
   responses:
     Unauthorized:
-      description: 401 — Token không hợp lệ hoặc đã hết hạn.
+      description: 401 â€” Token khÃ´ng há»£p lá»‡ hoáº·c Ä‘Ã£ háº¿t háº¡n.
       content:
         application/json:
           schema:
@@ -28,7 +28,7 @@ components:
             code: 401
             message: ERR_UNAUTHORIZED
     Forbidden:
-      description: 403 — Không có quyền thực hiện hành động này.
+      description: 403 â€” KhÃ´ng cÃ³ quyá»n thá»±c hiá»‡n hÃ nh Ä‘á»™ng nÃ y.
       content:
         application/json:
           schema:
@@ -37,7 +37,7 @@ components:
             code: 403
             message: ERR_FORBIDDEN
     NotFound:
-      description: 404 — Không tìm thấy tài nguyên.
+      description: 404 â€” KhÃ´ng tÃ¬m tháº¥y tÃ i nguyÃªn.
       content:
         application/json:
           schema:
@@ -46,7 +46,7 @@ components:
             code: 404
             message: ERR_NOT_FOUND
     UnprocessableEntity:
-      description: 422 — Dữ liệu đầu vào không hợp lệ.
+      description: 422 â€” Dá»¯ liá»‡u Ä‘áº§u vÃ o khÃ´ng há»£p lá»‡.
       content:
         application/json:
           schema:
@@ -56,7 +56,7 @@ components:
             message: ERR_VALIDATION
             details: 'phone: invalid format'
     TooManyRequests:
-      description: 429 — Vượt quá giới hạn tần suất request (Rate Limit).
+      description: 429 â€” VÆ°á»£t quÃ¡ giá»›i háº¡n táº§n suáº¥t request (Rate Limit).
       content:
         application/json:
           schema:
@@ -77,7 +77,7 @@ components:
           example: ERR_CONDITION_NOT_MET
         details:
           type: string
-          description: Thông tin lỗi bổ sung (optional)
+          description: ThÃ´ng tin lá»—i bá»• sung (optional)
     FeedUserResponse:
       type: object
       properties:
@@ -85,13 +85,13 @@ components:
           $ref: '#/components/schemas/User'
         spiritual_match_score:
           type: integer
-          description: "Điểm tương hợp tâm linh (0-100)"
+          description: "Äiá»ƒm tÆ°Æ¡ng há»£p tÃ¢m linh (0-100)"
         zodiac:
           type: string
-          description: "Cung hoàng đạo"
+          description: "Cung hoÃ ng Ä‘áº¡o"
         numerology:
           type: integer
-          description: "Con số chủ đạo"
+          description: "Con sá»‘ chá»§ Ä‘áº¡o"
     User:
       type: object
       properties:
@@ -103,7 +103,7 @@ components:
           example: 0901234567
         name:
           type: string
-          example: Nguyễn Văn A
+          example: Nguyá»…n VÄƒn A
         dob:
           type: string
           format: date
@@ -128,11 +128,11 @@ components:
         balance:
           type: number
           example: 350.0
-          description: Số dư Xu khả dụng
+          description: Sá»‘ dÆ° Xu kháº£ dá»¥ng
         hold_balance:
           type: number
           example: 100.0
-          description: Số dư Xu đang bị đóng băng (cọc Date)
+          description: Sá»‘ dÆ° Xu Ä‘ang bá»‹ Ä‘Ã³ng bÄƒng (cá»c Date)
     Match:
       type: object
       properties:
@@ -177,7 +177,7 @@ components:
           format: date-time
         qr_token:
           type: string
-          description: Chỉ hiển thị cho chủ hẹn (rotate mỗi 30s)
+          description: Chá»‰ hiá»ƒn thá»‹ cho chá»§ háº¹n (rotate má»—i 30s)
     CourtCase:
       type: object
       properties:
@@ -186,7 +186,7 @@ components:
           format: uuid
         defendant_name_masked:
           type: string
-          example: Nguyễn ***
+          example: Nguyá»…n ***
         reason:
           type: string
         status:
@@ -221,7 +221,7 @@ components:
           example: 820
         is_halted:
           type: boolean
-          description: Circuit Breaker đang kích hoạt
+          description: Circuit Breaker Ä‘ang kÃ­ch hoáº¡t
     WalletTransaction:
       type: object
       properties:
@@ -231,7 +231,7 @@ components:
         amount:
           type: number
           example: -50
-          description: Âm = chi, Dương = thu
+          description: Ã‚m = chi, DÆ°Æ¡ng = thu
         type:
           type: string
           enum:
@@ -269,94 +269,10 @@ components:
 security:
   - bearerAuth: []
 paths:
-  /contracts:
-    post:
-      summary: Tạo khế ước hẹn hò (Trừ xu cọc của người tạo)
-      tags:
-        - Dating Contract
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - partner_id
-                - deposit_amount
-                - appointment_time
-              properties:
-                partner_id:
-                  type: string
-                  format: uuid
-                deposit_amount:
-                  type: number
-                  example: 50.0
-                appointment_time:
-                  type: string
-                  format: date-time
-      responses:
-        '201':
-          description: Khế ước được tạo thành công
-  /contracts/{contract_id}/accept:
-    post:
-      summary: Đối tác chấp nhận khế ước (Trừ xu cọc của đối tác)
-      tags:
-        - Dating Contract
-      parameters:
-        - name: contract_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Thành công
-  /contracts/{contract_id}/cancel:
-    post:
-      summary: Hủy khế ước (Xử lý hoàn cọc hoặc phạt)
-      tags:
-        - Dating Contract
-      parameters:
-        - name: contract_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Thành công
-  /contracts/{contract_id}/scan:
-    post:
-      summary: Quét mã QR check-in hẹn hò (Trả lại cọc cho cả hai)
-      tags:
-        - Dating Contract
-      parameters:
-        - name: contract_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - qr_token
-              properties:
-                qr_token:
-                  type: string
-      responses:
-        '200':
-          description: Check-in thành công
   /auth/send-otp:
     post:
-      summary: Gửi mã OTP về số điện thoại
-      description: Gọi API ESMS.vn để gửi SMS OTP. OTP có TTL 120 giây, tối đa 5 lần/ngày/SĐT.
+      summary: Gá»­i mÃ£ OTP vá» sá»‘ Ä‘iá»‡n thoáº¡i
+      description: Gá»i API ESMS.vn Ä‘á»ƒ gá»­i SMS OTP. OTP cÃ³ TTL 120 giÃ¢y, tá»‘i Ä‘a 5 láº§n/ngÃ y/SÄT.
       tags:
         - Auth
       security: []
@@ -374,7 +290,7 @@ paths:
                   example: 0901234567
       responses:
         '200':
-          description: OTP đã được gửi thành công
+          description: OTP Ä‘Ã£ Ä‘Æ°á»£c gá»­i thÃ nh cÃ´ng
           content:
             application/json:
               schema:
@@ -392,9 +308,9 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
   /auth/verify-otp:
     post:
-      summary: Xác thực OTP và đăng nhập / tạo tài khoản
-      description: Nếu SĐT chưa tồn tại → tạo tài khoản mới. Nếu đã có → đăng nhập.
-        Trả về JWT Access Token (15 phút) và Refresh Token (30 ngày).
+      summary: XÃ¡c thá»±c OTP vÃ  Ä‘Äƒng nháº­p / táº¡o tÃ i khoáº£n
+      description: Náº¿u SÄT chÆ°a tá»“n táº¡i â†’ táº¡o tÃ i khoáº£n má»›i. Náº¿u Ä‘Ã£ cÃ³ â†’ Ä‘Äƒng nháº­p.
+        Tráº£ vá» JWT Access Token (15 phÃºt) vÃ  Refresh Token (30 ngÃ y).
       tags:
         - Auth
       security: []
@@ -416,7 +332,7 @@ paths:
                   example: '123456'
       responses:
         '200':
-          description: Xác thực thành công
+          description: XÃ¡c thá»±c thÃ nh cÃ´ng
           content:
             application/json:
               schema:
@@ -431,7 +347,7 @@ paths:
                   user:
                     $ref: '#/components/schemas/User'
         '400':
-          description: OTP sai hoặc đã hết hạn
+          description: OTP sai hoáº·c Ä‘Ã£ háº¿t háº¡n
           content:
             application/json:
               schema:
@@ -443,7 +359,7 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
   /auth/refresh:
     post:
-      summary: Làm mới Access Token
+      summary: LÃ m má»›i Access Token
       tags:
         - Auth
       security: []
@@ -460,7 +376,7 @@ paths:
                   type: string
       responses:
         '200':
-          description: Cặp token mới (token cũ đã bị vô hiệu hóa)
+          description: Cáº·p token má»›i (token cÅ© Ä‘Ã£ bá»‹ vÃ´ hiá»‡u hÃ³a)
           content:
             application/json:
               schema:
@@ -474,9 +390,9 @@ paths:
           $ref: '#/components/responses/Unauthorized'
   /upload/presigned-url:
     post:
-      summary: Lấy Presigned URL để upload file trực tiếp lên Cloudflare R2
-      description: Tạo link tải lên an toàn có thời hạn 15 phút. Hỗ trợ upload avatar
-        và ảnh.
+      summary: Láº¥y Presigned URL Ä‘á»ƒ upload file trá»±c tiáº¿p lÃªn Cloudflare R2
+      description: Táº¡o link táº£i lÃªn an toÃ n cÃ³ thá»i háº¡n 15 phÃºt. Há»— trá»£ upload avatar
+        vÃ  áº£nh.
       tags:
         - Upload
       requestBody:
@@ -520,8 +436,8 @@ paths:
 
   /ai/suggest:
     post:
-      summary: Nhận gợi ý tin nhắn từ AI Mỏ Hỗn
-      description: Gửi match_id để AI tự động phân tích 5 tin nhắn gần nhất và đưa ra 3 gợi ý phản hồi (Đã che thông tin cá nhân).
+      summary: Nháº­n gá»£i Ã½ tin nháº¯n tá»« AI Má» Há»—n
+      description: Gá»­i match_id Ä‘á»ƒ AI tá»± Ä‘á»™ng phÃ¢n tÃ­ch 5 tin nháº¯n gáº§n nháº¥t vÃ  Ä‘Æ°a ra 3 gá»£i Ã½ pháº£n há»“i (ÄÃ£ che thÃ´ng tin cÃ¡ nhÃ¢n).
       tags:
         - AI Wingman
       security:
@@ -540,7 +456,7 @@ paths:
                   format: uuid
       responses:
         "200":
-          description: Danh sách gợi ý tin nhắn
+          description: Danh sÃ¡ch gá»£i Ã½ tin nháº¯n
           content:
             application/json:
               schema:
@@ -558,7 +474,7 @@ paths:
           $ref: '#/components/responses/InternalError'
   /users/me:
     get:
-      summary: Lấy thông tin profile của bản thân
+      summary: Láº¥y thÃ´ng tin profile cá»§a báº£n thÃ¢n
       tags:
         - Users
       responses:
@@ -571,7 +487,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
     put:
-      summary: Cập nhật thông tin profile
+      summary: Cáº­p nháº­t thÃ´ng tin profile
       tags:
         - Users
       requestBody:
@@ -591,7 +507,7 @@ paths:
                   type: number
       responses:
         '200':
-          description: Cập nhật thành công
+          description: Cáº­p nháº­t thÃ nh cÃ´ng
           content:
             application/json:
               schema:
@@ -602,7 +518,7 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
   /users/me/wallet:
     get:
-      summary: Xem số dư ví Xu
+      summary: Xem sá»‘ dÆ° vÃ­ Xu
       tags:
         - Users
       responses:
@@ -616,7 +532,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
   /users/me/wallet/transactions:
     get:
-      summary: Lịch sử giao dịch Xu
+      summary: Lá»‹ch sá»­ giao dá»‹ch Xu
       tags:
         - Users
       parameters:
@@ -634,10 +550,10 @@ paths:
           name: type
           schema:
             type: string
-            description: 'Lọc theo loại giao dịch (VD: card_buy)'
+            description: 'Lá»c theo loáº¡i giao dá»‹ch (VD: card_buy)'
       responses:
         '200':
-          description: Danh sách giao dịch
+          description: Danh sÃ¡ch giao dá»‹ch
           content:
             application/json:
               schema:
@@ -653,7 +569,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
   /users/{user_id}/profile:
     get:
-      summary: Xem profile công khai của một user khác
+      summary: Xem profile cÃ´ng khai cá»§a má»™t user khÃ¡c
       tags:
         - Users
       parameters:
@@ -676,9 +592,9 @@ paths:
           $ref: '#/components/responses/NotFound'
   /users/feed:
     get:
-      summary: Lấy danh sách profiles để quẹt thẻ
-      description: Thuật toán trả về danh sách profiles đã lọc theo GPS bán kính 50km
-        và Hệ Tâm Linh (nếu được chọn).
+      summary: Láº¥y danh sÃ¡ch profiles Ä‘á»ƒ quáº¹t tháº»
+      description: Thuáº­t toÃ¡n tráº£ vá» danh sÃ¡ch profiles Ä‘Ã£ lá»c theo GPS bÃ¡n kÃ­nh 50km
+        vÃ  Há»‡ TÃ¢m Linh (náº¿u Ä‘Æ°á»£c chá»n).
       tags:
         - Matches
       parameters:
@@ -689,7 +605,7 @@ paths:
             enum:
               - default
               - spiritual
-          description: spiritual = Lọc theo Hệ Tâm Linh
+          description: spiritual = Lá»c theo Há»‡ TÃ¢m Linh
         - in: query
           name: limit
           schema:
@@ -698,7 +614,7 @@ paths:
             maximum: 50
       responses:
         '200':
-          description: Danh sách profile để quẹt
+          description: Danh sÃ¡ch profile Ä‘á»ƒ quáº¹t
           content:
             application/json:
               schema:
@@ -709,7 +625,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
   /court/cases:
     post:
-      summary: Tạo một vụ kiện mới (Tòa án Tình yêu)
+      summary: Táº¡o má»™t vá»¥ kiá»‡n má»›i (TÃ²a Ã¡n TÃ¬nh yÃªu)
       tags:
         - Court
       requestBody:
@@ -729,12 +645,12 @@ paths:
                   type: string
       responses:
         '201':
-          description: Tạo thành công
+          description: Táº¡o thÃ nh cÃ´ng
         '400':
-          description: Lỗi logic (chưa im lặng 48h)
+          description: Lá»—i logic (chÆ°a im láº·ng 48h)
   /court/{case_id}/vote:
     post:
-      summary: Bỏ phiếu cho một vụ kiện
+      summary: Bá» phiáº¿u cho má»™t vá»¥ kiá»‡n
       tags:
         - Court
       parameters:
@@ -758,10 +674,10 @@ paths:
                   enum: [guilty, not_guilty]
       responses:
         '200':
-          description: Bỏ phiếu thành công
+          description: Bá» phiáº¿u thÃ nh cÃ´ng
   /court/{case_id}/withdraw:
     post:
-      summary: Rút đơn kiện
+      summary: RÃºt Ä‘Æ¡n kiá»‡n
       tags:
         - Court
       parameters:
@@ -773,11 +689,11 @@ paths:
             format: uuid
       responses:
         '200':
-          description: Đã rút đơn
+          description: ÄÃ£ rÃºt Ä‘Æ¡n
   /devices/token:
     post:
-      summary: Đăng ký FCM Token
-      description: Nhận và lưu trữ FCM Token của user vào Redis để gửi push notification
+      summary: ÄÄƒng kÃ½ FCM Token
+      description: Nháº­n vÃ  lÆ°u trá»¯ FCM Token cá»§a user vÃ o Redis Ä‘á»ƒ gá»­i push notification
       tags:
         - Devices
       requestBody:
@@ -792,20 +708,20 @@ paths:
               properties:
                 fcm_token:
                   type: string
-                  description: FCM Token nhận được từ Firebase SDK
+                  description: FCM Token nháº­n Ä‘Æ°á»£c tá»« Firebase SDK
                 device_id:
                   type: string
-                  description: Device ID định danh thiết bị
+                  description: Device ID Ä‘á»‹nh danh thiáº¿t bá»‹
       responses:
         '200':
-          description: Đăng ký token thành công
+          description: ÄÄƒng kÃ½ token thÃ nh cÃ´ng
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
   /matches/swipe:
     post:
-      summary: Quẹt thẻ (Like/Pass)
+      summary: Quáº¹t tháº» (Like/Pass)
       tags:
         - Matches
       requestBody:
@@ -828,7 +744,7 @@ paths:
                     - pass
       responses:
         '200':
-          description: Kết quả quẹt thẻ
+          description: Káº¿t quáº£ quáº¹t tháº»
           content:
             application/json:
               schema:
@@ -842,14 +758,14 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Target user không tồn tại
+          description: Target user khÃ´ng tá»“n táº¡i
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
   /matches:
     get:
-      summary: Lấy danh sách các Match hiện tại
+      summary: Láº¥y danh sÃ¡ch cÃ¡c Match hiá»‡n táº¡i
       tags:
         - Matches
       parameters:
@@ -865,7 +781,7 @@ paths:
             default: 0
       responses:
         '200':
-          description: Danh sách Match
+          description: Danh sÃ¡ch Match
           content:
             application/json:
               schema:
@@ -881,9 +797,9 @@ paths:
           $ref: '#/components/responses/Unauthorized'
   /locket/send:
     post:
-      summary: Gửi ảnh Blind Locket đến Widget của đối phương
-      description: 'Upload ảnh và trigger silent push tới Widget của người nhận. Worker
-        xử lý blur ngầm. Rate limit: 10 ảnh/giờ/cặp đôi (miễn rate limit nếu có Premium).'
+      summary: Gá»­i áº£nh Blind Locket Ä‘áº¿n Widget cá»§a Ä‘á»‘i phÆ°Æ¡ng
+      description: 'Upload áº£nh vÃ  trigger silent push tá»›i Widget cá»§a ngÆ°á»i nháº­n. Worker
+        xá»­ lÃ½ blur ngáº§m. Rate limit: 10 áº£nh/giá»/cáº·p Ä‘Ã´i (miá»…n rate limit náº¿u cÃ³ Premium).'
       tags:
         - Locket
       requestBody:
@@ -899,13 +815,13 @@ paths:
                 image:
                   type: string
                   format: binary
-                  description: File ảnh (JPG/PNG, tối đa 10MB)
+                  description: File áº£nh (JPG/PNG, tá»‘i Ä‘a 10MB)
                 match_id:
                   type: string
                   format: uuid
       responses:
         '202':
-          description: Accepted — Ảnh đã nhận, Worker đang xử lý blur và gửi Push
+          description: Accepted â€” áº¢nh Ä‘Ã£ nháº­n, Worker Ä‘ang xá»­ lÃ½ blur vÃ  gá»­i Push
           content:
             application/json:
               schema:
@@ -918,7 +834,7 @@ paths:
                     type: integer
                     example: 2500
         '400':
-          description: Ảnh NSFW bị từ chối (tỷ lệ khỏa thân > 30%)
+          description: áº¢nh NSFW bá»‹ tá»« chá»‘i (tá»· lá»‡ khá»a thÃ¢n > 30%)
           content:
             application/json:
               schema:
@@ -934,9 +850,9 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
   /court/cases:
     post:
-      summary: Đâm đơn kiện (Ghosting, Trap...)
-      description: 'Điều kiện: Bị đơn im lặng > 48h và Streak cũ > 5 ngày. Vi phạm
-        điều kiện trả về ERR_CONDITION_NOT_MET.'
+      summary: ÄÃ¢m Ä‘Æ¡n kiá»‡n (Ghosting, Trap...)
+      description: 'Äiá»u kiá»‡n: Bá»‹ Ä‘Æ¡n im láº·ng > 48h vÃ  Streak cÅ© > 5 ngÃ y. Vi pháº¡m
+        Ä‘iá»u kiá»‡n tráº£ vá» ERR_CONDITION_NOT_MET.'
       tags:
         - Court
       requestBody:
@@ -954,18 +870,18 @@ paths:
                   format: uuid
                 reason:
                   type: string
-                  description: 'Lý do kiện: ''Ghosting'', ''Trapboy/Trapgirl'', ''Bùng
-                    kèo''...'
-                  example: Ghosting sau 2 tuần hẹn hò
+                  description: 'LÃ½ do kiá»‡n: ''Ghosting'', ''Trapboy/Trapgirl'', ''BÃ¹ng
+                    kÃ¨o''...'
+                  example: Ghosting sau 2 tuáº§n háº¹n hÃ²
       responses:
         '201':
-          description: Khởi kiện thành công
+          description: Khá»Ÿi kiá»‡n thÃ nh cÃ´ng
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CourtCase'
         '400':
-          description: Không đủ điều kiện kiện
+          description: KhÃ´ng Ä‘á»§ Ä‘iá»u kiá»‡n kiá»‡n
           content:
             application/json:
               schema:
@@ -977,7 +893,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
     get:
-      summary: Lấy danh sách vụ án đang chờ biểu quyết (cho Bồi thẩm đoàn)
+      summary: Láº¥y danh sÃ¡ch vá»¥ Ã¡n Ä‘ang chá» biá»ƒu quyáº¿t (cho Bá»“i tháº©m Ä‘oÃ n)
       tags:
         - Court
       parameters:
@@ -993,7 +909,7 @@ paths:
             default: 0
       responses:
         '200':
-          description: Danh sách các vụ kiện đang public (đã ẩn danh thông tin PII)
+          description: Danh sÃ¡ch cÃ¡c vá»¥ kiá»‡n Ä‘ang public (Ä‘Ã£ áº©n danh thÃ´ng tin PII)
           content:
             application/json:
               schema:
@@ -1009,7 +925,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
   /court/cases/{case_id}/vote:
     post:
-      summary: Bỏ phiếu biểu quyết (Jury Vote)
+      summary: Bá» phiáº¿u biá»ƒu quyáº¿t (Jury Vote)
       tags:
         - Court
       parameters:
@@ -1035,7 +951,7 @@ paths:
                     - not_guilty
       responses:
         '200':
-          description: Ghi nhận phiếu bầu thành công
+          description: Ghi nháº­n phiáº¿u báº§u thÃ nh cÃ´ng
           content:
             application/json:
               schema:
@@ -1049,7 +965,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Không được phép vote vụ kiện mà mình là đương sự
+          description: KhÃ´ng Ä‘Æ°á»£c phÃ©p vote vá»¥ kiá»‡n mÃ  mÃ¬nh lÃ  Ä‘Æ°Æ¡ng sá»±
           content:
             application/json:
               schema:
@@ -1058,7 +974,7 @@ paths:
           $ref: '#/components/responses/NotFound'
   /court/cases/{case_id}/withdraw:
     post:
-      summary: Rút đơn kiện (Chỉ nguyên đơn, chỉ trước khi đủ 50 vote)
+      summary: RÃºt Ä‘Æ¡n kiá»‡n (Chá»‰ nguyÃªn Ä‘Æ¡n, chá»‰ trÆ°á»›c khi Ä‘á»§ 50 vote)
       tags:
         - Court
       parameters:
@@ -1070,7 +986,7 @@ paths:
             format: uuid
       responses:
         '200':
-          description: Đơn kiện đã được rút thành công
+          description: ÄÆ¡n kiá»‡n Ä‘Ã£ Ä‘Æ°á»£c rÃºt thÃ nh cÃ´ng
           content:
             application/json:
               schema:
@@ -1080,7 +996,7 @@ paths:
                     type: string
                     example: Case withdrawn successfully
         '400':
-          description: Vụ án đã có phán quyết, không thể rút
+          description: Vá»¥ Ã¡n Ä‘Ã£ cÃ³ phÃ¡n quyáº¿t, khÃ´ng thá»ƒ rÃºt
           content:
             application/json:
               schema:
@@ -1096,7 +1012,7 @@ paths:
           $ref: '#/components/responses/NotFound'
   /clans:
     post:
-      summary: Tạo Bang hội (Tốn phí Xu)
+      summary: Táº¡o Bang há»™i (Tá»‘n phÃ­ Xu)
       tags:
         - Clans
       requestBody:
@@ -1128,12 +1044,12 @@ paths:
                     type: string
                     format: uuid
         '400':
-          description: Lỗi tên Bang hội đã tồn tại hoặc không hợp lệ
+          description: Lá»—i tÃªn Bang há»™i Ä‘Ã£ tá»“n táº¡i hoáº·c khÃ´ng há»£p lá»‡
         '402':
-          description: Không đủ Xu để tạo Bang hội
+          description: KhÃ´ng Ä‘á»§ Xu Ä‘á»ƒ táº¡o Bang há»™i
   /clans/leaderboard:
     get:
-      summary: Bảng xếp hạng Clan theo điểm tuần
+      summary: Báº£ng xáº¿p háº¡ng Clan theo Ä‘iá»ƒm tuáº§n
       tags:
         - Clans
       parameters:
@@ -1144,7 +1060,7 @@ paths:
             default: 20
       responses:
         '200':
-          description: Top Clan xếp theo weekly_score
+          description: Top Clan xáº¿p theo weekly_score
           content:
             application/json:
               schema:
@@ -1161,9 +1077,9 @@ paths:
           $ref: '#/components/responses/Unauthorized'
   /landmarks/{landmark_id}/checkin:
     post:
-      summary: Check-in GPS tại Landmark để cộng điểm Clan
-      description: Hệ thống dùng PostGIS ST_DWithin với radius_meters của Landmark
-        để xác nhận. Phát hiện Mock Location → ban 7 ngày.
+      summary: Check-in GPS táº¡i Landmark Ä‘á»ƒ cá»™ng Ä‘iá»ƒm Clan
+      description: Há»‡ thá»‘ng dÃ¹ng PostGIS ST_DWithin vá»›i radius_meters cá»§a Landmark
+        Ä‘á»ƒ xÃ¡c nháº­n. PhÃ¡t hiá»‡n Mock Location â†’ ban 7 ngÃ y.
       tags:
         - Clans
       parameters:
@@ -1195,7 +1111,7 @@ paths:
                   example: false
       responses:
         '200':
-          description: Check-in hợp lệ — cộng 10 điểm cho Clan
+          description: Check-in há»£p lá»‡ â€” cá»™ng 10 Ä‘iá»ƒm cho Clan
           content:
             application/json:
               schema:
@@ -1207,7 +1123,7 @@ paths:
                   clan_weekly_score:
                     type: integer
         '400':
-          description: Vị trí GPS nằm ngoài bán kính hợp lệ của Landmark
+          description: Vá»‹ trÃ­ GPS náº±m ngoÃ i bÃ¡n kÃ­nh há»£p lá»‡ cá»§a Landmark
           content:
             application/json:
               schema:
@@ -1218,7 +1134,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Phát hiện Fake GPS hoặc đang trong thời gian bị cấm check-in
+          description: PhÃ¡t hiá»‡n Fake GPS hoáº·c Ä‘ang trong thá»i gian bá»‹ cáº¥m check-in
           content:
             application/json:
               schema:
@@ -1229,9 +1145,9 @@ paths:
                 ban_until: '2026-08-18T00:00:00Z'
   /contracts:
     post:
-      summary: Gửi yêu cầu Khế Ước đi Date
-      description: 'Điều kiện: Cả 2 đã chat ≥ 20 tin và số dư ≥ deposit_amount. Đóng
-        băng Xu ngay khi tạo.'
+      summary: Gá»­i yÃªu cáº§u Kháº¿ Æ¯á»›c Ä‘i Date
+      description: 'Äiá»u kiá»‡n: Cáº£ 2 Ä‘Ã£ chat â‰¥ 20 tin vÃ  sá»‘ dÆ° â‰¥ deposit_amount. ÄÃ³ng
+        bÄƒng Xu ngay khi táº¡o.'
       tags:
         - Contracts
       requestBody:
@@ -1251,23 +1167,23 @@ paths:
                 deposit_amount:
                   type: number
                   example: 100
-                  description: Số Xu mỗi bên cọc (phải bằng nhau)
+                  description: Sá»‘ Xu má»—i bÃªn cá»c (pháº£i báº±ng nhau)
                 appointment_time:
                   type: string
                   format: date-time
-                  description: Giờ hẹn dự kiến
+                  description: Giá» háº¹n dá»± kiáº¿n
                 location_note:
                   type: string
-                  example: Café The Coffee House, Q1
+                  example: CafÃ© The Coffee House, Q1
       responses:
         '201':
-          description: Tạo khế ước thành công, Xu bị đóng băng
+          description: Táº¡o kháº¿ Æ°á»›c thÃ nh cÃ´ng, Xu bá»‹ Ä‘Ã³ng bÄƒng
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatingContract'
         '400':
-          description: Không đủ Xu hoặc chưa đủ điều kiện chat
+          description: KhÃ´ng Ä‘á»§ Xu hoáº·c chÆ°a Ä‘á»§ Ä‘iá»u kiá»‡n chat
           content:
             application/json:
               schema:
@@ -1276,7 +1192,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
   /contracts/{contract_id}/accept:
     post:
-      summary: Người nhận lời đồng ý Khế Ước
+      summary: NgÆ°á»i nháº­n lá»i Ä‘á»“ng Ã½ Kháº¿ Æ¯á»›c
       tags:
         - Contracts
       parameters:
@@ -1288,13 +1204,13 @@ paths:
             format: uuid
       responses:
         '200':
-          description: Khế ước được chấp nhận, Xu của User B bị đóng băng
+          description: Kháº¿ Æ°á»›c Ä‘Æ°á»£c cháº¥p nháº­n, Xu cá»§a User B bá»‹ Ä‘Ã³ng bÄƒng
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatingContract'
         '400':
-          description: User B không đủ Xu
+          description: User B khÃ´ng Ä‘á»§ Xu
           content:
             application/json:
               schema:
@@ -1307,9 +1223,9 @@ paths:
           $ref: '#/components/responses/NotFound'
   /contracts/{contract_id}/cancel:
     post:
-      summary: Hủy Khế Ước (ghi nhận người hủy để xử lý phạt)
-      description: Nếu Cron Job phát hiện quá giờ hẹn 30 phút cũng tự gọi endpoint
-        logic này.
+      summary: Há»§y Kháº¿ Æ¯á»›c (ghi nháº­n ngÆ°á»i há»§y Ä‘á»ƒ xá»­ lÃ½ pháº¡t)
+      description: Náº¿u Cron Job phÃ¡t hiá»‡n quÃ¡ giá» háº¹n 30 phÃºt cÅ©ng tá»± gá»i endpoint
+        logic nÃ y.
       tags:
         - Contracts
       parameters:
@@ -1327,10 +1243,10 @@ paths:
               properties:
                 reason:
                   type: string
-                  example: Bận đột xuất
+                  example: Báº­n Ä‘á»™t xuáº¥t
       responses:
         '200':
-          description: Xử lý hủy thành công. Xu đã bị phân phối theo quy tắc.
+          description: Xá»­ lÃ½ há»§y thÃ nh cÃ´ng. Xu Ä‘Ã£ bá»‹ phÃ¢n phá»‘i theo quy táº¯c.
           content:
             application/json:
               schema:
@@ -1352,9 +1268,9 @@ paths:
           $ref: '#/components/responses/NotFound'
   /contracts/{contract_id}/scan:
     post:
-      summary: Quét Dynamic QR code để xác nhận gặp mặt
-      description: QR Token rotate mỗi 30 giây. Quét thành công → Hoàn trả toàn bộ
-        Xu đóng băng cho cả 2.
+      summary: QuÃ©t Dynamic QR code Ä‘á»ƒ xÃ¡c nháº­n gáº·p máº·t
+      description: QR Token rotate má»—i 30 giÃ¢y. QuÃ©t thÃ nh cÃ´ng â†’ HoÃ n tráº£ toÃ n bá»™
+        Xu Ä‘Ã³ng bÄƒng cho cáº£ 2.
       tags:
         - Contracts
       parameters:
@@ -1377,7 +1293,7 @@ paths:
                   type: string
       responses:
         '200':
-          description: Khớp mã QR — Hoàn tiền cọc cho cả 2 thành công
+          description: Khá»›p mÃ£ QR â€” HoÃ n tiá»n cá»c cho cáº£ 2 thÃ nh cÃ´ng
           content:
             application/json:
               schema:
@@ -1390,7 +1306,7 @@ paths:
                     type: string
                     example: 100 Xu returned to both users
         '400':
-          description: QR Token sai hoặc đã hết hạn (> 30 giây)
+          description: QR Token sai hoáº·c Ä‘Ã£ háº¿t háº¡n (> 30 giÃ¢y)
           content:
             application/json:
               schema:
@@ -1404,7 +1320,7 @@ paths:
           $ref: '#/components/responses/NotFound'
   /cards/{user_id}:
     get:
-      summary: Xem thông tin Thẻ Bài của một Profile
+      summary: Xem thÃ´ng tin Tháº» BÃ i cá»§a má»™t Profile
       tags:
         - Cards
       parameters:
@@ -1416,7 +1332,7 @@ paths:
             format: uuid
       responses:
         '200':
-          description: Thông tin Thẻ Bài
+          description: ThÃ´ng tin Tháº» BÃ i
           content:
             application/json:
               schema:
@@ -1424,7 +1340,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Chưa đạt Level 5 để mở tính năng Sàn giao dịch
+          description: ChÆ°a Ä‘áº¡t Level 5 Ä‘á»ƒ má»Ÿ tÃ­nh nÄƒng SÃ n giao dá»‹ch
           content:
             application/json:
               schema:
@@ -1433,9 +1349,9 @@ paths:
           $ref: '#/components/responses/NotFound'
   /cards/trade:
     post:
-      summary: Đặt lệnh mua/bán Thẻ Bài Profile
-      description: Áp dụng phí giao dịch 2%. Nếu Circuit Breaker đang kích hoạt →
-        trả về 503.
+      summary: Äáº·t lá»‡nh mua/bÃ¡n Tháº» BÃ i Profile
+      description: Ãp dá»¥ng phÃ­ giao dá»‹ch 2%. Náº¿u Circuit Breaker Ä‘ang kÃ­ch hoáº¡t â†’
+        tráº£ vá» 503.
       tags:
         - Cards
       requestBody:
@@ -1462,7 +1378,7 @@ paths:
                   minimum: 1
       responses:
         '200':
-          description: Khớp lệnh thành công
+          description: Khá»›p lá»‡nh thÃ nh cÃ´ng
           content:
             application/json:
               schema:
@@ -1479,11 +1395,11 @@ paths:
                     type: number
                   fee:
                     type: number
-                    description: Phí giao dịch 2%
+                    description: PhÃ­ giao dá»‹ch 2%
                   new_wallet_balance:
                     type: number
         '400':
-          description: Không đủ Xu hoặc không đủ Thẻ Bài để bán
+          description: KhÃ´ng Ä‘á»§ Xu hoáº·c khÃ´ng Ä‘á»§ Tháº» BÃ i Ä‘á»ƒ bÃ¡n
           content:
             application/json:
               schema:
@@ -1491,7 +1407,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '503':
-          description: Circuit Breaker đang kích hoạt — Giao dịch tạm dừng
+          description: Circuit Breaker Ä‘ang kÃ­ch hoáº¡t â€” Giao dá»‹ch táº¡m dá»«ng
           content:
             application/json:
               schema:
@@ -1502,9 +1418,9 @@ paths:
                 resume_at: '2026-08-11T12:45:00Z'
   /ex-ratings:
     post:
-      summary: Đánh giá đối phương sau khi Unmatch
-      description: Chỉ thực hiện được sau khi gọi API unmatch. Reviewer được ẩn danh
-        hoàn toàn.
+      summary: ÄÃ¡nh giÃ¡ Ä‘á»‘i phÆ°Æ¡ng sau khi Unmatch
+      description: Chá»‰ thá»±c hiá»‡n Ä‘Æ°á»£c sau khi gá»i API unmatch. Reviewer Ä‘Æ°á»£c áº©n danh
+        hoÃ n toÃ n.
       tags:
         - Ex-Rating
       requestBody:
@@ -1533,11 +1449,11 @@ paths:
                   items:
                     type: string
                   example:
-                    - '#Lịch_sự'
-                    - '#Đúng_giờ'
+                    - '#Lá»‹ch_sá»±'
+                    - '#ÄÃºng_giá»'
       responses:
         '201':
-          description: Đánh giá đã được ghi nhận (ẩn danh)
+          description: ÄÃ¡nh giÃ¡ Ä‘Ã£ Ä‘Æ°á»£c ghi nháº­n (áº©n danh)
           content:
             application/json:
               schema:
@@ -1547,7 +1463,7 @@ paths:
                     type: string
                     example: Rating submitted anonymously
         '400':
-          description: Chưa đủ điều kiện (< 50 tin nhắn)
+          description: ChÆ°a Ä‘á»§ Ä‘iá»u kiá»‡n (< 50 tin nháº¯n)
           content:
             application/json:
               schema:
@@ -1556,9 +1472,9 @@ paths:
           $ref: '#/components/responses/Unauthorized'
   /users/{user_id}/ex-rating:
     get:
-      summary: Tra cứu CV Tình Trường (Mất phí 50 Xu)
-      description: Tự động trừ 50 Xu khi gọi API thành công. Trả về điểm tổng hợp
-        và tag cloud (ẩn danh reviewer).
+      summary: Tra cá»©u CV TÃ¬nh TrÆ°á»ng (Máº¥t phÃ­ 50 Xu)
+      description: Tá»± Ä‘á»™ng trá»« 50 Xu khi gá»i API thÃ nh cÃ´ng. Tráº£ vá» Ä‘iá»ƒm tá»•ng há»£p
+        vÃ  tag cloud (áº©n danh reviewer).
       tags:
         - Ex-Rating
       parameters:
@@ -1570,7 +1486,7 @@ paths:
             format: uuid
       responses:
         '200':
-          description: CV Tình Trường (đã trừ 50 Xu)
+          description: CV TÃ¬nh TrÆ°á»ng (Ä‘Ã£ trá»« 50 Xu)
           content:
             application/json:
               schema:
@@ -1592,12 +1508,12 @@ paths:
                       properties:
                         tag:
                           type: string
-                          example: '#Lịch_sự'
+                          example: '#Lá»‹ch_sá»±'
                         count:
                           type: integer
                           example: 4
         '400':
-          description: Không đủ 50 Xu để tra cứu
+          description: KhÃ´ng Ä‘á»§ 50 Xu Ä‘á»ƒ tra cá»©u
           content:
             application/json:
               schema:
@@ -1611,7 +1527,7 @@ paths:
           $ref: '#/components/responses/NotFound'
   /health:
     get:
-      summary: Health check endpoint (dùng cho Uptime Monitor và K8s probes)
+      summary: Health check endpoint (dÃ¹ng cho Uptime Monitor vÃ  K8s probes)
       tags:
         - System
       security: []
@@ -1633,7 +1549,7 @@ paths:
                     type: integer
   /bounties:
     post:
-      summary: Đăng lệnh truy nã hẹn hò
+      summary: ÄÄƒng lá»‡nh truy nÃ£ háº¹n hÃ²
       tags:
         - Bounties
       requestBody:
@@ -1652,7 +1568,7 @@ paths:
           description: Created
   /bounties/{id}/apply:
     post:
-      summary: Nộp đơn ứng tuyển lệnh truy nã
+      summary: Ná»™p Ä‘Æ¡n á»©ng tuyá»ƒn lá»‡nh truy nÃ£
       tags:
         - Bounties
       parameters:
@@ -1666,7 +1582,7 @@ paths:
           description: Applied
   /auctions/{id}/bid:
     post:
-      summary: Trả giá cho phiên đấu giá mù
+      summary: Tráº£ giÃ¡ cho phiÃªn Ä‘áº¥u giÃ¡ mÃ¹
       tags:
         - Auctions
       parameters:
@@ -1689,7 +1605,7 @@ paths:
           description: Bid placed
   /wall-of-shames/{user_id}/throw-tomato:
     post:
-      summary: Ném cà chua vào đối tượng bị phong sát
+      summary: NÃ©m cÃ  chua vÃ o Ä‘á»‘i tÆ°á»£ng bá»‹ phong sÃ¡t
       tags:
         - Drama
       parameters:
@@ -1720,7 +1636,7 @@ paths:
           description: Matched
   /wingmans/referral:
     post:
-      summary: Tạo link ghép đôi cho bạn bè
+      summary: Táº¡o link ghÃ©p Ä‘Ã´i cho báº¡n bÃ¨
       tags:
         - Wingman
       requestBody:
@@ -1757,7 +1673,7 @@ paths:
                     format: date-time
   /wingmans/referral/{id}/accept:
     post:
-      summary: Chấp nhận ghép đôi từ Cò Mối
+      summary: Cháº¥p nháº­n ghÃ©p Ä‘Ã´i tá»« CÃ² Má»‘i
       tags:
         - Wingman
       parameters:
@@ -1782,7 +1698,7 @@ paths:
                     type: string
   /minigame/steal/init:
     post:
-      summary: Kích hoạt PK cướp Thẻ Bài
+      summary: KÃ­ch hoáº¡t PK cÆ°á»›p Tháº» BÃ i
       tags:
         - Cards
         - Minigame
@@ -1809,7 +1725,7 @@ paths:
           description: PK Match created
   /minigame/steal/submit:
     post:
-      summary: Gửi kết quả trận PK cướp Thẻ Bài
+      summary: Gá»­i káº¿t quáº£ tráº­n PK cÆ°á»›p Tháº» BÃ i
       tags:
         - Cards
         - Minigame
@@ -1832,10 +1748,10 @@ paths:
                   type: boolean
       responses:
         '200':
-          description: Kết quả được ghi nhận
+          description: Káº¿t quáº£ Ä‘Æ°á»£c ghi nháº­n
   /chat/ws:
     get:
-      summary: Kết nối WebSocket nhận tin nhắn Real-time
+      summary: Káº¿t ná»‘i WebSocket nháº­n tin nháº¯n Real-time
       tags:
         - Chat
       responses:
@@ -1843,7 +1759,7 @@ paths:
           description: Switching Protocols (WebSocket Connected)
   /chat/messages:
     post:
-      summary: Gửi tin nhắn chat
+      summary: Gá»­i tin nháº¯n chat
       tags:
         - Chat
       requestBody:
@@ -1872,10 +1788,10 @@ paths:
                   example: Hello
       responses:
         '201':
-          description: Đã gửi
+          description: ÄÃ£ gá»­i
   /chat/messages/{match_id}:
     get:
-      summary: Lấy lịch sử chat
+      summary: Láº¥y lá»‹ch sá»­ chat
       tags:
         - Chat
       parameters:
@@ -1893,10 +1809,10 @@ paths:
             format: date-time
       responses:
         '200':
-          description: Lịch sử tin nhắn
+          description: Lá»‹ch sá»­ tin nháº¯n
   /shames:
     get:
-      summary: Lấy danh sách Wall of Shame
+      summary: Láº¥y danh sÃ¡ch Wall of Shame
       tags:
         - Shames
       security:
@@ -1949,7 +1865,7 @@ paths:
                           format: date-time
   /shames/{id}/tomato:
     post:
-      summary: Ném cà chua vào Wall of Shame
+      summary: NÃ©m cÃ  chua vÃ o Wall of Shame
       tags:
         - Shames
       security:
@@ -1963,20 +1879,20 @@ paths:
             format: uuid
       responses:
         '200':
-          description: Ném cà chua thành công
+          description: NÃ©m cÃ  chua thÃ nh cÃ´ng
         '400':
-          description: Request không hợp lệ
+          description: Request khÃ´ng há»£p lá»‡
 
   /vibe/status:
     get:
-      summary: Lấy trạng thái Vibe Check
+      summary: Láº¥y tráº¡ng thÃ¡i Vibe Check
       tags:
         - Vibe
       security:
         - BearerAuth: []
       responses:
         '200':
-          description: Trạng thái Vibe Check
+          description: Tráº¡ng thÃ¡i Vibe Check
           content:
             application/json:
               schema:
@@ -1988,21 +1904,21 @@ paths:
                     type: string
   /vibe/current-track:
     get:
-      summary: Lấy bài hát đang nghe (Mock Spotify)
+      summary: Láº¥y bÃ i hÃ¡t Ä‘ang nghe (Mock Spotify)
       tags:
         - Vibe
       security:
         - BearerAuth: []
       responses:
         '200':
-          description: Thông tin bài hát
+          description: ThÃ´ng tin bÃ i hÃ¡t
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
   /vibe/match:
     post:
-      summary: Ghép đôi Vibe Check
+      summary: GhÃ©p Ä‘Ã´i Vibe Check
       tags:
         - Vibe
       security:
@@ -2018,23 +1934,23 @@ paths:
                   type: string
       responses:
         '201':
-          description: Ghép đôi thành công
+          description: GhÃ©p Ä‘Ã´i thÃ nh cÃ´ng
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
   /auctions/active:
     get:
-      summary: Lấy danh sách đấu giá đang diễn ra
+      summary: Láº¥y danh sÃ¡ch Ä‘áº¥u giÃ¡ Ä‘ang diá»…n ra
       tags: [Auction]
       security:
         - BearerAuth: []
       responses:
         '200':
-          description: "Thành công"
+          description: "ThÃ nh cÃ´ng"
   /auctions/{id}/bid:
     post:
-      summary: Đặt giá thầu
+      summary: Äáº·t giÃ¡ tháº§u
       tags: [Auction]
       security:
         - BearerAuth: []
@@ -2053,10 +1969,10 @@ paths:
                 amount: { type: number }
       responses:
         '201':
-          description: "Thành công"
+          description: "ThÃ nh cÃ´ng"
   /matches/{match_id}:
     delete:
-      summary: Hủy tương hợp (Unmatch)
+      summary: Há»§y tÆ°Æ¡ng há»£p (Unmatch)
       tags:
         - Matches
       security:
@@ -2070,7 +1986,7 @@ paths:
             format: uuid
       responses:
         '200':
-          description: Unmatch thành công
+          description: Unmatch thÃ nh cÃ´ng
           content:
             application/json:
               schema:
@@ -2087,7 +2003,7 @@ paths:
           $ref: '#/components/responses/NotFound'
   /vouchers:
     get:
-      summary: Danh sách Voucher khả dụng
+      summary: Danh sÃ¡ch Voucher kháº£ dá»¥ng
       tags:
         - Vouchers
       security:
@@ -2097,7 +2013,7 @@ paths:
           description: OK
   /vouchers/redeem:
     post:
-      summary: Đổi Xu lấy Voucher
+      summary: Äá»•i Xu láº¥y Voucher
       tags:
         - Vouchers
       security:
@@ -2117,12 +2033,12 @@ paths:
                   example: 100
       responses:
         '201':
-          description: Đổi thành công
+          description: Äá»•i thÃ nh cÃ´ng
         '400':
-          description: Không đủ điểm hoặc hết hàng
+          description: KhÃ´ng Ä‘á»§ Ä‘iá»ƒm hoáº·c háº¿t hÃ ng
   /admin/v1/vouchers:
     get:
-      summary: (Admin) Danh sách tất cả Voucher
+      summary: (Admin) Danh sÃ¡ch táº¥t cáº£ Voucher
       tags:
         - Admin
         - Vouchers
@@ -2132,7 +2048,7 @@ paths:
         '200':
           description: OK
     post:
-      summary: (Admin) Thêm mã Voucher mới
+      summary: (Admin) ThÃªm mÃ£ Voucher má»›i
       tags:
         - Admin
         - Vouchers
@@ -2159,7 +2075,7 @@ paths:
           description: Created
   /admin/v1/vouchers/{id}:
     delete:
-      summary: (Admin) Xóa/Thu hồi Voucher chưa dùng
+      summary: (Admin) XÃ³a/Thu há»“i Voucher chÆ°a dÃ¹ng
       tags:
         - Admin
         - Vouchers
