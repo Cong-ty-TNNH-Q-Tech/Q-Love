@@ -30,7 +30,7 @@ func TestMatchHandler_Unmatch_Success(t *testing.T) {
 	handler := NewMatchHandler(mockService)
 
 	app.Delete("/matches/:match_id", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.NewString())
+		c.Locals("user_id", uuid.New())
 		return handler.Unmatch(c)
 	})
 
@@ -46,7 +46,7 @@ func TestMatchHandler_Unmatch_InvalidMatchID(t *testing.T) {
 	handler := NewMatchHandler(mockService)
 
 	app.Delete("/matches/:match_id", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.NewString())
+		c.Locals("user_id", uuid.New())
 		return handler.Unmatch(c)
 	})
 
@@ -62,7 +62,7 @@ func TestMatchHandler_Unmatch_Forbidden(t *testing.T) {
 	handler := NewMatchHandler(mockService)
 
 	app.Delete("/matches/:match_id", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.NewString())
+		c.Locals("user_id", uuid.New())
 		return handler.Unmatch(c)
 	})
 
@@ -78,7 +78,7 @@ func TestMatchHandler_Unmatch_NotFound(t *testing.T) {
 	handler := NewMatchHandler(mockService)
 
 	app.Delete("/matches/:match_id", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.NewString())
+		c.Locals("user_id", uuid.New())
 		return handler.Unmatch(c)
 	})
 
@@ -94,7 +94,7 @@ func TestMatchHandler_Unmatch_InternalError(t *testing.T) {
 	handler := NewMatchHandler(mockService)
 
 	app.Delete("/matches/:match_id", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.NewString())
+		c.Locals("user_id", uuid.New())
 		return handler.Unmatch(c)
 	})
 

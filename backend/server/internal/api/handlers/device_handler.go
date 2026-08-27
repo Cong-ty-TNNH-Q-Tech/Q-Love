@@ -24,12 +24,10 @@ func NewDeviceHandler(redisClient *redis.Client) *DeviceHandler {
 
 // RegisterFCMToken allows mobile app to register their FCM push token
 func (h *DeviceHandler) RegisterFCMToken(c *fiber.Ctx) error {
-	userIDStr := c.Locals("user_id")
-	if userIDStr == nil {
+	userID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
-
-	userID, ok := userIDStr.(uuid.UUID)
 	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid user ID"})
 	}

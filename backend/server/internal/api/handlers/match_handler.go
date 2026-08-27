@@ -26,12 +26,10 @@ func (h *MatchHandler) Unmatch(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid match_id"})
 	}
 
-	userIDStr := c.Locals("user_id").(string)
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	userID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid user id"})
 	}
-
 	if err := h.matchService.Unmatch(c.Context(), matchID, userID); err != nil {
 		if err.Error() == "forbidden" {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "forbidden"})
