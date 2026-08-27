@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [backend/server/models] Bổ sung cơ chế Soft Delete (cột `deleted_at`) cho các bảng `user_wallets` và `wallet_transactions` để tuân thủ Rule 6 (Issue #175).
 
 ### Added
+- [backend/server/services] Thêm Cronjob quản lý Đảo Tình Yêu (Reset Streak & Level) (Issue #9).
 - [backend/server/api] Thêm API Cọc tiền Khế ước Hẹn hò và cơ chế chống Race Condition (Issue #8).
 - [backend/server/api] Thêm API Check-in Landmark & Anti-Fake GPS (Issue #10).
 - [backend/server/models] Thêm thuộc tính `ClanID` vào model `User` và `Location` (PostGIS) vào model `Landmark`.

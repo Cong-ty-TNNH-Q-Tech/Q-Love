@@ -134,6 +134,9 @@ func (m *mockMatchRepoForCourt) FindByUsers(ctx context.Context, u1, u2 uuid.UUI
 	return nil, nil
 }
 
+func (m *mockMatchRepoForCourt) ResetStreakForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
+func (m *mockMatchRepoForCourt) ResetIslandLevelForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
+
 // Tests
 
 func TestCourtService_FileLawsuit_Success(t *testing.T) {

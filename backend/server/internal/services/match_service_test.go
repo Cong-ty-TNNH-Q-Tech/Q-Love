@@ -61,6 +61,8 @@ func (m *mockMatchServiceRepo) Create(ctx context.Context, match *models.Match) 
 func (m *mockMatchServiceRepo) FindByUsers(ctx context.Context, u1, u2 uuid.UUID) (*models.Match, error) {
 	return nil, nil
 }
+func (m *mockMatchServiceRepo) ResetStreakForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
+func (m *mockMatchServiceRepo) ResetIslandLevelForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
 
 func TestMatchService_Unmatch(t *testing.T) {
 	matchID := uuid.New()
