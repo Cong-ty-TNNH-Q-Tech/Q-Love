@@ -39,7 +39,7 @@ func TestLandmarkHandler_CheckIn(t *testing.T) {
 	handler := NewLandmarkHandler(mockService)
 
 	app.Post("/checkin/:landmark_id", func(c *fiber.Ctx) error {
-		c.Locals("user_id", "123e4567-e89b-12d3-a456-426614174000")
+		c.Locals("user_id", uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"))
 		return handler.CheckIn(c)
 	})
 

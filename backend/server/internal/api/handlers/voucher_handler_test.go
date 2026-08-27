@@ -47,7 +47,7 @@ func TestVoucherHandler_RedeemVoucher(t *testing.T) {
 	
 	// Add mock locals middleware
 	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("userID", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return c.Next()
 	})
 	app.Post("/redeem", handler.RedeemVoucher)
@@ -87,7 +87,7 @@ func TestVoucherHandler_RedeemVoucher_Errors(t *testing.T) {
 	app := fiber.New()
 	svc := &mockVoucherService{err: errors.New("fail")}
 	handler := NewVoucherHandler(svc)
-	app.Use(func(c *fiber.Ctx) error { c.Locals("userID", uuid.New().String()); return c.Next() })
+	app.Use(func(c *fiber.Ctx) error { c.Locals("user_id", uuid.New()); return c.Next() })
 	app.Post("/redeem", handler.RedeemVoucher)
 
 	body, _ := json.Marshal(map[string]interface{}{

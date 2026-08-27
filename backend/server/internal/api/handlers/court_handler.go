@@ -32,12 +32,10 @@ type VoteRequest struct {
 }
 
 func (h *CourtHandler) FileLawsuit(c *fiber.Ctx) error {
-	userIDStr := c.Locals("userID").(string)
-	plaintiffID, err := uuid.Parse(userIDStr)
-	if err != nil {
+	plaintiffID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid user id"})
 	}
-
 	var req FileLawsuitRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
@@ -55,12 +53,10 @@ func (h *CourtHandler) FileLawsuit(c *fiber.Ctx) error {
 }
 
 func (h *CourtHandler) GetFeed(c *fiber.Ctx) error {
-	userIDStr := c.Locals("userID").(string)
-	jurorID, err := uuid.Parse(userIDStr)
-	if err != nil {
+	jurorID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid user id"})
 	}
-
 	limit := c.QueryInt("limit", 20)
 	cases, err := h.courtService.GetFeed(c.Context(), jurorID, limit)
 	if err != nil {
@@ -73,12 +69,10 @@ func (h *CourtHandler) GetFeed(c *fiber.Ctx) error {
 }
 
 func (h *CourtHandler) VoteCase(c *fiber.Ctx) error {
-	userIDStr := c.Locals("userID").(string)
-	jurorID, err := uuid.Parse(userIDStr)
-	if err != nil {
+	jurorID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid user id"})
 	}
-
 	caseIDStr := c.Params("case_id")
 	caseID, err := uuid.Parse(caseIDStr)
 	if err != nil {
@@ -105,12 +99,10 @@ func (h *CourtHandler) VoteCase(c *fiber.Ctx) error {
 }
 
 func (h *CourtHandler) WithdrawCase(c *fiber.Ctx) error {
-	userIDStr := c.Locals("userID").(string)
-	plaintiffID, err := uuid.Parse(userIDStr)
-	if err != nil {
+	plaintiffID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid user id"})
 	}
-
 	caseIDStr := c.Params("case_id")
 	caseID, err := uuid.Parse(caseIDStr)
 	if err != nil {

@@ -56,16 +56,10 @@ func (h *ExRatingHandler) SubmitRating(c *fiber.Ctx) error {
 }
 
 func (h *ExRatingHandler) ViewRating(c *fiber.Ctx) error {
-	viewerIDStr, ok := c.Locals("user_id").(string)
-	if !ok || viewerIDStr == "" {
+	viewerID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
-
-	viewerID, err := uuid.Parse(viewerIDStr)
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid user context"})
-	}
-
 	targetUserIDStr := c.Params("user_id")
 	targetUserID, err := uuid.Parse(targetUserIDStr)
 	if err != nil {

@@ -19,12 +19,10 @@ func NewMinigameHandler(minigameService services.MinigameService) *MinigameHandl
 }
 
 func (h *MinigameHandler) InitSteal(c *fiber.Ctx) error {
-	attackerIDStr := c.Locals("user_id").(string)
-	attackerID, err := uuid.Parse(attackerIDStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user id"})
+	attackerID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid user id"})
 	}
-
 	var req struct {
 		DefenderID   string `json:"defender_id"`
 		TargetCardID string `json:"target_card_id"`
@@ -54,12 +52,10 @@ func (h *MinigameHandler) InitSteal(c *fiber.Ctx) error {
 }
 
 func (h *MinigameHandler) SubmitStealResult(c *fiber.Ctx) error {
-	attackerIDStr := c.Locals("user_id").(string)
-	attackerID, err := uuid.Parse(attackerIDStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user id"})
+	attackerID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid user id"})
 	}
-
 	var req struct {
 		StealID string `json:"steal_id"`
 		IsWin   bool   `json:"is_win"`

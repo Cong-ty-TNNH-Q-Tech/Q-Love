@@ -51,8 +51,8 @@ func TestLocketHandler_SendLocket_InvalidUserID(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/send", nil)
 	resp, _ := app.Test(req)
 
-	if resp.StatusCode != fiber.StatusBadRequest {
-		t.Errorf("Expected status %d, got %d", fiber.StatusBadRequest, resp.StatusCode)
+	if resp.StatusCode != fiber.StatusUnauthorized {
+		t.Errorf("Expected status %d, got %d", fiber.StatusUnauthorized, resp.StatusCode)
 	}
 }
 
@@ -61,7 +61,7 @@ func TestLocketHandler_SendLocket_InvalidMatchID(t *testing.T) {
 	handler := NewLocketHandler(&mockLocketService{})
 
 	app.Post("/send", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return handler.SendLocket(c)
 	})
 
@@ -84,7 +84,7 @@ func TestLocketHandler_SendLocket_MissingImage(t *testing.T) {
 	handler := NewLocketHandler(&mockLocketService{})
 
 	app.Post("/send", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return handler.SendLocket(c)
 	})
 
@@ -107,7 +107,7 @@ func TestLocketHandler_SendLocket_ServiceError(t *testing.T) {
 	handler := NewLocketHandler(&mockLocketService{err: errors.New("service error")})
 
 	app.Post("/send", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return handler.SendLocket(c)
 	})
 
@@ -132,7 +132,7 @@ func TestLocketHandler_SendLocket_Success(t *testing.T) {
 	handler := NewLocketHandler(&mockLocketService{})
 
 	app.Post("/send", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return handler.SendLocket(c)
 	})
 

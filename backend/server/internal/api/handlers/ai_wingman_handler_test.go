@@ -34,7 +34,7 @@ func TestAIWingmanHandler_SuggestReplies(t *testing.T) {
 	handler := NewAIWingmanHandler(&mockAIWingmanService{})
 
 	app.Post("/suggest", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return handler.SuggestReplies(c)
 	})
 
@@ -62,7 +62,7 @@ func TestAIWingmanHandler_SuggestReplies_InvalidJSON(t *testing.T) {
 	app := fiber.New()
 	handler := NewAIWingmanHandler(&mockAIWingmanService{})
 	app.Post("/suggest", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return handler.SuggestReplies(c)
 	})
 
@@ -78,7 +78,7 @@ func TestAIWingmanHandler_SuggestReplies_InvalidUUID(t *testing.T) {
 	app := fiber.New()
 	handler := NewAIWingmanHandler(&mockAIWingmanService{})
 	app.Post("/suggest", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return handler.SuggestReplies(c)
 	})
 
@@ -97,7 +97,7 @@ func TestAIWingmanHandler_SuggestReplies_ServiceError(t *testing.T) {
 	app := fiber.New()
 	handler := NewAIWingmanHandler(&mockAIWingmanService{err: assert.AnError})
 	app.Post("/suggest", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return handler.SuggestReplies(c)
 	})
 
