@@ -156,8 +156,7 @@ CREATE TABLE card_transactions (
     type VARCHAR(10),
     quantity INT,
     price_at_transaction NUMERIC,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Notifications & Violations
@@ -220,8 +219,7 @@ CREATE TABLE wall_of_shames (
     reason TEXT,
     tomatoes_thrown INT DEFAULT 0,
     expires_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE vibe_checks (
@@ -229,8 +227,7 @@ CREATE TABLE vibe_checks (
     user1_id UUID REFERENCES users(id),
     user2_id UUID REFERENCES users(id),
     track_id VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE wingman_referrals (
@@ -248,6 +245,5 @@ CREATE TABLE card_steals (
     defender_id UUID REFERENCES users(id),
     target_card_id UUID REFERENCES users(id),
     result VARCHAR(20),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
