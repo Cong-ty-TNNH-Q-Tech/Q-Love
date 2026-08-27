@@ -69,7 +69,7 @@ func TestDatingContractHandler_CreateContract(t *testing.T) {
 		mockService.On("CreateContract", mock.Anything, userID, targetID, 500.0, mock.Anything).Return(&models.DatingContract{ID: uuid.New()}, nil)
 
 		reqBody := map[string]interface{}{
-			"target_user_id":   targetID.String(),
+			"partner_id":       targetID.String(),
 			"deposit_amount":   500.0,
 			"appointment_time": apptTime.Format(time.RFC3339),
 		}
@@ -87,7 +87,7 @@ func TestDatingContractHandler_CreateContract(t *testing.T) {
 		mockService.On("CreateContract", mock.Anything, userID, targetID, 500.0, mock.Anything).Return(nil, assert.AnError)
 
 		reqBody := map[string]interface{}{
-			"target_user_id":   targetID.String(),
+			"partner_id":       targetID.String(),
 			"deposit_amount":   500.0,
 			"appointment_time": apptTime.Format(time.RFC3339),
 		}
