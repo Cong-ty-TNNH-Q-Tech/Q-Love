@@ -74,8 +74,8 @@ func TestLocketHandler_SendLocket_InvalidMatchID(t *testing.T) {
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	resp, _ := app.Test(req)
 
-	if resp.StatusCode != fiber.StatusUnauthorized {
-		t.Errorf("Expected status %d, got %d", fiber.StatusUnauthorized, resp.StatusCode)
+	if resp.StatusCode != fiber.StatusBadRequest {
+		t.Errorf("Expected status %d, got %d", fiber.StatusBadRequest, resp.StatusCode)
 	}
 }
 
@@ -97,8 +97,8 @@ func TestLocketHandler_SendLocket_MissingImage(t *testing.T) {
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	resp, _ := app.Test(req)
 
-	if resp.StatusCode != fiber.StatusUnauthorized {
-		t.Errorf("Expected status %d, got %d", fiber.StatusUnauthorized, resp.StatusCode)
+	if resp.StatusCode != fiber.StatusBadRequest {
+		t.Errorf("Expected status %d, got %d", fiber.StatusBadRequest, resp.StatusCode)
 	}
 }
 

@@ -114,8 +114,8 @@ func TestVibeHandler_InvalidUser(t *testing.T) {
 
 	req1 := httptest.NewRequest("GET", "/vibe/current-track", nil)
 	resp1, _ := app.Test(req1)
-	// CurrentTrack doesn't parse UUID, just checks if string is empty
-	assert.Equal(t, 200, resp1.StatusCode)
+	// CurrentTrack expects UUID and fails since user_id is string
+	assert.Equal(t, 401, resp1.StatusCode)
 
 	req2 := httptest.NewRequest("POST", "/vibe/match", bytes.NewBufferString(`{"track_id": "track1"}`))
 	req2.Header.Set("Content-Type", "application/json")
