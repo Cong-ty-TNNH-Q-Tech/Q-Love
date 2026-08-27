@@ -11,6 +11,9 @@ import (
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
+	"fmt"
+	"time"
 )
 
 type MatchService interface {
@@ -18,11 +21,17 @@ type MatchService interface {
 }
 
 type matchService struct {
-	matchRepo repository.MatchRepository
+	matchRepo   repository.MatchRepository
+	notifSvc    NotificationService
+	redisClient *redis.Client
 }
 
-func NewMatchService(matchRepo repository.MatchRepository) MatchService {
-	return &matchService{matchRepo: matchRepo}
+func NewMatchService(matchRepo repository.MatchRepository, notifSvc NotificationService, redisClient *redis.Client) MatchService {
+	return &matchService{
+		matchRepo:   matchRepo,
+		notifSvc:    notifSvc,
+		redisClient: redisClient,
+	}
 }
 
 func (s *matchService) Unmatch(ctx context.Context, matchID, userID uuid.UUID) error {
@@ -44,7 +53,30 @@ func (s *matchService) Unmatch(ctx context.Context, matchID, userID uuid.UUID) e
 		return err
 	}
 
-	// TODO: Trigger luồng cho phép đánh giá CV Tình trường (Ex-Rating)
+	// Trigger luồng cho phép đánh giá CV Tình trường (Ex-Rating)
+	if s.redisClient != nil {
+		partnerID := match.User2ID
+		if match.User2ID == userID {
+			partnerID = match.User1ID
+		}
+
+		userKey := fmt.Sprintf("pending_ex_ratings:%s", userID.String())
+		partnerKey := fmt.Sprintf("pending_ex_ratings:%s", partnerID.String())
+
+		// Add to pending sets
+		s.redisClient.SAdd(ctx, userKey, partnerID.String())
+		s.redisClient.SAdd(ctx, partnerKey, userID.String())
+
+		// Set 24h expiration
+		s.redisClient.Expire(ctx, userKey, 24*time.Hour)
+		s.redisClient.Expire(ctx, partnerKey, 24*time.Hour)
+
+		if s.notifSvc != nil {
+			s.notifSvc.SendPush(ctx, userID, "ex_rating", "Đánh giá tình cũ", "Bạn có 24h để đánh giá CV Tình trường của người cũ", nil)
+			s.notifSvc.SendPush(ctx, partnerID, "ex_rating", "Đánh giá tình cũ", "Bạn có 24h để đánh giá CV Tình trường của người cũ", nil)
+		}
+	}
+
 	return nil
 }
 

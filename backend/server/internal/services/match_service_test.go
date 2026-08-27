@@ -16,6 +16,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type mockNotificationService struct{}
+
+func (m *mockNotificationService) SendPush(ctx context.Context, userID uuid.UUID, nType, title, body string, data map[string]string) error {
+	return nil
+}
+
+func (m *mockNotificationService) SendSilentPush(ctx context.Context, userID uuid.UUID, data map[string]string) error {
+	return nil
+}
+
 type mockMatchServiceRepo struct {
 	matches map[uuid.UUID]*models.Match
 	err     error
@@ -79,7 +89,7 @@ func TestMatchService_Unmatch(t *testing.T) {
 		},
 	}
 
-	service := NewMatchService(mockRepo)
+	service := NewMatchService(mockRepo, new(mockNotificationService), nil)
 
 	err := service.Unmatch(context.Background(), matchID, userID)
 	assert.NoError(t, err)
@@ -94,7 +104,7 @@ func TestMatchService_Unmatch_NotFound(t *testing.T) {
 		matches: map[uuid.UUID]*models.Match{},
 	}
 
-	service := NewMatchService(mockRepo)
+	service := NewMatchService(mockRepo, new(mockNotificationService), nil)
 
 	err := service.Unmatch(context.Background(), matchID, userID)
 	assert.EqualError(t, err, "match not found")
@@ -116,7 +126,7 @@ func TestMatchService_Unmatch_Forbidden(t *testing.T) {
 		},
 	}
 
-	service := NewMatchService(mockRepo)
+	service := NewMatchService(mockRepo, new(mockNotificationService), nil)
 
 	err := service.Unmatch(context.Background(), matchID, randomUserID)
 	assert.EqualError(t, err, "forbidden")
@@ -130,7 +140,7 @@ func TestMatchService_Unmatch_DBError(t *testing.T) {
 		err: errors.New("db error"),
 	}
 
-	service := NewMatchService(mockRepo)
+	service := NewMatchService(mockRepo, new(mockNotificationService), nil)
 
 	err := service.Unmatch(context.Background(), matchID, userID)
 	assert.EqualError(t, err, "db error")

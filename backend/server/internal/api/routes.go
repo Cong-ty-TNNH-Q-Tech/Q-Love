@@ -44,14 +44,15 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 	go hub.Run(ctx)
 	chatHandler := handlers.NewChatHandler(chatService, hub)
 
-	matchService := services.NewMatchService(matchRepo)
-	matchHandler := handlers.NewMatchHandler(matchService)
 	userPremRepo := repository.NewUserPremiumRepository(db)
 	
 	violationRepo := repository.NewUserViolationRepository(db)
 	nsfwService := services.NewNSFWService(cfg)
 	notificationRepo := repository.NewNotificationRepository(db)
 	notificationService := services.NewNotificationService(notificationRepo, redisClient, cfg.FCMKey)
+
+	matchService := services.NewMatchService(matchRepo, notificationService, redisClient)
+	matchHandler := handlers.NewMatchHandler(matchService)
 	locketService := services.NewLocketService(chatRepo, matchRepo, violationRepo, nsfwService, notificationService, r2Client)
 	locketHandler := handlers.NewLocketHandler(locketService)
 
