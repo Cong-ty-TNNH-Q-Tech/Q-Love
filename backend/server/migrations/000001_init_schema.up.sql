@@ -72,8 +72,7 @@ CREATE TABLE ex_ratings (
     target_id UUID REFERENCES users(id),
     rating_score INT CHECK (rating_score >= 1 AND rating_score <= 5),
     tags TEXT[],
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- O2O & Gamification (Khế Ước, Bản Đồ, Tòa Án)
@@ -203,8 +202,7 @@ CREATE TABLE blind_auctions (
     end_time TIMESTAMP,
     current_highest_bid INT DEFAULT 0,
     winner_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    status VARCHAR(20) DEFAULT 'active',
-    deleted_at TIMESTAMP
+    status VARCHAR(20) DEFAULT 'active'
 );
 
 CREATE TABLE auction_bids (
@@ -212,8 +210,7 @@ CREATE TABLE auction_bids (
     auction_id UUID REFERENCES blind_auctions(id) ON DELETE CASCADE,
     bidder_id UUID REFERENCES users(id),
     bid_amount INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE wall_of_shames (
