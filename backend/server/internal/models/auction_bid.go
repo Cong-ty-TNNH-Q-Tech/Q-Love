@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // AuctionBid represents a bid placed by a user in a blind auction.
@@ -17,4 +18,5 @@ type AuctionBid struct {
 	BidderID  uuid.UUID `gorm:"type:uuid;not null" json:"bidder_id"`
 	Amount    float64   `gorm:"not null" json:"amount"`
 	CreatedAt time.Time `json:"created_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
