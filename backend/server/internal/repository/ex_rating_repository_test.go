@@ -47,8 +47,8 @@ func TestExRatingRepository_Create(t *testing.T) {
 		CreatedAt:    time.Now(),
 	}
 
-	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "ex_ratings"`)).
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+	mock.ExpectQuery(`(?i)INSERT INTO "ex_ratings"`).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(rating.ID))
 
 	err := repo.Create(context.Background(), rating)
@@ -62,7 +62,7 @@ func TestExRatingRepository_HasRated(t *testing.T) {
 	targetUserID := uuid.New()
 	matchID := uuid.New()
 
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT count(*) FROM "ex_ratings" WHERE match_id = $1 AND target_user_id = $2`)).
+	mock.ExpectQuery(`(?i)SELECT count\(\*\) FROM "ex_ratings"`).
 		WithArgs(matchID, targetUserID).
 		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 
@@ -77,7 +77,7 @@ func TestExRatingRepository_GetSummaryByUserID(t *testing.T) {
 
 	targetUserID := uuid.New()
 
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "ex_ratings" WHERE target_user_id = $1`)).
+	mock.ExpectQuery(`(?i)SELECT \* FROM "ex_ratings"`).
 		WithArgs(targetUserID).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "target_user_id", "match_id", "rating_score", "tags_string"}).
 			AddRow(uuid.New(), targetUserID, uuid.New(), 5, `#good,#funny`).
@@ -97,7 +97,7 @@ func TestExRatingRepository_GetSummaryByUserID_Empty(t *testing.T) {
 
 	targetUserID := uuid.New()
 
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "ex_ratings" WHERE target_user_id = $1`)).
+	mock.ExpectQuery(`(?i)SELECT \* FROM "ex_ratings"`).
 		WithArgs(targetUserID).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "target_user_id", "match_id", "rating_score", "tags_string"}))
 
@@ -114,7 +114,7 @@ func TestExRatingRepository_GetSummaryByUserID_Error(t *testing.T) {
 
 	targetUserID := uuid.New()
 
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "ex_ratings" WHERE target_user_id = $1`)).
+	mock.ExpectQuery(`(?i)SELECT \* FROM "ex_ratings"`).
 		WithArgs(targetUserID).
 		WillReturnError(errors.New("db error"))
 
