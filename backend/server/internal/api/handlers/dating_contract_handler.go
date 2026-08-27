@@ -25,19 +25,18 @@ func (h *DatingContractHandler) CreateContract(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid user id"})
 	}
 	var req struct {
-		TargetUserID    string    `json:"target_user_id"`
+		PartnerID       string    `json:"partner_id"`
 		DepositAmount   float64   `json:"deposit_amount"`
 		AppointmentTime time.Time `json:"appointment_time"`
-		LocationNote    string    `json:"location_note"`
 	}
 
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	targetUserID, err := uuid.Parse(req.TargetUserID)
+	targetUserID, err := uuid.Parse(req.PartnerID)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid target_user_id format"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid partner_id format"})
 	}
 
 	contract, err := h.contractService.CreateContract(c.Context(), userID, targetUserID, req.DepositAmount, req.AppointmentTime)
