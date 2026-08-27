@@ -50,12 +50,10 @@ func (h *AuctionHandler) PlaceBid(c *fiber.Ctx) error {
 	}
 
 	// Assuming we extract UserID from JWT middleware
-	userIDVal := c.Locals("userID")
-	if userIDVal == nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	userID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
-	userID := userIDVal.(uuid.UUID)
-
 	if err := h.auctionService.PlaceBid(ctx, auctionID, userID, req.Amount); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}

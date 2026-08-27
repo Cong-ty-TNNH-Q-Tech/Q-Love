@@ -21,12 +21,10 @@ func NewFeedHandler(feedService services.FeedService) *FeedHandler {
 }
 
 func (h *FeedHandler) GetFeed(c *fiber.Ctx) error {
-	userIDVal := c.Locals("user_id")
-	if userIDVal == nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	userID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
-	userID := userIDVal.(uuid.UUID)
-
 	filter := c.Query("filter", "default")
 	radius := c.QueryInt("radius", 50000) // Default 50km
 

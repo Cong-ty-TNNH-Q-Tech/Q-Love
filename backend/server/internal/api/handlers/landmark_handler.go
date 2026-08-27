@@ -19,12 +19,10 @@ func NewLandmarkHandler(landmarkService services.LandmarkService) *LandmarkHandl
 }
 
 func (h *LandmarkHandler) CheckIn(c *fiber.Ctx) error {
-	userIDStr := c.Locals("user_id").(string)
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	userID, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid user id"})
 	}
-
 	landmarkIDStr := c.Params("landmark_id")
 	landmarkID, err := uuid.Parse(landmarkIDStr)
 	if err != nil {

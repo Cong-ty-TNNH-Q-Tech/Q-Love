@@ -20,11 +20,10 @@ func NewAIWingmanHandler(aiService services.AIWingmanService) *AIWingmanHandler 
 
 // SuggestReplies POST /api/v1/ai/suggest
 func (h *AIWingmanHandler) SuggestReplies(c *fiber.Ctx) error {
-	userIDStr, ok := c.Locals("user_id").(string)
-	if !ok || userIDStr == "" {
+	_, ok := c.Locals("user_id").(uuid.UUID)
+	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
-
 	type Request struct {
 		MatchID string `json:"match_id"`
 	}

@@ -31,7 +31,7 @@ func TestMinigameHandler_InitSteal(t *testing.T) {
 	handler := NewMinigameHandler(&mockMinigameService{})
 
 	app.Post("/init", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return handler.InitSteal(c)
 	})
 
@@ -55,7 +55,7 @@ func TestMinigameHandler_SubmitStealResult(t *testing.T) {
 	handler := NewMinigameHandler(&mockMinigameService{})
 
 	app.Post("/submit", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return handler.SubmitStealResult(c)
 	})
 
@@ -79,7 +79,7 @@ func TestMinigameHandler_InitSteal_InvalidJSON(t *testing.T) {
 	handler := NewMinigameHandler(&mockMinigameService{})
 
 	app.Post("/init", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return handler.InitSteal(c)
 	})
 
@@ -107,7 +107,7 @@ func TestMinigameHandler_SubmitStealResult_Error(t *testing.T) {
 	handler := NewMinigameHandler(&errorMockMinigameService{})
 
 	app.Post("/submit", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return handler.SubmitStealResult(c)
 	})
 

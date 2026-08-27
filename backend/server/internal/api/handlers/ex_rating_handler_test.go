@@ -51,7 +51,7 @@ func TestExRatingHandler_ViewRating(t *testing.T) {
 	app := fiber.New()
 	handler := NewExRatingHandler(&mockExRatingService{})
 	app.Get("/users/:user_id/ex-rating", func(c *fiber.Ctx) error {
-		c.Locals("user_id", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return handler.ViewRating(c)
 	})
 
@@ -140,7 +140,7 @@ func TestExRatingHandler_ViewRating_Errors(t *testing.T) {
 		} else if val == "invalid" {
 			c.Locals("user_id", "invalid-uuid")
 		} else {
-			c.Locals("user_id", uuid.New().String())
+			c.Locals("user_id", uuid.New())
 		}
 		return handler.ViewRating(c)
 	})

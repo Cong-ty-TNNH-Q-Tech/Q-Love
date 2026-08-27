@@ -56,7 +56,7 @@ func TestDatingContractHandler_CreateContract(t *testing.T) {
 	handler := NewDatingContractHandler(mockService)
 
 	app.Post("/contract", func(c *fiber.Ctx) error {
-		c.Locals("user_id", "123e4567-e89b-12d3-a456-426614174000")
+		c.Locals("user_id", uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"))
 		return handler.CreateContract(c)
 	})
 
@@ -107,7 +107,7 @@ func TestDatingContractHandler_AcceptContract(t *testing.T) {
 	handler := NewDatingContractHandler(mockService)
 
 	app.Post("/contract/:contract_id/accept", func(c *fiber.Ctx) error {
-		c.Locals("user_id", "123e4567-e89b-12d3-a456-426614174000")
+		c.Locals("user_id", uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"))
 		return handler.AcceptContract(c)
 	})
 
@@ -143,7 +143,7 @@ func TestDatingContractHandler_CancelContract(t *testing.T) {
 	handler := NewDatingContractHandler(mockService)
 
 	app.Post("/contract/:contract_id/cancel", func(c *fiber.Ctx) error {
-		c.Locals("user_id", "123e4567-e89b-12d3-a456-426614174000")
+		c.Locals("user_id", uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"))
 		return handler.CancelContract(c)
 	})
 

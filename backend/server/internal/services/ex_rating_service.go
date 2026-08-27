@@ -12,6 +12,7 @@ import (
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"github.com/google/uuid"
+	"database/sql"
 )
 
 type ExRatingService interface {
@@ -121,7 +122,7 @@ func (s *exRatingService) ViewRating(ctx context.Context, viewerID, targetUserID
 		}
 
 		return nil
-	})
+	}, &sql.TxOptions{Isolation: sql.LevelSerializable})
 
 	if err != nil {
 		return 0, 0, nil, err

@@ -19,16 +19,10 @@ func NewLocketHandler(locketService services.LocketService) *LocketHandler {
 
 // SendLocket handles POST /api/v1/locket/send
 func (h *LocketHandler) SendLocket(c *fiber.Ctx) error {
-	userIDStr, ok := c.Locals("user_id").(string)
+	senderID, ok := c.Locals("user_id").(uuid.UUID)
 	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
-
-	senderID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid User ID"})
-	}
-
 	matchIDStr := c.FormValue("match_id")
 	matchID, err := uuid.Parse(matchIDStr)
 	if err != nil {

@@ -48,19 +48,19 @@ func setupCourtHandlerApp(mockSvc *mockCourtService) *fiber.App {
 	app := fiber.New()
 	h := NewCourtHandler(mockSvc)
 	app.Post("/court/cases", func(c *fiber.Ctx) error {
-		c.Locals("userID", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return h.FileLawsuit(c)
 	})
 	app.Post("/court/:case_id/vote", func(c *fiber.Ctx) error {
-		c.Locals("userID", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return h.VoteCase(c)
 	})
 	app.Post("/court/:case_id/withdraw", func(c *fiber.Ctx) error {
-		c.Locals("userID", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return h.WithdrawCase(c)
 	})
 	app.Get("/court/feed", func(c *fiber.Ctx) error {
-		c.Locals("userID", uuid.New().String())
+		c.Locals("user_id", uuid.New())
 		return h.GetFeed(c)
 	})
 	return app
