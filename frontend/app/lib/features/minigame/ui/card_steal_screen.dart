@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:qlove/core/theme/app_theme.dart';
 
 import '../bloc/card_steal_bloc.dart';
 
@@ -80,7 +81,7 @@ class _CardStealScreenState extends State<CardStealScreen> with SingleTickerProv
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.error_outline, color: Colors.redAccent, size: 64),
+                  Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error, size: 64),
                   const SizedBox(height: 16),
                   Text(
                     state.message,
@@ -127,10 +128,10 @@ class _CardStealScreenState extends State<CardStealScreen> with SingleTickerProv
                         style: GoogleFonts.inter(
                           fontSize: 48,
                           fontWeight: FontWeight.bold,
-                          color: state.timeLeft <= 3 ? Colors.redAccent : Colors.white,
+                          color: state.timeLeft <= 3 ? AppTheme.neonRed : Colors.white,
                           shadows: [
                             Shadow(
-                              color: (state.timeLeft <= 3 ? Colors.red : Colors.blue).withOpacity(0.8),
+                              color: (state.timeLeft <= 3 ? AppTheme.neonRed : AppTheme.neonBlue).withOpacity(0.8),
                               blurRadius: 15,
                             )
                           ],
@@ -258,7 +259,7 @@ class _CardStealScreenState extends State<CardStealScreen> with SingleTickerProv
                       Icon(
                         isWin ? Icons.check_circle_outline : Icons.cancel_outlined,
                         size: 120,
-                        color: isWin ? Colors.greenAccent : Colors.redAccent,
+                        color: isWin ? AppTheme.neonGreen : AppTheme.neonRed,
                       ),
                       const SizedBox(height: 24),
                       Text(
@@ -269,7 +270,7 @@ class _CardStealScreenState extends State<CardStealScreen> with SingleTickerProv
                           color: Colors.white,
                           shadows: [
                             Shadow(
-                              color: (isWin ? Colors.green : Colors.red).withOpacity(0.6),
+                              color: (isWin ? AppTheme.neonGreen : AppTheme.neonRed).withOpacity(0.6),
                               blurRadius: 20,
                             )
                           ],

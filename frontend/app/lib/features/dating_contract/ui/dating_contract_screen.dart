@@ -65,7 +65,7 @@ class DatingContractScreen extends StatelessWidget {
             subtitle: const Text('Cọc: 200 Xu - Đợi phản hồi'),
             trailing: TextButton(
               onPressed: () {},
-              child: const Text('Hủy', style: TextStyle(color: Colors.red)),
+              child: Text('Hủy', style: TextStyle(color: Theme.of(context).colorScheme.error)),
             ),
           ),
         ),
