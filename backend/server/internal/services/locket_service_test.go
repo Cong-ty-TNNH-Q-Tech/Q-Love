@@ -31,6 +31,11 @@ func (m *mockMatchRepo) FindByID(ctx context.Context, id uuid.UUID) (*models.Mat
 	return m.match, m.err
 }
 
+
+
+func (m *mockMatchRepo) ResetStreakForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
+func (m *mockMatchRepo) ResetIslandLevelForInactiveMatches(ctx context.Context, inactiveDuration time.Duration) error { return nil }
+
 func (m *mockMatchRepo) UpdateLastInteraction(ctx context.Context, id uuid.UUID, t time.Time) error {
 	return nil
 }

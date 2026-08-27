@@ -16,12 +16,14 @@ import (
 type Scheduler struct {
 	c          *cron.Cron
 	cronService services.ClanCronService
+	islandCronService services.IslandCronService
 }
 
-func NewScheduler(cronService services.ClanCronService) *Scheduler {
+func NewScheduler(cronService services.ClanCronService, islandCronService services.IslandCronService) *Scheduler {
 	return &Scheduler{
 		c:          cron.New(cron.WithSeconds()),
 		cronService: cronService,
+		islandCronService: islandCronService,
 	}
 }
 
@@ -38,6 +40,18 @@ func (s *Scheduler) Start() {
 	})
 	if err != nil {
 		logger.Log.Fatal("Failed to register clan cron job", zap.Error(err))
+	}
+
+	// 0 0 0 * * * (0:00 every day)
+	_, err = s.c.AddFunc("0 0 0 * * *", func() {
+		ctx := context.Background()
+		logger.Log.Info("Triggering daily island ghosting check from cron")
+		if err := s.islandCronService.RunDailyGhostingCheck(ctx); err != nil {
+			logger.Log.Error("Failed to run daily island ghosting cron", zap.Error(err))
+		}
+	})
+	if err != nil {
+		logger.Log.Fatal("Failed to register island cron job", zap.Error(err))
 	}
 
 	s.c.Start()
