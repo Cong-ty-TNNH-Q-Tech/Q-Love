@@ -69,7 +69,7 @@ class _VibeCheckScreenState extends State<VibeCheckScreen> {
                       } else if (state is VibeCheckError) {
                         return Text(
                           state.message,
-                          style: const TextStyle(color: Colors.redAccent, fontSize: 16),
+                          style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 16),
                           textAlign: TextAlign.center,
                         );
                       } else if (state is VibeCheckLoaded) {

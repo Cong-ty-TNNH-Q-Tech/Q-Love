@@ -59,7 +59,7 @@ class WingmanDashboardScreen extends StatelessWidget {
                   ),
                 );
               } else if (state is WingmanError) {
-                return Center(child: Text(state.message, style: const TextStyle(color: Colors.red)));
+                return Center(child: Text(state.message, style: TextStyle(color: Theme.of(context).colorScheme.error)));
               }
               return const SizedBox.shrink();
             },

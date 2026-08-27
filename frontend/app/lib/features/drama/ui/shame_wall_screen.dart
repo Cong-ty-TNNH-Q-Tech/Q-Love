@@ -55,7 +55,7 @@ class ShameWallScreen extends StatelessWidget {
                   },
                 );
               } else if (state is ShameWallError) {
-                return Center(child: Text(state.message, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)));
+                return Center(child: Text(state.message, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.error)));
               }
               return const SizedBox.shrink();
             },
