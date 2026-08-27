@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:qlove/core/theme/app_theme.dart';
 
 class SpotifyCardWidget extends StatefulWidget {
   final String title;
@@ -131,7 +132,7 @@ class _SpotifyCardWidgetState extends State<SpotifyCardWidget> {
                   icon: Icon(
                     _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
                     size: 48,
-                    color: widget.previewUrl.isEmpty ? Colors.grey : Colors.greenAccent,
+                    color: widget.previewUrl.isEmpty ? Colors.grey : AppTheme.neonGreen,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -147,7 +148,7 @@ class _SpotifyCardWidgetState extends State<SpotifyCardWidget> {
                       }
                       return LinearProgressIndicator(
                         value: value.clamp(0.0, 1.0),
-                        color: Colors.greenAccent,
+                        color: AppTheme.neonGreen,
                         backgroundColor: Colors.white24,
                       );
                     },

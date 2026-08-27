@@ -10,6 +10,9 @@ class AppTheme {
   static const Color secondaryColor = Color(0xFF00F0FF); // Neon Cyan
   static const Color scaffoldBackground = Color(0xFF0A0A0A); // Deep dark
   static const Color surfaceColor = Color(0xFF1C1C1E); // Elevated dark
+  static const Color neonRed = Color(0xFFFF003C); // Neon Red
+  static const Color neonGreen = Color(0xFF00FF66); // Neon Green
+  static const Color neonBlue = Color(0xFF0066FF); // Neon Blue
 
   static ThemeData get darkTheme {
     return ThemeData(
