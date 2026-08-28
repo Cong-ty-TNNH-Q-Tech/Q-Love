@@ -3,6 +3,15 @@
     "appTitle": "Q-Love",
     "login": "Đăng nhập",
     "filter": "Bộ lọc",
-    "spiritualFilter": "Hệ Tâm linh \ud83d\udd2e",
-    "expandRadius": "Mở rộng bán kính"
+    "spiritualFilter": "Hệ Tâm linh 🔮",
+    "expandRadius": "Mở rộng bán kính",
+    "enterPhonePrompt": "Vui lòng nhập số điện thoại",
+    "loveJourneySubtitle": "Bắt đầu hành trình tình yêu của bạn",
+    "enterPhoneHint": "Nhập số điện thoại",
+    "continueBtn": "TIẾP TỤC",
+    "otpVerification": "Xác Thực OTP",
+    "otpSentMsg": "Mã xác thực đã được gửi đến số điện thoại của bạn",
+    "enter6DigitCode": "Nhập mã 6 chữ số",
+    "verifyBtn": "XÁC THỰC",
+    "enterFullOtp": "Vui lòng nhập đủ 6 số OTP"
 }
