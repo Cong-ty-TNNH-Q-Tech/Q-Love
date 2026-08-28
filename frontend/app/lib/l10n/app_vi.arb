@@ -18,5 +18,24 @@
     "wingmanSubtitle": "Bạn muốn ghép đôi ai với người này?",
     "friendListMock": "Danh sách bạn bè (Mock)",
     "matchNowBtn": "Ghép Đôi Ngay",
-    "matchSuccessMsg": "Ghép đôi thành công! Chờ họ đồng ý nhé."
+    "matchSuccessMsg": "Ghép đôi thành công! Chờ họ đồng ý nhé.",
+    "outOfSwipes": "Bút đã quẹt hết người rồi...\n{action}?",
+    "@outOfSwipes": {
+        "placeholders": {
+            "action": {
+                "type": "String"
+            }
+        }
+    },
+    "itsAMatch": "It's a Match! 🎉",
+    "matchDescription": "Bạn và {name} đã thích nhau!",
+    "@matchDescription": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "keepSwiping": "Tiếp tục quẹt",
+    "defaultFilter": "Mặc định"
 }
