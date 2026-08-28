@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:qlove/features/store/services/revenuecat_service.dart';
 import 'package:qlove/features/store/ui/widgets/coin_package_card.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CoinStoreScreen extends StatefulWidget {
   const CoinStoreScreen({Key? key}) : super(key: key);
@@ -37,12 +38,12 @@ class _CoinStoreScreenState extends State<CoinStoreScreen> {
     if (success) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nạp Xu thành công!')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.purchaseSuccess)),
       );
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nạp Xu thất bại hoặc bị hủy.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.purchaseFailed)),
       );
     }
   }
@@ -52,7 +53,7 @@ class _CoinStoreScreenState extends State<CoinStoreScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F1A), // Gen-Z Dark-first
       appBar: AppBar(
-        title: const Text('Cửa Hàng Xu', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context)!.storeTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -79,20 +80,20 @@ class _CoinStoreScreenState extends State<CoinStoreScreen> {
                   ]
                 ),
                 child: Column(
-                  children: const [
-                    Text('Số Xu hiện tại', style: TextStyle(color: Colors.white70, fontSize: 16)),
-                    SizedBox(height: 8),
-                    Text('1,250', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900)),
+                  children: [
+                    Text(AppLocalizations.of(context)!.currentCoins, style: const TextStyle(color: Colors.white70, fontSize: 16)),
+                    const SizedBox(height: 8),
+                    const Text('1,250', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900)),
                   ],
                 ),
               ),
               const SizedBox(height: 30),
-              const Text('Chọn Gói Nạp', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(AppLocalizations.of(context)!.selectPackage, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               
               Expanded(
                 child: _packages.isEmpty 
-                  ? const Center(child: Text('Không có gói nạp nào.', style: TextStyle(color: Colors.white54)))
+                  ? Center(child: Text(AppLocalizations.of(context)!.noPackages, style: const TextStyle(color: Colors.white54)))
                   : ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: _packages.length,
