@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Fixed
+- [backend/server/middleware] Khắc phục lỗi JWTMiddleware trả về JSON error response sai chuẩn API Docs, đổi thành `code` và `message` (Issue #163).
 - [backend/server/models] Bổ sung cơ chế Soft Delete (cột `deleted_at`) cho các bảng `user_wallets` và `wallet_transactions` để tuân thủ Rule 6 (Issue #175).
 
 ### Added
