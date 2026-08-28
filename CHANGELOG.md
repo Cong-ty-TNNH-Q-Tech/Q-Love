@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Fixed
+- [frontend/app] Bổ sung `AppLocalizations.delegate` vào `main.dart` để sửa lỗi crash ứng dụng khi dùng Localization (Issue #156).
 - [backend/server/middleware] Khắc phục lỗi JWTMiddleware trả về JSON error response sai chuẩn API Docs, đổi thành `code` và `message` (Issue #163).
 - [backend/server/models] Bổ sung cột `deleted_at` cho các bảng `blind_auctions`, `auction_bids`, `ex_ratings` trong Database Migration để đồng bộ với GORM Models (Issue #166).
 - [backend/server/models] Bổ sung cột `deleted_at` cho các bảng `card_transactions`, `wall_of_shames`, `vibe_checks`, `card_steals` trong Database Migration để đồng bộ với GORM Models (Issue #167).
