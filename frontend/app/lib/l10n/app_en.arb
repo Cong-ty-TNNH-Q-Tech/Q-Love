@@ -63,5 +63,9 @@
     "unmatchRatingTitle": "Rate Ex",
     "unmatchRatingSubtitle": "Leave an anonymous review for this person.",
     "submitRating": "Submit Rating",
-    "exRatingResultTitle": "Ex-Rating Result"
+    "exRatingResultTitle": "Ex-Rating Result",
+    "blindAuctionTitle": "Blind Auction",
+    "topHunters": "Top 5 Hunters",
+    "placeBid": "Place Bid",
+    "yourBid": "Your Bid"
 }

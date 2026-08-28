@@ -48,5 +48,9 @@
     "unmatchRatingTitle": "Đánh giá Ex",
     "unmatchRatingSubtitle": "Để lại đánh giá ẩn danh cho người này.",
     "submitRating": "Gửi đánh giá",
-    "exRatingResultTitle": "CV Tình trường"
+    "exRatingResultTitle": "CV Tình trường",
+    "blindAuctionTitle": "Đấu Giá Mù",
+    "topHunters": "Top 5 Thợ Săn",
+    "placeBid": "Đấu thầu",
+    "yourBid": "Giá thầu của bạn"
 }
