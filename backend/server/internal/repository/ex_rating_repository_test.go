@@ -48,7 +48,7 @@ func TestExRatingRepository_Create(t *testing.T) {
 	}
 
 	mock.ExpectQuery(`(?i)INSERT INTO "ex_ratings"`).
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(rating.ID))
 
 	err := repo.Create(context.Background(), rating)
@@ -79,9 +79,9 @@ func TestExRatingRepository_GetSummaryByUserID(t *testing.T) {
 
 	mock.ExpectQuery(`(?i)SELECT \* FROM "ex_ratings"`).
 		WithArgs(targetUserID).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "target_user_id", "match_id", "rating_score", "tags_string"}).
-			AddRow(uuid.New(), targetUserID, uuid.New(), 5, `#good,#funny`).
-			AddRow(uuid.New(), targetUserID, uuid.New(), 4, `#good`))
+		WillReturnRows(sqlmock.NewRows([]string{"id", "target_user_id", "match_id", "rating_score", "tags_string", "created_at", "deleted_at"}).
+			AddRow(uuid.New(), targetUserID, uuid.New(), 5, `#good,#funny`, time.Now(), nil).
+			AddRow(uuid.New(), targetUserID, uuid.New(), 4, `#good`, time.Now(), nil))
 
 	avg, total, tags, err := repo.GetSummaryByUserID(context.Background(), targetUserID)
 	assert.NoError(t, err)
@@ -99,7 +99,7 @@ func TestExRatingRepository_GetSummaryByUserID_Empty(t *testing.T) {
 
 	mock.ExpectQuery(`(?i)SELECT \* FROM "ex_ratings"`).
 		WithArgs(targetUserID).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "target_user_id", "match_id", "rating_score", "tags_string"}))
+		WillReturnRows(sqlmock.NewRows([]string{"id", "target_user_id", "match_id", "rating_score", "tags_string", "created_at", "deleted_at"}))
 
 	avg, total, tags, err := repo.GetSummaryByUserID(context.Background(), targetUserID)
 	assert.NoError(t, err)
