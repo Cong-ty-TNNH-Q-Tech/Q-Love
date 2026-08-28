@@ -59,5 +59,22 @@
     "blindAuctionTitle": "Đấu Giá Mù",
     "topHunters": "Top 5 Thợ Săn",
     "placeBid": "Đấu thầu",
-    "yourBid": "Giá thầu của bạn"
+    "yourBid": "Giá thầu của bạn",
+    "noPackages": "Không có gói nạp nào.",
+    "purchaseSuccess": "Nạp Xu thành công!",
+    "purchaseFailed": "Nạp Xu thất bại hoặc bị hủy.",
+    "createClan": "Thành lập Clan",
+    "clanName": "Tên Clan",
+    "clanNameHint": "Nhập tên Clan của bạn",
+    "profanityWarning": "Tên Clan chứa từ ngữ không phù hợp.",
+    "clanPoints": "Điểm Clan: {points}",
+    "@clanPoints": {
+        "placeholders": {
+            "points": {
+                "type": "String"
+            }
+        }
+    },
+    "inviteMembers": "Mời thành viên",
+    "inviteSuccess": "Đã gửi lời mời thành công!"
 }

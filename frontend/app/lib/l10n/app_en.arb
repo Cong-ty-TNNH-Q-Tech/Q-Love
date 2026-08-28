@@ -32,6 +32,23 @@
     "wingmanTitle": "Wingman Matchmaker",
     "wingmanSubtitle": "Who do you want to match this person with?",
     "friendListMock": "Friend List (Mock)",
+    "noPackages": "No packages available.",
+    "purchaseSuccess": "Coins purchased successfully!",
+    "purchaseFailed": "Purchase failed or was canceled.",
+    "createClan": "Create Clan",
+    "clanName": "Clan Name",
+    "clanNameHint": "Enter your Clan name",
+    "profanityWarning": "Clan name contains inappropriate words.",
+    "clanPoints": "Clan Points: {points}",
+    "@clanPoints": {
+        "placeholders": {
+            "points": {
+                "type": "String"
+            }
+        }
+    },
+    "inviteMembers": "Invite Members",
+    "inviteSuccess": "Invitation sent successfully!",
     "matchNowBtn": "Match Now",
     "matchSuccessMsg": "Match successful! Waiting for their approval.",
     "outOfSwipes": "You've swiped everyone...\n{action}?",
