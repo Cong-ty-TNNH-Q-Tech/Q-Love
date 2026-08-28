@@ -32,26 +32,7 @@
     "wingmanTitle": "Wingman Matchmaker",
     "wingmanSubtitle": "Who do you want to match this person with?",
     "friendListMock": "Friend List (Mock)",
-    "noPackages": "No packages available.",
-    "purchaseSuccess": "Coins purchased successfully!",
-    "purchaseFailed": "Purchase failed or was canceled.",
-    "createClan": "Create Clan",
-    "clanName": "Clan Name",
-    "clanNameHint": "Enter your Clan name",
-    "profanityWarning": "Clan name contains inappropriate words.",
-    "clanPoints": "Clan Points: {points}",
-    "@clanPoints": {
-        "placeholders": {
-            "points": {
-                "type": "String"
-            }
-        }
-    },
-    "inviteMembers": "Invite Members",
-    "inviteSuccess": "Invitation sent successfully!",
-    "clanMapTitle": "Clan Conquest Map",
-    "checkInLandmark": "Capture Flag",
-    "landmarkCaptured": "Captured successfully!",
+
     "matchNowBtn": "Match Now",
     "matchSuccessMsg": "Match successful! Waiting for their approval.",
     "outOfSwipes": "You've swiped everyone...\n{action}?",
@@ -94,5 +75,28 @@
     "blindAuctionTitle": "Blind Auction",
     "topHunters": "Top 5 Hunters",
     "placeBid": "Place Bid",
-    "yourBid": "Your Bid"
+    "yourBid": "Your Bid",
+    "storeTitle": "Coin Store",
+    "currentCoins": "Current Coins",
+    "selectPackage": "Select a Package",
+    "purchaseSuccess": "Coins purchased successfully!",
+    "purchaseFailed": "Purchase failed or was canceled.",
+    "noPackages": "No packages available.",
+    "createClan": "Create Clan",
+    "clanName": "Clan Name",
+    "clanNameHint": "Enter your Clan name",
+    "profanityWarning": "Clan name contains inappropriate words.",
+    "clanPoints": "Clan Points: {points}",
+    "@clanPoints": {
+        "placeholders": {
+            "points": {
+                "type": "String"
+            }
+        }
+    },
+    "inviteMembers": "Invite Members",
+    "inviteSuccess": "Invitation sent successfully!",
+    "clanMapTitle": "Clan Conquest Map",
+    "checkInLandmark": "Capture Flag",
+    "landmarkCaptured": "Captured successfully!"
 }
