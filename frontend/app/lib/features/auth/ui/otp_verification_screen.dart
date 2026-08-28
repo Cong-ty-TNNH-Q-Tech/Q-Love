@@ -8,6 +8,7 @@ import 'package:qlove/features/auth/bloc/auth_bloc.dart';
 import 'package:qlove/features/auth/bloc/auth_event.dart';
 import 'package:qlove/features/auth/bloc/auth_state.dart';
 import 'package:qlove/features/auth/ui/profile_creation_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'widgets/glass_text_field.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
@@ -30,7 +31,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập đủ 6 số OTP')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.enterFullOtp)),
       );
     }
   }
@@ -82,73 +83,75 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             ),
           ),
           child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Xác Thực OTP',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          color: AppTheme.primaryColor,
-                          fontSize: 32,
-                        ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Mã xác thực đã được gửi đến số\n${widget.phone}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 48),
-                  GlassTextField(
-                    controller: _otpController,
-                    hintText: 'Nhập mã 6 chữ số',
-                    keyboardType: TextInputType.number,
-                    maxLength: 6,
-                  ),
-                  const SizedBox(height: 32),
-                  BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, state) {
-                      final isLoading = state is AuthLoading;
-                      return ElevatedButton(
-                        onPressed: isLoading ? null : _onVerifyPressed,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.otpVerification,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                            color: AppTheme.primaryColor,
+                            fontSize: 32,
                           ),
-                          elevation: 8,
-                          shadowColor: AppTheme.primaryColor.withOpacity(0.5),
-                        ),
-                        child: isLoading
-                            ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '${AppLocalizations.of(context)!.otpSentMsg}\n${widget.phone}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+                    GlassTextField(
+                      controller: _otpController,
+                      hintText: AppLocalizations.of(context)!.enter6DigitCode,
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                    ),
+                    const SizedBox(height: 32),
+                    BlocBuilder<AuthBloc, AuthState>(
+                      builder: (context, state) {
+                        final isLoading = state is AuthLoading;
+                        return ElevatedButton(
+                          onPressed: isLoading ? null : _onVerifyPressed,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 8,
+                            shadowColor: AppTheme.primaryColor.withOpacity(0.5),
+                          ),
+                          child: isLoading
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  AppLocalizations.of(context)!.verifyBtn,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                  ),
                                 ),
-                              )
-                            : const Text(
-                                'XÁC THỰC',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                      );
-                    },
-                  ),
-                ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
