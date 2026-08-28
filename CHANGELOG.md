@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Fixed
+- [backend/server/models] Bổ sung cột `deleted_at` cho các bảng `card_transactions`, `wall_of_shames`, `vibe_checks`, `card_steals` trong Database Migration để đồng bộ với GORM Models (Issue #167).
 - [backend/server/auth] Khắc phục lỗi bất đồng bộ tên claim (`user_id` sang `sub`) giữa quá trình cấp phát và kiểm tra JWT gây lỗi 401 cho mọi request (Issue #165).
 - [backend/server/models] Bổ sung cơ chế Soft Delete (cột `deleted_at`) cho các bảng `user_wallets` và `wallet_transactions` để tuân thủ Rule 6 (Issue #175).
 
