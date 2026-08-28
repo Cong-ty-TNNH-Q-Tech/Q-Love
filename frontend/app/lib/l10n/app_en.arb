@@ -78,7 +78,21 @@
     "storeTitle": "Coin Store",
     "currentCoins": "Current Coins",
     "selectPackage": "Select a Package",
-    "purchaseSuccess": "Purchase successful!",
-    "purchaseFailed": "Purchase failed or canceled.",
-    "noPackages": "No packages available."
+    "purchaseSuccess": "Coins purchased successfully!",
+    "purchaseFailed": "Purchase failed or was canceled.",
+    "noPackages": "No packages available.",
+    "createClan": "Create Clan",
+    "clanName": "Clan Name",
+    "clanNameHint": "Enter your Clan name",
+    "profanityWarning": "Clan name contains inappropriate words.",
+    "clanPoints": "Clan Points: {points}",
+    "@clanPoints": {
+        "placeholders": {
+            "points": {
+                "type": "String"
+            }
+        }
+    },
+    "inviteMembers": "Invite Members",
+    "inviteSuccess": "Invitation sent successfully!"
 }

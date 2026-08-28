@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [frontend/app] Xây dựng màn hình Thành lập & Quản lý Clan (Issue #28) kèm bộ lọc từ ngữ thô tục (Profanity Filter) cho tên Clan.
 - [frontend/admin] Xây dựng UI Quản lý Người dùng và Dòng tiền (React), hỗ trợ hiển thị lịch sử giao dịch và trạng thái người dùng (Issue #23).
 - [frontend/admin] Thêm UI Quản lý Vật phẩm & Voucher, quản lý kho hàng đổi Xu với tính năng CRUD cơ bản (Issue #37).
 - [frontend/app] Thêm UI/UX màn hình Cài đặt (Settings) và chức năng cảnh báo Xóa tài khoản (Soft Delete) theo chuẩn App Store (Issue #38).
