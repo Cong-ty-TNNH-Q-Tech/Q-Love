@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // BlindAuction represents a daily blind auction for an exclusive 24h chat with a top user.
@@ -21,4 +22,5 @@ type BlindAuction struct {
 	WinningBid   float64   `gorm:"default:0" json:"winning_bid"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
+	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
 }
