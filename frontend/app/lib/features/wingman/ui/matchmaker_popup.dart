@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../bloc/wingman_bloc.dart';
 import '../repository/wingman_repository.dart';
 
@@ -19,7 +20,7 @@ class MatchmakerPopup extends StatelessWidget {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) => BlocProvider(
-        create: (context) => WingmanBloc(repository: WingmanRepository(Dio())),
+        create: (innerContext) => WingmanBloc(repository: WingmanRepository(RepositoryProvider.of<Dio>(context))),
         child: MatchmakerPopup(targetId: targetId),
       ),
     );
@@ -52,7 +53,7 @@ class MatchmakerPopup extends StatelessWidget {
               children: [
                 const SizedBox(height: 8),
                 Text(
-                  'Mai Mối Cò Mối',
+                  AppLocalizations.of(context)!.wingmanTitle,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -60,7 +61,7 @@ class MatchmakerPopup extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Bạn muốn ghép đôi ai với người này?',
+                  AppLocalizations.of(context)!.wingmanSubtitle,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.white70,
                   ),
@@ -76,7 +77,7 @@ class MatchmakerPopup extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      'Danh sách bạn bè (Mock)',
+                      AppLocalizations.of(context)!.friendListMock,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white54),
                     ),
                   ),
@@ -88,7 +89,7 @@ class MatchmakerPopup extends StatelessWidget {
                       Navigator.of(context).pop();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: const Text('Ghép đôi thành công! Chờ họ đồng ý nhé.'),
+                          content: Text(AppLocalizations.of(context)!.matchSuccessMsg),
                           backgroundColor: Theme.of(context).colorScheme.primary,
                         ),
                       );
@@ -118,9 +119,9 @@ class MatchmakerPopup extends StatelessWidget {
                         elevation: 8,
                         shadowColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
                       ),
-                      child: const Text(
-                        'Ghép Đôi Ngay',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      child: Text(
+                        AppLocalizations.of(context)!.matchNowBtn,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     );
                   },

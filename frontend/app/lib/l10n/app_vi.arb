@@ -13,5 +13,10 @@
     "otpSentMsg": "Mã xác thực đã được gửi đến số điện thoại của bạn",
     "enter6DigitCode": "Nhập mã 6 chữ số",
     "verifyBtn": "XÁC THỰC",
-    "enterFullOtp": "Vui lòng nhập đủ 6 số OTP"
+    "enterFullOtp": "Vui lòng nhập đủ 6 số OTP",
+    "wingmanTitle": "Mai Mối Cò Mối",
+    "wingmanSubtitle": "Bạn muốn ghép đôi ai với người này?",
+    "friendListMock": "Danh sách bạn bè (Mock)",
+    "matchNowBtn": "Ghép Đôi Ngay",
+    "matchSuccessMsg": "Ghép đôi thành công! Chờ họ đồng ý nhé."
 }
