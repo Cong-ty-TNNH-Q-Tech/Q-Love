@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import VoucherFormModal from './components/VoucherFormModal';
 import VoucherHistoryModal from './components/VoucherHistoryModal';
 
