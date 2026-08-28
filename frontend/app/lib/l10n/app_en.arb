@@ -28,5 +28,29 @@
     "otpSentMsg": "Verification code has been sent to your phone number",
     "enter6DigitCode": "Enter 6-digit code",
     "verifyBtn": "VERIFY",
-    "enterFullOtp": "Please enter all 6 digits"
+    "enterFullOtp": "Please enter all 6 digits",
+    "wingmanTitle": "Wingman Matchmaker",
+    "wingmanSubtitle": "Who do you want to match this person with?",
+    "friendListMock": "Friend List (Mock)",
+    "matchNowBtn": "Match Now",
+    "matchSuccessMsg": "Match successful! Waiting for their approval.",
+    "outOfSwipes": "You've swiped everyone...\n{action}?",
+    "@outOfSwipes": {
+        "placeholders": {
+            "action": {
+                "type": "String"
+            }
+        }
+    },
+    "itsAMatch": "It's a Match! 🎉",
+    "matchDescription": "You and {name} liked each other!",
+    "@matchDescription": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "keepSwiping": "Keep swiping",
+    "defaultFilter": "Default"
 }

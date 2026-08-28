@@ -7,6 +7,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_links/app_links.dart';
+import 'package:dio/dio.dart';
 import 'package:qlove/core/network/dio_client.dart';
 import 'package:qlove/core/network/secure_storage_service.dart';
 import 'package:qlove/features/auth/bloc/auth_bloc.dart';
@@ -126,6 +127,7 @@ class _QLoveAppState extends State<QLoveApp> {
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
+        RepositoryProvider<Dio>.value(value: _dioClient.dio),
         RepositoryProvider.value(value: _secureStorageService),
         RepositoryProvider.value(value: _authRepository),
       ],
