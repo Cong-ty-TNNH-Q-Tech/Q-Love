@@ -51,20 +51,26 @@ class ProfileSwipeCard extends StatelessWidget {
             
             // Profile Info
             Positioned(
-              bottom: 24,
-              left: 20,
-              right: 20,
+              bottom: MediaQuery.of(context).size.height * 0.03,
+              left: MediaQuery.of(context).size.width * 0.05,
+              right: MediaQuery.of(context).size.width * 0.05,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Text(
-                        '${profile.name ?? 'Ẩn danh'}, ${profile.age ?? '?'}',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            '${profile.name ?? 'Ẩn danh'}, ${profile.age ?? '?'}',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
