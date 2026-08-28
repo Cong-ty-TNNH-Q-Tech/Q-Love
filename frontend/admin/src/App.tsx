@@ -1,6 +1,8 @@
 
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { VoucherListPage } from './pages/vouchers/VoucherListPage';
+import { UserListPage } from './pages/users/UserListPage';
+import { TransactionListPage } from './pages/transactions/TransactionListPage';
 
 function App() {
   return (
@@ -13,6 +15,8 @@ function App() {
           </div>
           <nav className="flex-1 p-4 space-y-2">
             <Link to="/" className="block px-4 py-2 rounded hover:bg-gray-800 text-gray-300 hover:text-white">Dashboard</Link>
+            <Link to="/users" className="block px-4 py-2 rounded hover:bg-gray-800 text-gray-300 hover:text-white">Người dùng</Link>
+            <Link to="/transactions" className="block px-4 py-2 rounded hover:bg-gray-800 text-gray-300 hover:text-white">Dòng tiền</Link>
             <Link to="/vouchers" className="block px-4 py-2 rounded hover:bg-gray-800 text-gray-300 hover:text-white">Voucher & Vật phẩm</Link>
           </nav>
         </aside>
@@ -27,6 +31,8 @@ function App() {
               </div>
             } />
             <Route path="/vouchers" element={<VoucherListPage />} />
+            <Route path="/users" element={<UserListPage />} />
+            <Route path="/transactions" element={<TransactionListPage />} />
           </Routes>
         </main>
       </div>
