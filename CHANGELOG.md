@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [backend/server/models] Bổ sung cơ chế Soft Delete (cột `deleted_at`) cho các bảng `user_wallets` và `wallet_transactions` để tuân thủ Rule 6 (Issue #175).
 
 ### Added
+- [frontend/app] Thuật toán sinh mã Offline TOTP QR Code theo chuẩn RFC 6238 cho tính năng Dating Contract (Issue #17).
 - [frontend/app] Tích hợp SDK RevenueCat (`purchases_flutter`), xây dựng giao diện Cửa hàng Xu (In-App Purchase) theo chuẩn Dark-first (Issue #36).
 - [frontend/admin] Thêm UI Quản lý Vật phẩm & Voucher, quản lý kho hàng đổi Xu với tính năng CRUD cơ bản (Issue #37).
 - [frontend/app] Thêm UI/UX màn hình chỉnh sửa Hồ sơ cá nhân (Avatar, Bio) và Hồ sơ công khai (Issue #45).

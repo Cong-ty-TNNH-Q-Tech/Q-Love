@@ -61,6 +61,19 @@
     "placeBid": "Đấu thầu",
     "yourBid": "Giá thầu của bạn",
     "storeTitle": "Cửa Hàng Xu",
+    "clanMapTitle": "Bản Đồ Chiếm Thành",
+    "checkInLandmark": "Chiếm Cờ Ngay",
+    "landmarkCaptured": "Chiếm thành công!",
+    "datingContractTitle": "Khế ước Hẹn hò",
+    "scanQrToSign": "Cho đối phương quét mã QR này để cùng ký kết Khế ước Hẹn hò.",
+    "qrRefreshIn": "Làm mới sau {seconds}s",
+    "@qrRefreshIn": {
+        "placeholders": {
+            "seconds": {
+                "type": "String"
+            }
+        }
+    },
     "currentCoins": "Số Xu hiện tại",
     "selectPackage": "Chọn Gói Nạp",
     "purchaseSuccess": "Nạp Xu thành công!",

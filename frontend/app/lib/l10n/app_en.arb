@@ -75,6 +75,19 @@
     "topHunters": "Top 5 Hunters",
     "placeBid": "Place Bid",
     "yourBid": "Your Bid",
+    "clanMapTitle": "Clan Conquest Map",
+    "checkInLandmark": "Capture Flag",
+    "landmarkCaptured": "Captured successfully!",
+    "datingContractTitle": "Dating Contract",
+    "scanQrToSign": "Let your partner scan this QR code to sign the Dating Contract together.",
+    "qrRefreshIn": "Refreshes in {seconds}s",
+    "@qrRefreshIn": {
+        "placeholders": {
+            "seconds": {
+                "type": "String"
+            }
+        }
+    },
     "storeTitle": "Coin Store",
     "currentCoins": "Current Coins",
     "selectPackage": "Select a Package",
