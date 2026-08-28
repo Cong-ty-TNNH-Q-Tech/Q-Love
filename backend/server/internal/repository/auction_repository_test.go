@@ -72,7 +72,7 @@ func TestAuctionRepository_GetActiveAuctionsCursor(t *testing.T) {
 	repo := NewAuctionRepository(db)
 	
 	// Test with nil lastID
-	mock.ExpectQuery(`(?i)SELECT \* FROM "blind_auctions" WHERE status = \$1 ORDER BY id ASC LIMIT \$2`).
+	mock.ExpectQuery(`(?i)SELECT \* FROM "blind_auctions" WHERE status = \$1 AND "blind_auctions"\."deleted_at" IS NULL ORDER BY id ASC LIMIT \$2`).
 		WithArgs("active", 100).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "status"}).AddRow(uuid.New(), "active"))
 
@@ -82,7 +82,7 @@ func TestAuctionRepository_GetActiveAuctionsCursor(t *testing.T) {
 
 	// Test with non-nil lastID
 	lastID := uuid.New()
-	mock.ExpectQuery(`(?i)SELECT \* FROM "blind_auctions" WHERE status = \$1 AND id > \$2 ORDER BY id ASC LIMIT \$3`).
+	mock.ExpectQuery(`(?i)SELECT \* FROM "blind_auctions" WHERE status = \$1 AND id > \$2 AND "blind_auctions"\."deleted_at" IS NULL ORDER BY id ASC LIMIT \$3`).
 		WithArgs("active", lastID, 100).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "status"}).AddRow(uuid.New(), "active"))
 
@@ -120,7 +120,7 @@ func TestAuctionRepository_PlaceBid(t *testing.T) {
 	}
 
 	mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO "auction_bids"`)).
-		WithArgs(bid.ID, bid.AuctionID, bid.BidderID, bid.Amount, sqlmock.AnyArg()).
+		WithArgs(bid.ID, bid.AuctionID, bid.BidderID, bid.Amount, sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = repo.PlaceBid(context.Background(), bid)

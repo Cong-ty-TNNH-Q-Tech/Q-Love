@@ -47,7 +47,7 @@ func TestExRatingRepository_Create(t *testing.T) {
 	}
 
 	mock.ExpectQuery(`(?i)INSERT INTO "ex_ratings"`).
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(rating.ID))
 
 	err := repo.Create(context.Background(), rating)
