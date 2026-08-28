@@ -27,14 +27,16 @@ func JWTMiddleware(secret string) fiber.Handler {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Missing Authorization header",
+				"code":    401,
+				"message": "ERR_UNAUTHORIZED",
 			})
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Invalid Authorization header format",
+				"code":    401,
+				"message": "ERR_UNAUTHORIZED",
 			})
 		}
 
@@ -51,7 +53,8 @@ func JWTMiddleware(secret string) fiber.Handler {
 
 		if err != nil || !token.Valid {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Invalid or expired token",
+				"code":    401,
+				"message": "ERR_UNAUTHORIZED",
 			})
 		}
 
@@ -62,7 +65,8 @@ func JWTMiddleware(secret string) fiber.Handler {
 				parsedUUID, err := uuid.Parse(subject)
 				if err != nil {
 					return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-						"error": "Invalid user ID in token",
+						"code":    401,
+						"message": "ERR_UNAUTHORIZED",
 					})
 				}
 				// Set user ID in locals for next handlers
@@ -72,7 +76,8 @@ func JWTMiddleware(secret string) fiber.Handler {
 		}
 
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Invalid token claims",
+			"code":    401,
+			"message": "ERR_UNAUTHORIZED",
 		})
 	}
 }
@@ -87,14 +92,16 @@ func AdminMiddleware(secret string) fiber.Handler {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Missing Authorization header",
+				"code":    401,
+				"message": "ERR_UNAUTHORIZED",
 			})
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Invalid Authorization header format",
+				"code":    401,
+				"message": "ERR_UNAUTHORIZED",
 			})
 		}
 
@@ -111,7 +118,8 @@ func AdminMiddleware(secret string) fiber.Handler {
 
 		if err != nil || !token.Valid {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Invalid or expired token",
+				"code":    401,
+				"message": "ERR_UNAUTHORIZED",
 			})
 		}
 
@@ -121,7 +129,8 @@ func AdminMiddleware(secret string) fiber.Handler {
 			role, roleOk := claims["role"].(string)
 			if !roleOk || role != "admin" {
 				return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-					"error": "Forbidden: Requires admin role",
+					"code":    403,
+					"message": "ERR_FORBIDDEN",
 				})
 			}
 
@@ -130,7 +139,8 @@ func AdminMiddleware(secret string) fiber.Handler {
 				parsedUUID, err := uuid.Parse(subject)
 				if err != nil {
 					return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-						"error": "Invalid user ID in token",
+						"code":    401,
+						"message": "ERR_UNAUTHORIZED",
 					})
 				}
 				// Set user ID in locals for next handlers
@@ -140,7 +150,8 @@ func AdminMiddleware(secret string) fiber.Handler {
 		}
 
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Invalid token claims",
+			"code":    401,
+			"message": "ERR_UNAUTHORIZED",
 		})
 	}
 }
