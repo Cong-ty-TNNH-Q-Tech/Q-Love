@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [frontend/admin] Thêm UI Quản lý Vật phẩm & Voucher, quản lý kho hàng đổi Xu với tính năng CRUD cơ bản (Issue #37).
 - [frontend/app] Thêm UI/UX màn hình Cài đặt (Settings) và chức năng cảnh báo Xóa tài khoản (Soft Delete) theo chuẩn App Store (Issue #38).
 - [frontend/app] Thêm giao diện Đấu Giá Mù (Blind Auction) theo chuẩn Gen-Z Dark-first, với hiệu ứng đếm ngược 24h, input đấu thầu, và danh sách Top 5 Thợ Săn (Issue #51).
 - [frontend/admin] Bổ sung các thẻ Meta SEO (`description`, `og:title`, `og:description`, `og:image`) và đổi `lang="vi"`, thay thế favicon mặc định thành favicon Q-Love cho Admin Dashboard (Issue #154).
