@@ -92,5 +92,8 @@
         }
     },
     "inviteMembers": "Mời thành viên",
-    "inviteSuccess": "Đã gửi lời mời thành công!"
+    "inviteSuccess": "Đã gửi lời mời thành công!",
+    "clanMapTitle": "Bản Đồ Chiếm Thành",
+    "checkInLandmark": "Chiếm Cờ Ngay",
+    "landmarkCaptured": "Chiếm thành công!"
 }

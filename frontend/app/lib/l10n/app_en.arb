@@ -32,6 +32,7 @@
     "wingmanTitle": "Wingman Matchmaker",
     "wingmanSubtitle": "Who do you want to match this person with?",
     "friendListMock": "Friend List (Mock)",
+
     "matchNowBtn": "Match Now",
     "matchSuccessMsg": "Match successful! Waiting for their approval.",
     "outOfSwipes": "You've swiped everyone...\n{action}?",
@@ -107,5 +108,8 @@
         }
     },
     "inviteMembers": "Invite Members",
-    "inviteSuccess": "Invitation sent successfully!"
+    "inviteSuccess": "Invitation sent successfully!",
+    "clanMapTitle": "Clan Conquest Map",
+    "checkInLandmark": "Capture Flag",
+    "landmarkCaptured": "Captured successfully!"
 }
