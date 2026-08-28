@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Fixed
+- [frontend/app] Khắc phục lỗi tràn màn hình trên `ProfileSwipeCard` bằng cách bọc Tên người dùng trong `Flexible` và `FittedBox`, đồng thời sử dụng `MediaQuery` để điều chỉnh padding responsive (Issue #155).
+- [frontend/app] Khắc phục lỗi `WingmanBloc` không sử dụng chung instance `Dio` từ `RepositoryProvider`, gây lỗi 401 Unauthorized khi gọi API Mai Mối. Thay thế các hardcode text bằng `AppLocalizations` (Issue #157).
 - [frontend/app] Bọc màn hình Xác Thực OTP (`otp_verification_screen.dart`) bằng `SingleChildScrollView` để sửa lỗi tràn màn hình và áp dụng localization (Issue #159).
 - [frontend/app] Bọc màn hình Đăng Nhập (`login_screen.dart`) bằng `SingleChildScrollView` để sửa lỗi tràn màn hình khi mở bàn phím và áp dụng localization (Issue #158).
 - [frontend/app] Bổ sung `AppLocalizations.delegate` vào `main.dart` để sửa lỗi crash ứng dụng khi dùng Localization (Issue #156).
