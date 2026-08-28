@@ -19,5 +19,14 @@
     "expandRadius": "Expand Radius",
     "@expandRadius": {
         "description": "Expand radius toggle label"
-    }
+    },
+    "enterPhonePrompt": "Please enter your phone number",
+    "loveJourneySubtitle": "Start your love journey",
+    "enterPhoneHint": "Enter phone number",
+    "continueBtn": "CONTINUE",
+    "otpVerification": "OTP Verification",
+    "otpSentMsg": "Verification code has been sent to your phone number",
+    "enter6DigitCode": "Enter 6-digit code",
+    "verifyBtn": "VERIFY",
+    "enterFullOtp": "Please enter all 6 digits"
 }

@@ -8,6 +8,7 @@ import 'package:qlove/features/auth/bloc/auth_bloc.dart';
 import 'package:qlove/features/auth/bloc/auth_event.dart';
 import 'package:qlove/features/auth/bloc/auth_state.dart';
 import 'package:qlove/features/auth/ui/otp_verification_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'widgets/glass_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -26,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
       context.read<AuthBloc>().add(SendOtpRequested(phone));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập số điện thoại')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.enterPhonePrompt)),
       );
     }
   }
@@ -67,78 +68,80 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Icon(
-                    Icons.favorite,
-                    color: AppTheme.primaryColor,
-                    size: 80,
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Q-Love',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          color: AppTheme.primaryColor,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Bắt đầu hành trình tình yêu của bạn',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 16,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Icon(
+                      Icons.favorite,
+                      color: AppTheme.primaryColor,
+                      size: 80,
                     ),
-                  ),
-                  const SizedBox(height: 48),
-                  GlassTextField(
-                    controller: _phoneController,
-                    hintText: 'Nhập số điện thoại',
-                    keyboardType: TextInputType.phone,
-                    prefixIcon: Icons.phone,
-                  ),
-                  const SizedBox(height: 24),
-                  BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, state) {
-                      final isLoading = state is AuthLoading;
-                      return ElevatedButton(
-                        onPressed: isLoading ? null : _onLoginPressed,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                    const SizedBox(height: 24),
+                    Text(
+                      AppLocalizations.of(context)!.appTitle,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                            color: AppTheme.primaryColor,
                           ),
-                          elevation: 8,
-                          shadowColor: AppTheme.primaryColor.withOpacity(0.5),
-                        ),
-                        child: isLoading
-                            ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      AppLocalizations.of(context)!.loveJourneySubtitle,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+                    GlassTextField(
+                      controller: _phoneController,
+                      hintText: AppLocalizations.of(context)!.enterPhoneHint,
+                      keyboardType: TextInputType.phone,
+                      prefixIcon: Icons.phone,
+                    ),
+                    const SizedBox(height: 24),
+                    BlocBuilder<AuthBloc, AuthState>(
+                      builder: (context, state) {
+                        final isLoading = state is AuthLoading;
+                        return ElevatedButton(
+                          onPressed: isLoading ? null : _onLoginPressed,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 8,
+                            shadowColor: AppTheme.primaryColor.withOpacity(0.5),
+                          ),
+                          child: isLoading
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  AppLocalizations.of(context)!.continueBtn,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                  ),
                                 ),
-                              )
-                            : const Text(
-                                'TIẾP TỤC',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                      );
-                    },
-                  ),
-                ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
