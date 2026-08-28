@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [backend/server/models] Bổ sung cơ chế Soft Delete (cột `deleted_at`) cho các bảng `user_wallets` và `wallet_transactions` để tuân thủ Rule 6 (Issue #175).
 
 ### Added
+- [frontend/admin] Bổ sung các thẻ Meta SEO (`description`, `og:title`, `og:description`, `og:image`) và đổi `lang="vi"`, thay thế favicon mặc định thành favicon Q-Love cho Admin Dashboard (Issue #154).
 - [backend/server/services] Thêm Cronjob quản lý Đảo Tình Yêu (Reset Streak & Level) (Issue #9).
 - [backend/server/api] Thêm API Cọc tiền Khế ước Hẹn hò và cơ chế chống Race Condition (Issue #8).
 - [backend/server/api] Thêm API Check-in Landmark & Anti-Fake GPS (Issue #10).
