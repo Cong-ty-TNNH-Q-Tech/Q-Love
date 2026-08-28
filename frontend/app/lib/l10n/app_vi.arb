@@ -59,5 +59,11 @@
     "blindAuctionTitle": "Đấu Giá Mù",
     "topHunters": "Top 5 Thợ Săn",
     "placeBid": "Đấu thầu",
-    "yourBid": "Giá thầu của bạn"
+    "yourBid": "Giá thầu của bạn",
+    "storeTitle": "Cửa Hàng Xu",
+    "currentCoins": "Số Xu hiện tại",
+    "selectPackage": "Chọn Gói Nạp",
+    "purchaseSuccess": "Nạp Xu thành công!",
+    "purchaseFailed": "Nạp Xu thất bại hoặc bị hủy.",
+    "noPackages": "Không có gói nạp nào."
 }

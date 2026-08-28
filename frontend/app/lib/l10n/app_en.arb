@@ -74,5 +74,11 @@
     "blindAuctionTitle": "Blind Auction",
     "topHunters": "Top 5 Hunters",
     "placeBid": "Place Bid",
-    "yourBid": "Your Bid"
+    "yourBid": "Your Bid",
+    "storeTitle": "Coin Store",
+    "currentCoins": "Current Coins",
+    "selectPackage": "Select a Package",
+    "purchaseSuccess": "Purchase successful!",
+    "purchaseFailed": "Purchase failed or canceled.",
+    "noPackages": "No packages available."
 }
