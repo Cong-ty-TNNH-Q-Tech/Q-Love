@@ -344,7 +344,7 @@ func TestAuthService_RefreshToken_MissingUserID(t *testing.T) {
 
 	_, _, err := svc.RefreshToken(context.Background(), tokenString)
 	assert.Error(t, err)
-	assert.Equal(t, "missing user_id in claims", err.Error())
+	assert.Equal(t, "missing sub in claims", err.Error())
 }
 
 func TestAuthService_RefreshToken_InvalidUUID(t *testing.T) {
