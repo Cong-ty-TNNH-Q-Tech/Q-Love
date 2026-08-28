@@ -37,5 +37,16 @@
         }
     },
     "keepSwiping": "Tiếp tục quẹt",
-    "defaultFilter": "Mặc định"
+    "defaultFilter": "Mặc định",
+    "editProfileTitle": "Chỉnh sửa Hồ sơ",
+    "saveChanges": "Lưu thay đổi",
+    "publicProfileTitle": "Hồ sơ",
+    "searchExRatingBtn": "Tra cứu CV Tình trường",
+    "deduct50CoinsMsg": "Tra cứu CV Tình trường của người này sẽ tốn 50 Xu. Bạn có chắc chắn muốn tiếp tục?",
+    "confirm": "Xác nhận",
+    "cancel": "Hủy",
+    "unmatchRatingTitle": "Đánh giá Ex",
+    "unmatchRatingSubtitle": "Để lại đánh giá ẩn danh cho người này.",
+    "submitRating": "Gửi đánh giá",
+    "exRatingResultTitle": "CV Tình trường"
 }

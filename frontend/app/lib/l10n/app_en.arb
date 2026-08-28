@@ -52,5 +52,16 @@
         }
     },
     "keepSwiping": "Keep swiping",
-    "defaultFilter": "Default"
+    "defaultFilter": "Default",
+    "editProfileTitle": "Edit Profile",
+    "saveChanges": "Save Changes",
+    "publicProfileTitle": "Profile",
+    "searchExRatingBtn": "Search Ex-Rating",
+    "deduct50CoinsMsg": "Searching for this user's Ex-Rating will cost 50 Coins. Do you want to proceed?",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "unmatchRatingTitle": "Rate Ex",
+    "unmatchRatingSubtitle": "Leave an anonymous review for this person.",
+    "submitRating": "Submit Rating",
+    "exRatingResultTitle": "Ex-Rating Result"
 }
