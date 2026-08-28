@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [backend/server/models] Bổ sung cơ chế Soft Delete (cột `deleted_at`) cho các bảng `user_wallets` và `wallet_transactions` để tuân thủ Rule 6 (Issue #175).
 
 ### Added
+- [frontend/app] Tích hợp SDK RevenueCat (`purchases_flutter`), xây dựng giao diện Cửa hàng Xu (In-App Purchase) theo chuẩn Dark-first (Issue #36).
+- [frontend/admin] Thêm UI Quản lý Vật phẩm & Voucher, quản lý kho hàng đổi Xu với tính năng CRUD cơ bản (Issue #37).
 - [frontend/app] Thêm UI/UX màn hình chỉnh sửa Hồ sơ cá nhân (Avatar, Bio) và Hồ sơ công khai (Issue #45).
 - [frontend/app] Thêm tính năng Tra cứu CV Tình trường (Ex-Rating) (trừ 50 Xu) với biểu đồ thống kê và danh sách tags ẩn danh (Issue #45).
 - [frontend/app] Thêm BottomSheet đánh giá (Rate Ex) sau khi Unmatch với tính năng đánh giá sao và chọn tags ẩn danh (Issue #45).
