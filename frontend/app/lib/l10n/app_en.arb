@@ -52,5 +52,9 @@
         }
     },
     "keepSwiping": "Keep swiping",
-    "defaultFilter": "Default"
+    "defaultFilter": "Default",
+    "blindAuctionTitle": "Blind Auction",
+    "topHunters": "Top 5 Hunters",
+    "placeBid": "Place Bid",
+    "yourBid": "Your Bid"
 }
