@@ -355,7 +355,7 @@ func TestAuthService_RefreshToken_InvalidUUID(t *testing.T) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"type":    "refresh",
-		"user_id": "invalid-uuid",
+		"sub": "invalid-uuid",
 	})
 	tokenString, _ := token.SignedString([]byte("secret"))
 
