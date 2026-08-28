@@ -104,6 +104,7 @@ erDiagram
         uuid reviewer_id FK
         uuid target_id FK
         int rating_score
+        timestamp deleted_at
     }
     NOTIFICATIONS {
         uuid id PK
@@ -232,7 +233,8 @@ erDiagram
 | `target_id` | UUID | FK(users.id) | Người bị đánh giá |
 | `rating_score`| INT | Check(1-5) | Điểm số (1 đến 5 sao) |
 | `tags` | TEXT[] | | Mảng các tag nhận xét (VD: #RedFlag) |
-
+| `created_at` | TIMESTAMP | Default NOW() | |
+| `deleted_at` | TIMESTAMP | | |
 **Bảng `wingman_referrals`** (Nghề Cò Mối)
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
@@ -406,6 +408,7 @@ erDiagram
 | `current_highest_bid`| INT | Default 0 | |
 | `winner_id` | UUID | FK(users.id), Nullable | Người thắng cuộc |
 | `status` | VARCHAR(20) | Default 'active' | `active`, `completed` |
+| `deleted_at` | TIMESTAMP | | |
 
 **Bảng `auction_bids`** (Lượt Trả Giá)
 | Column | Type | Constraints | Description |
@@ -415,6 +418,7 @@ erDiagram
 | `bidder_id` | UUID | FK(users.id) | |
 | `bid_amount` | INT | | |
 | `created_at` | TIMESTAMP | Default NOW() | |
+| `deleted_at` | TIMESTAMP | | |
 
 **Bảng `wall_of_shames`** (Tường Thành Phong Sát)
 | Column | Type | Constraints | Description |

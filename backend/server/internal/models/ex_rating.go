@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type ExRating struct {
@@ -18,6 +19,7 @@ type ExRating struct {
 	RatingScore  int       `gorm:"not null"`
 	TagsString   string    `gorm:"type:text"` // Comma-separated tags
 	CreatedAt    time.Time
+	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 // GetTags returns the tags as a slice of strings
