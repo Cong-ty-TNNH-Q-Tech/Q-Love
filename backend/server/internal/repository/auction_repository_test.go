@@ -30,7 +30,7 @@ func TestAuctionRepository_CreateAuction(t *testing.T) {
 	}
 
 	mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO "blind_auctions"`)).
-		WithArgs(auction.ID, auction.TargetUserID, auction.StartTime, auction.EndTime, auction.Status, sqlmock.AnyArg(), auction.WinningBid, sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(auction.ID, auction.TargetUserID, auction.StartTime, auction.EndTime, auction.Status, sqlmock.AnyArg(), auction.WinningBid, sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = repo.CreateAuction(context.Background(), auction)
