@@ -37,5 +37,9 @@
         }
     },
     "keepSwiping": "Tiếp tục quẹt",
-    "defaultFilter": "Mặc định"
+    "defaultFilter": "Mặc định",
+    "blindAuctionTitle": "Đấu Giá Mù",
+    "topHunters": "Top 5 Thợ Săn",
+    "placeBid": "Đấu thầu",
+    "yourBid": "Giá thầu của bạn"
 }
