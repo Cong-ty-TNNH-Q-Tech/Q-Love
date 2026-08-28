@@ -70,7 +70,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               ),
               const SizedBox(height: 24),
               ListTile(
-                title: Text('Mặc định', style: GoogleFonts.inter(color: Colors.white)),
+                title: Text(AppLocalizations.of(context)!.defaultFilter, style: GoogleFonts.inter(color: Colors.white)),
                 trailing: _currentFilter == 'default' ? const Icon(Icons.check, color: Color(0xFFFF3D6B)) : null,
                 onTap: () {
                   setState(() => _currentFilter = 'default');
@@ -129,9 +129,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               barrierDismissible: false,
               builder: (ctx) => AlertDialog(
                 backgroundColor: const Color(0xFF1E1E2E),
-                title: Text('It\'s a Match! 🎉', style: GoogleFonts.inter(color: Colors.white)),
+                title: Text(AppLocalizations.of(context)!.itsAMatch, style: GoogleFonts.inter(color: Colors.white)),
                 content: Text(
-                  'Bạn và ${state.matchedUser.name ?? 'người ấy'} đã thích nhau!',
+                  AppLocalizations.of(context)!.matchDescription(state.matchedUser.name ?? 'người ấy'),
                   style: GoogleFonts.inter(color: Colors.white70),
                 ),
                 actions: [
@@ -140,7 +140,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                       Navigator.pop(ctx);
                       context.read<DiscoverBloc>().add(ResumeDiscoverRequested());
                     },
-                    child: Text('Tiếp tục quẹt', style: GoogleFonts.inter(color: const Color(0xFFFF3D6B))),
+                    child: Text(AppLocalizations.of(context)!.keepSwiping, style: GoogleFonts.inter(color: const Color(0xFFFF3D6B))),
                   ),
                 ],
               ),
@@ -201,7 +201,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           const Icon(Icons.person_search, size: 100, color: Colors.white24),
           const SizedBox(height: 24),
           Text(
-            'Bút đã quẹt hết người rồi...\n${AppLocalizations.of(context)!.expandRadius}?',
+            AppLocalizations.of(context)!.outOfSwipes(AppLocalizations.of(context)!.expandRadius),
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: Colors.white,
