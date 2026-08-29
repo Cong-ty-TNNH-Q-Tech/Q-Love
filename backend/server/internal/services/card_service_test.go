@@ -58,10 +58,7 @@ func (m *MockCardRepository) GetOwnedQuantity(ctx context.Context, collectorID, 
 type MockWalletRepository struct {
 	mock.Mock
 }
-func (m *MockWalletRepository) GetBalance(ctx context.Context, userID uuid.UUID) (float64, error) {
-	args := m.Called(ctx, userID)
-	return args.Get(0).(float64), args.Error(1)
-}
+func (m *MockWalletRepository) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
 func (m *MockWalletRepository) UpdateBalance(ctx context.Context, userID uuid.UUID, amount float64) error {
 	args := m.Called(ctx, userID, amount)
 	return args.Error(0)
@@ -77,10 +74,9 @@ func (m *MockWalletRepository) GetWalletForUpdate(ctx context.Context, userID uu
 	}
 	return args.Get(0).(*models.UserWallet), args.Error(1)
 }
-func (m *MockWalletRepository) CreateWallet(ctx context.Context, wallet *models.UserWallet) error {
-	args := m.Called(ctx, wallet)
-	return args.Error(0)
-}
+func (m *MockWalletRepository) HoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
+func (m *MockWalletRepository) ReleaseHoldBalance(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
+func (m *MockWalletRepository) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
 
 type MockUserRepository struct {
 	mock.Mock
@@ -93,10 +89,10 @@ func (m *MockUserRepository) FindByID(ctx context.Context, id uuid.UUID) (*model
 	return args.Get(0).(*models.User), args.Error(1)
 }
 func (m *MockUserRepository) Create(ctx context.Context, user *models.User) error { return nil }
-func (m *MockUserRepository) Update(ctx context.Context, user *models.User) error { return nil }
 func (m *MockUserRepository) FindByPhone(ctx context.Context, phone string) (*models.User, error) { return nil, nil }
-func (m *MockUserRepository) UpdateLocation(ctx context.Context, userID uuid.UUID, lat, lng float64) error { return nil }
-func (m *MockUserRepository) GetUsersInRadius(ctx context.Context, lat, lng, radiusKm float64, limit int, excludedIDs []uuid.UUID) ([]models.User, error) { return nil, nil }
+func (m *MockUserRepository) GetTopUsersByScore(ctx context.Context, limit int) ([]uuid.UUID, error) { return nil, nil }
+func (m *MockUserRepository) GetFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) { return nil, nil }
+func (m *MockUserRepository) GetSpiritualFeed(ctx context.Context, userID uuid.UUID, radius int) ([]models.User, error) { return nil, nil }
 
 // Dummy TxManager
 type dummyTxManager struct{}
