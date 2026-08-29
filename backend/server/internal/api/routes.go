@@ -126,7 +126,7 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 	chatGroup.Get("/messages/:match_id", middleware.JWTMiddleware(cfg.JWTSecret), chatHandler.GetMessages)
 
 	// Locket routes
-	locketGroup := v1.Group("/locket", middleware.JWTMiddleware(cfg.JWTSecret))
+	locketGroup := v1.Group("/locket", middleware.JWTMiddleware(cfg.JWTSecret), middleware.PremiumMiddleware(userPremRepo))
 	locketGroup.Post("/send", middleware.LocketRateLimiter(), locketHandler.SendLocket)
 	
 	// Auction routes
