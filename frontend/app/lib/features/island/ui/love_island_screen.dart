@@ -14,17 +14,15 @@ class LoveIslandScreen extends StatefulWidget {
 }
 
 class _LoveIslandScreenState extends State<LoveIslandScreen> {
-  // A placeholder Rive animation URL since we don't have a real island asset yet
-  final String _riveUrl = 'https://cdn.rive.app/animations/vehicles.riv';
+  // Use local asset
+  final String _riveUrl = 'assets/animations/love_island.riv';
   
   StateMachineController? _controller;
   
   void _onRiveInit(Artboard artboard) {
-    // For a real island asset, we would use its specific state machine name.
-    // e.g. StateMachineController.fromArtboard(artboard, 'IslandStateMachine');
     _controller = StateMachineController.fromArtboard(
       artboard,
-      'bumpy', // state machine for the placeholder vehicle
+      'IslandStateMachine',
     );
     
     if (_controller != null) {
@@ -64,8 +62,8 @@ class _LoveIslandScreenState extends State<LoveIslandScreen> {
         fit: StackFit.expand,
         children: [
           // Rive Animation Background
-          RiveAnimation.network(
-            _riveUrl,
+          RiveAnimation.asset(
+            'assets/animations/love_island.riv',
             fit: BoxFit.cover,
             onInit: _onRiveInit,
             alignment: Alignment.center,
