@@ -37,6 +37,7 @@ func TestCardRepository_CreateCardProfile(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectQuery(`INSERT INTO "card_profiles"`).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"user_id"}).AddRow(profile.UserID))
 	mock.ExpectCommit()
 
@@ -58,7 +59,7 @@ func TestCardRepository_GetCardProfile(t *testing.T) {
 	userID := uuid.New()
 
 	mock.ExpectQuery(`SELECT \* FROM "card_profiles" WHERE user_id = \$1`).
-		WithArgs(userID).
+		WithArgs(userID, 1).
 		WillReturnRows(sqlmock.NewRows([]string{"user_id"}).AddRow(userID))
 
 	profile, err := repo.GetCardProfile(context.Background(), userID)
