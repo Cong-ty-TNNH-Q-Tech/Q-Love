@@ -30,7 +30,6 @@ func TestCardRepository_CreateCardProfile(t *testing.T) {
 	repo := NewCardRepository(gormDB)
 
 	profile := &models.CardProfile{
-		ID:        uuid.New(),
 		UserID:    uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -38,7 +37,7 @@ func TestCardRepository_CreateCardProfile(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectQuery(`INSERT INTO "card_profiles"`).
-		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(profile.ID))
+		WillReturnRows(sqlmock.NewRows([]string{"user_id"}).AddRow(profile.UserID))
 	mock.ExpectCommit()
 
 	err = repo.CreateCardProfile(context.Background(), profile)
@@ -60,7 +59,7 @@ func TestCardRepository_GetCardProfile(t *testing.T) {
 
 	mock.ExpectQuery(`SELECT \* FROM "card_profiles" WHERE user_id = \$1`).
 		WithArgs(userID).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "user_id"}).AddRow(uuid.New(), userID))
+		WillReturnRows(sqlmock.NewRows([]string{"user_id"}).AddRow(userID))
 
 	profile, err := repo.GetCardProfile(context.Background(), userID)
 	assert.NoError(t, err)

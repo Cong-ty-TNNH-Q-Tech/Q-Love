@@ -31,8 +31,8 @@ func TestChatLockRepository_Create(t *testing.T) {
 
 	lock := &models.ChatLock{
 		ID:        uuid.New(),
-		ChatID:    uuid.New(),
-		UserID:    uuid.New(),
+		UserID1:   uuid.New(),
+		UserID2:   uuid.New(),
 		ExpiresAt: time.Now().Add(time.Hour),
 		CreatedAt: time.Now(),
 	}
