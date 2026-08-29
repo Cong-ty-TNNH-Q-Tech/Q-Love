@@ -35,7 +35,6 @@ func (m *mockPremiumRepo) ActivatePremium(ctx context.Context, userID uuid.UUID,
 }
 
 func TestPremiumMiddleware(t *testing.T) {
-	app := fiber.New()
 	userID := uuid.New()
 
 	tests := []struct {
@@ -82,9 +81,10 @@ func TestPremiumMiddleware(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			app := fiber.New()
 			handler := middleware.PremiumMiddleware(tt.repo)
 
-			app.Get("/test-"+tt.name, func(c *fiber.Ctx) error {
+			app.Get("/test", func(c *fiber.Ctx) error {
 				if tt.userID != nil {
 					c.Locals("user_id", tt.userID)
 				}
@@ -97,7 +97,7 @@ func TestPremiumMiddleware(t *testing.T) {
 				return c.SendStatus(fiber.StatusOK)
 			})
 
-			req := httptest.NewRequest("GET", "/test-"+tt.name, nil)
+			req := httptest.NewRequest("GET", "/test", nil)
 			resp, err := app.Test(req)
 			if err != nil {
 				t.Fatalf("failed to execute request: %v", err)
