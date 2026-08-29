@@ -50,6 +50,7 @@ flutter:
   generate: true
   assets:
     - assets/icon/
+    - assets/animations/
 
 flutter_launcher_icons:
   android: "launcher_icon"
