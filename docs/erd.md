@@ -130,6 +130,15 @@ erDiagram
         timestamp expires_at
         timestamp created_at
     }
+    WALLET_TRANSACTIONS {
+        uuid id PK
+        uuid user_id FK
+        numeric amount
+        varchar type
+        uuid reference_id
+        timestamp created_at
+        timestamp deleted_at
+    }
 ```
 
 ---
