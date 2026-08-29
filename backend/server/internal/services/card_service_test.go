@@ -14,6 +14,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"database/sql"
+	"github.com/alicebob/miniredis/v2"
+	"github.com/redis/go-redis/v9"
 )
 
 type MockCardRepository struct {
@@ -269,3 +271,67 @@ func TestTradeCard_TxErrors(t *testing.T) {
 	err = svc.TradeCard(context.Background(), collectorID, targetUserID, "invalid", 1)
 	assert.Error(t, err)
 }
+
+func TestTradeCard_CircuitBreaker(t *testing.T) {
+	mr, _ := miniredis.Run()
+	defer mr.Close()
+	redisClient := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+
+	mockCardRepo := new(MockCardRepository)
+	mockWalletRepo := new(MockWalletRepository)
+	mockUserRepo := new(MockUserRepository)
+	
+	svc := NewCardService(mockCardRepo, mockWalletRepo, mockUserRepo, &dummyTxManager{}, redisClient)
+
+	collectorID := uuid.New()
+	targetUserID := uuid.New()
+
+	mockUserRepo.On("FindByID", mock.Anything, collectorID).Return(&models.User{Level: 5}, nil)
+	mockCardRepo.On("GetCardProfileForUpdate", mock.Anything, targetUserID).Return(&models.CardProfile{
+		UserID: targetUserID,
+		CurrentPrice: 100,
+		AvailableCards: 1000,
+		TotalCards: 1000,
+	}, nil)
+	mockWalletRepo.On("UpdateBalance", mock.Anything, collectorID, mock.AnythingOfType("float64")).Return(nil)
+	mockCardRepo.On("UpdateCardProfile", mock.Anything, mock.AnythingOfType("*models.CardProfile")).Return(nil)
+	mockCardRepo.On("CreateCardTransaction", mock.Anything, mock.AnythingOfType("*models.CardTransaction")).Return(nil)
+	mockWalletRepo.On("CreateTransaction", mock.Anything, mock.AnythingOfType("*models.WalletTransaction")).Return(nil)
+
+	// Fill the circuit breaker threshold
+	cbKey := "circuit_breaker:" + targetUserID.String()
+	for i := 0; i < 60; i++ {
+		mr.Lpush(cbKey, "1")
+	}
+
+	// Should trigger circuit breaker error
+	err := svc.TradeCard(context.Background(), collectorID, targetUserID, "buy", 1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "circuit breaker active")
+}
+
+func TestUpdateCardProfile_Error(t *testing.T) {
+	mockCardRepo := new(MockCardRepository)
+	mockWalletRepo := new(MockWalletRepository)
+	mockUserRepo := new(MockUserRepository)
+	
+	svc := NewCardService(mockCardRepo, mockWalletRepo, mockUserRepo, &dummyTxManager{}, nil)
+
+	collectorID := uuid.New()
+	targetUserID := uuid.New()
+
+	mockUserRepo.On("FindByID", mock.Anything, collectorID).Return(&models.User{Level: 5}, nil)
+	mockCardRepo.On("GetCardProfileForUpdate", mock.Anything, targetUserID).Return(&models.CardProfile{
+		UserID: targetUserID, AvailableCards: 1000, TotalCards: 1000,
+	}, nil)
+
+	mockWalletRepo.On("UpdateBalance", mock.Anything, collectorID, mock.AnythingOfType("float64")).Return(nil)
+	
+	// Error on update profile
+	mockCardRepo.On("UpdateCardProfile", mock.Anything, mock.AnythingOfType("*models.CardProfile")).Return(errors.New("db error")).Once()
+	
+	err := svc.TradeCard(context.Background(), collectorID, targetUserID, "buy", 1)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "db error")
+}
+
