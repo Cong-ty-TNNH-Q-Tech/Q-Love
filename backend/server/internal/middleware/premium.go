@@ -23,7 +23,7 @@ func PremiumMiddleware(premiumRepo repository.UserPremiumRepository) fiber.Handl
 		}
 
 		premium, err := premiumRepo.FindByUserID(c.Context(), userID)
-		if err == nil && premium != nil && premium.IsActive && premium.ExpiresAt.After(time.Now()) {
+		if err == nil && premium != nil && premium.ExpiresAt.After(time.Now()) {
 			c.Locals("is_premium", true)
 		} else {
 			c.Locals("is_premium", false)
