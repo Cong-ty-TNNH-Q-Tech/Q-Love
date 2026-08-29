@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:qlove/core/theme/app_theme.dart';
 
 class ExRatingResultScreen extends StatelessWidget {
   const ExRatingResultScreen({super.key});
@@ -52,10 +53,10 @@ class ExRatingResultScreen extends StatelessWidget {
               style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            _buildStatBar('Sự chung thủy', 0.9, const Color(0xFF4CAF50)),
-            _buildStatBar('Mức độ giao tiếp', 0.7, const Color(0xFF2196F3)),
-            _buildStatBar('Sự quan tâm', 0.8, const Color(0xFFE91E63)),
-            _buildStatBar('Mức độ toxic', 0.2, const Color(0xFFF44336)),
+            _buildStatBar('Sự chung thủy', 0.9, AppTheme.neonGreen),
+            _buildStatBar('Mức độ giao tiếp', 0.7, AppTheme.neonBlue),
+            _buildStatBar('Sự quan tâm', 0.8, AppTheme.primaryColor),
+            _buildStatBar('Mức độ toxic', 0.2, AppTheme.neonRed),
             
             const SizedBox(height: 40),
             Text(
@@ -112,14 +113,14 @@ class ExRatingResultScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: isPositive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+        color: isPositive ? AppTheme.neonGreen.withOpacity(0.1) : AppTheme.neonRed.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isPositive ? Colors.green.withOpacity(0.5) : Colors.red.withOpacity(0.5)),
+        border: Border.all(color: isPositive ? AppTheme.neonGreen.withOpacity(0.5) : AppTheme.neonRed.withOpacity(0.5)),
       ),
       child: Text(
         text,
         style: GoogleFonts.inter(
-          color: isPositive ? Colors.greenAccent : Colors.redAccent,
+          color: isPositive ? AppTheme.neonGreen : AppTheme.neonRed,
           fontWeight: FontWeight.w500,
         ),
       ),

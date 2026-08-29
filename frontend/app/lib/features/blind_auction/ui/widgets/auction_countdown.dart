@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:qlove/core/theme/app_theme.dart';
 
 class AuctionCountdown extends StatelessWidget {
   final Duration timeRemaining;
@@ -25,7 +26,7 @@ class AuctionCountdown extends StatelessWidget {
         boxShadow: [
           if (isUrgent)
             BoxShadow(
-              color: Colors.red.withOpacity(0.5),
+              color: AppTheme.neonRed.withOpacity(0.5),
               blurRadius: 20,
               spreadRadius: 2,
             ),
@@ -38,7 +39,7 @@ class AuctionCountdown extends StatelessWidget {
             style: GoogleFonts.dseg14Classic( // using a digital font or fallback
               fontSize: 48,
               fontWeight: FontWeight.bold,
-              color: isUrgent ? const Color(0xFFFF3D6B) : Colors.white,
+              color: isUrgent ? AppTheme.neonRed : Colors.white,
             ).copyWith(fontFamily: 'Inter'), // Fallback if DSEG is not available
           ),
           const SizedBox(height: 8),
