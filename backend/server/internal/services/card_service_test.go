@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"database/sql"
 )
 
 type MockCardRepository struct {
@@ -96,7 +97,7 @@ func (m *MockUserRepository) GetSpiritualFeed(ctx context.Context, userID uuid.U
 
 // Dummy TxManager
 type dummyTxManager struct{}
-func (d *dummyTxManager) WithTransaction(ctx context.Context, fn func(context.Context) error, opts ...interface{}) error {
+func (d *dummyTxManager) WithTransaction(ctx context.Context, fn func(context.Context) error, opts ...*sql.TxOptions) error {
 	return fn(ctx)
 }
 
