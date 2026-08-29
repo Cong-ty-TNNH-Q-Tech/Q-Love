@@ -27,6 +27,12 @@ func (m *mockPremiumRepo) FindByUserID(ctx context.Context, userID uuid.UUID) (*
 	return m.premium, m.err
 }
 func (m *mockPremiumRepo) Update(ctx context.Context, premium *models.UserPremium) error { return nil }
+func (m *mockPremiumRepo) IsUserPremium(ctx context.Context, userID uuid.UUID) (bool, error) {
+	return m.premium != nil && m.premium.ExpiresAt.After(time.Now()), m.err
+}
+func (m *mockPremiumRepo) ActivatePremium(ctx context.Context, userID uuid.UUID, expiresAt time.Time) error {
+	return nil
+}
 
 func TestPremiumMiddleware(t *testing.T) {
 	app := fiber.New()
