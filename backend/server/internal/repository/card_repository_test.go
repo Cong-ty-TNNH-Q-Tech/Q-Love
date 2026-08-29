@@ -131,8 +131,9 @@ func TestCardRepository_CreateCardTransaction(t *testing.T) {
 	}
 
 	mock.ExpectBegin()
-	mock.ExpectExec(`INSERT INTO "card_transactions"`).
-		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectQuery(`INSERT INTO "card_transactions"`).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(tx.ID))
 	mock.ExpectCommit()
 
 	err = repo.CreateCardTransaction(context.Background(), tx)
