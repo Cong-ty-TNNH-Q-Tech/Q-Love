@@ -1,43 +1,28 @@
-// Copyright 2026 Q-Tech Team
-// Licensed under the GNU AGPLv3 License.
-// See LICENSE file in the project root for full license information.
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rive/rive.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../bloc/island_cubit.dart';
 
-class LoveIslandScreen extends StatefulWidget {
+class LoveIslandScreen extends StatelessWidget {
   const LoveIslandScreen({Key? key}) : super(key: key);
 
   @override
-  _LoveIslandScreenState createState() => _LoveIslandScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => IslandCubit(),
+      child: const _LoveIslandBody(),
+    );
+  }
 }
 
-class _LoveIslandScreenState extends State<LoveIslandScreen> {
-  // Use local asset
-  final String _riveUrl = 'assets/animations/love_island.riv';
-  
-  StateMachineController? _controller;
-  
-  void _onRiveInit(Artboard artboard) {
-    _controller = StateMachineController.fromArtboard(
-      artboard,
-      'IslandStateMachine',
-    );
-    
-    if (_controller != null) {
-      artboard.addController(_controller!);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
+class _LoveIslandBody extends StatelessWidget {
+  const _LoveIslandBody({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<IslandCubit>();
+    
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F1A), // Gen-Z Dark-first
       extendBodyBehindAppBar: true,
@@ -65,7 +50,7 @@ class _LoveIslandScreenState extends State<LoveIslandScreen> {
           RiveAnimation.asset(
             'assets/animations/love_island.riv',
             fit: BoxFit.cover,
-            onInit: _onRiveInit,
+            onInit: cubit.onRiveInit,
             alignment: Alignment.center,
           ),
           
@@ -122,9 +107,9 @@ class _LoveIslandScreenState extends State<LoveIslandScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildActionButton(Icons.favorite, Colors.pinkAccent),
-                    _buildActionButton(Icons.star, Colors.amber),
-                    _buildActionButton(Icons.home, Colors.cyan),
+                    _buildActionButton(Icons.favorite, Colors.pinkAccent, cubit),
+                    _buildActionButton(Icons.star, Colors.amber, cubit),
+                    _buildActionButton(Icons.home, Colors.cyan, cubit),
                   ],
                 ),
               ],
@@ -135,14 +120,11 @@ class _LoveIslandScreenState extends State<LoveIslandScreen> {
     );
   }
 
-  Widget _buildActionButton(IconData icon, Color color) {
+  Widget _buildActionButton(IconData icon, Color color, IslandCubit cubit) {
     return FloatingActionButton(
       heroTag: null, // Avoid hero tag conflicts
       onPressed: () {
-        // Handle interaction, maybe trigger a Rive boolean/trigger input
-        if (_controller != null) {
-          // E.g. _controller!.findInput<bool>('isDay')?.value = false;
-        }
+        // Trigger interactions via Cubit in the future
       },
       backgroundColor: Colors.white.withOpacity(0.15),
       elevation: 0,
