@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [backend/server/api] Bổ sung PremiumMiddleware để bỏ qua giới hạn Rate Limit của Locket đối với người dùng Premium (Issue #30).
 - [frontend/app] Tích hợp Mapbox SDK (`mapbox_maps_flutter`), xây dựng Bản Đồ Chiếm Thành cho Clan (Issue #19).
 - [frontend/app] Xây dựng màn hình Thành lập & Quản lý Clan (Issue #28) kèm bộ lọc từ ngữ thô tục (Profanity Filter) cho tên Clan.
 - [frontend/admin] Xây dựng UI Quản lý Người dùng và Dòng tiền (React), hỗ trợ hiển thị lịch sử giao dịch và trạng thái người dùng (Issue #23).
