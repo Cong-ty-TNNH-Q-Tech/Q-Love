@@ -22,6 +22,7 @@ import (
 )
 
 func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *storage.R2Client, redisClient *redis.Client, cfg *config.Config) {
+	userRepo := repository.NewUserRepository(db)
 	wingmanRepo := repository.NewWingmanRepository(db)
 	walletRepo := repository.NewWalletRepository(db)
 	shameRepo := repository.NewShameRepository(db)
@@ -71,7 +72,6 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 
 	// Auth routes setup
 	esmsClient := esms.NewClient(cfg.ESMSAPIKey, cfg.ESMSSecretKey)
-	userRepo := repository.NewUserRepository(db)
 	authService := services.NewAuthService(userRepo, esmsClient, redisClient, cfg.JWTSecret)
 	authHandler := handlers.NewAuthHandler(authService)
 
