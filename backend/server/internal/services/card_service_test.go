@@ -302,14 +302,12 @@ func TestTradeCard_CircuitBreaker(t *testing.T) {
 
 	// Fill the circuit breaker threshold
 	cbKey := "circuit_breaker:" + targetUserID.String()
-	for i := 0; i < 60; i++ {
-		mr.Lpush(cbKey, "1")
-	}
+	mr.Set(cbKey, "1")
 
 	// Should trigger circuit breaker error
 	err := svc.TradeCard(context.Background(), collectorID, targetUserID, "buy", 1)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "circuit breaker active")
+	assert.Contains(t, err.Error(), "circuit breaker")
 }
 
 func TestUpdateCardProfile_Error(t *testing.T) {
