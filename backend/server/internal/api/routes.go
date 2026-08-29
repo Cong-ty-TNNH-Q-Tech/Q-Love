@@ -37,6 +37,10 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 	shameHandler := handlers.NewShameHandler(shameService)
 	clanHandler := handlers.NewClanHandler(clanService)
 
+	cardRepo := repository.NewCardRepository(db)
+	cardService := services.NewCardService(cardRepo, walletRepo, userRepo, txManager, redisClient)
+	cardHandler := handlers.NewCardHandler(cardService)
+
 	// Chat & Websocket
 	chatRepo := repository.NewChatMessageRepository(db)
 	chatService := services.NewChatService(chatRepo)
@@ -166,6 +170,11 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 	stealGroup := v1.Group("/minigame/steal", middleware.JWTMiddleware(cfg.JWTSecret))
 	stealGroup.Post("/init", minigameHandler.InitSteal)
 	stealGroup.Post("/submit", minigameHandler.SubmitStealResult)
+
+	// Cards (Chợ Thẻ Bài) routes
+	cardGroup := v1.Group("/cards", middleware.JWTMiddleware(cfg.JWTSecret))
+	cardGroup.Get("/:user_id", cardHandler.GetCardProfile)
+	cardGroup.Post("/trade", cardHandler.TradeCard)
 
 	// Match API
 	matchGroup := v1.Group("/matches", middleware.JWTMiddleware(cfg.JWTSecret))
