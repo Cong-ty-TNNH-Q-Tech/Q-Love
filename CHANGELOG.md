@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] - Sắp tới
+
+### Fixed
+- [backend/server/services] Sửa lỗi nghiêm trọng trong `CancelContract`: Status bị ghi đè trước khi check, dẫn đến User A mất tiền cọc khi hủy hợp đồng `pending` (Deep Review Finding #1).
+
+### Changed
+- [repo] Dọn dẹp ~6MB file rác (CI logs, debug scripts) khỏi repo root và cập nhật `.gitignore` toàn diện (Deep Review Finding #2).
+
 ### Added
 - [frontend/app] Biểu đồ giá Thẻ Bài & Giao diện The Purge (Issue #20).
 ### Added

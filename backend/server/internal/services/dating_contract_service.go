@@ -253,11 +253,13 @@ func (s *datingContractService) CancelContract(ctx context.Context, contractID u
 			return errors.New("forbidden")
 		}
 
+		// Save original status BEFORE overwriting
+		originalStatus := contract.Status
 		contract.Status = "cancelled"
 		contract.CancelledByID = &userID
 		
-		// If pending, just refund User A (since User B hasn't deposited yet)
-		if contract.Status == "pending" {
+		// If was pending, just refund User A (since User B hasn't deposited yet)
+		if originalStatus == "pending" {
 			if err := s.refundDeposit(txCtx, contract.UserAID, contract.DepositAmount, contract.ID); err != nil {
 				return err
 			}

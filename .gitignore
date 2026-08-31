@@ -1,1 +1,54 @@
-log*.txt
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+dist/
+build/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Debug logs & temp files
+*.log
+*.log.*
+*.txt
+!README.md
+!CHANGELOG.md
+!LICENSE.txt
+!docs/**/*.txt
+!frontend/**/*.txt
+!backend/**/*.txt
+
+# Python scripts (temp fixes)
+*.py
+
+# Coverage
+coverage/
+*.out
+
+# Flutter
+frontend/app/.dart_tool/
+frontend/app/.packages
+frontend/app/.pub-cache/
+frontend/app/build/
+
+# Go
+backend/server/tmp/
