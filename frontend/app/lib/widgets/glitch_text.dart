@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Q-Tech. All rights reserved.
+// Licensed under the GNU AGPLv3 License.
+
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -76,3 +79,4 @@ class _GlitchTextState extends State<GlitchText> with SingleTickerProviderStateM
     );
   }
 }
+

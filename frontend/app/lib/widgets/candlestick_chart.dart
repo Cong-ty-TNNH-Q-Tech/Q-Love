@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Q-Tech. All rights reserved.
+// Licensed under the GNU AGPLv3 License.
+
 import 'package:flutter/material.dart';
 import 'package:qlove/core/theme/app_theme.dart';
 
@@ -141,3 +144,4 @@ class _CandlestickPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+
