@@ -13,6 +13,8 @@ import (
 	"go.uber.org/zap"
 )
 
+// PurgeWorker defines the interface for the background worker that processes
+// the matchmaking queue for The Purge event.
 type PurgeWorker interface {
 	Start(ctx context.Context, workers int)
 }
