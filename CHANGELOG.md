@@ -6,7 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] - Sắp tới
-
+### Added
+- [frontend/app] Biểu đồ giá Thẻ Bài & Giao diện The Purge (Issue #20).
 ### Added
 - [backend/server/services] Thêm `CardService` xử lý Chợ Thẻ Bài Profile Độc Thân (Khớp lệnh Thẻ Bài) và thuật toán Bonding Curve (Issue #11).
 - [backend/server/services] Tích hợp Circuit Breaker cho Sàn Chứng Khoán qua Redis, đóng băng giao dịch (5 phút) khi biến động giá > 30% (Issue #29).
