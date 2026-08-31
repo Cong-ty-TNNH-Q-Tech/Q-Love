@@ -8,6 +8,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/services"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -33,6 +34,21 @@ func (m *mockIslandCronService) RunDailyGhostingCheck(ctx context.Context) error
 	return m.err
 }
 
+type mockPushService struct {
+	called bool
+	err    error
+}
+
+func (m *mockPushService) SendPush(ctx context.Context, userID string, title string, body string, payload map[string]string) error {
+	m.called = true
+	return m.err
+}
+
+func (m *mockPushService) BroadcastToAll(ctx context.Context, title string, body string, payload map[string]string) error {
+	m.called = true
+	return m.err
+}
+
 func TestScheduler_StartStop(t *testing.T) {
 	if logger.Log == nil {
 		logger.Log = zap.NewNop()
@@ -40,7 +56,8 @@ func TestScheduler_StartStop(t *testing.T) {
 
 	mockService := &mockCronService{}
 	mockIslandService := &mockIslandCronService{}
-	scheduler := NewScheduler(mockService, mockIslandService)
+	mockPushService := &mockPushService{}
+	scheduler := NewScheduler(mockService, mockIslandService, mockPushService)
 
 	assert.NotNil(t, scheduler)
 	
@@ -58,13 +75,14 @@ func TestScheduler_CronJob(t *testing.T) {
 
 	mockService := &mockCronService{}
 	mockIslandService := &mockIslandCronService{}
-	scheduler := NewScheduler(mockService, mockIslandService)
+	mockPushService := &mockPushService{}
+	scheduler := NewScheduler(mockService, mockIslandService, mockPushService)
 
 	scheduler.Start()
 	defer scheduler.Stop()
 
 	entries := scheduler.c.Entries()
-	assert.Len(t, entries, 2)
+	assert.Len(t, entries, 3)
 
 	// Execute all jobs directly
 	for _, entry := range entries {
@@ -72,6 +90,7 @@ func TestScheduler_CronJob(t *testing.T) {
 	}
 	assert.True(t, mockService.called)
 	assert.True(t, mockIslandService.called)
+	assert.True(t, mockPushService.called)
 
 	// Test error case
 	mockService.called = false
@@ -84,4 +103,5 @@ func TestScheduler_CronJob(t *testing.T) {
 	}
 	assert.True(t, mockService.called)
 	assert.True(t, mockIslandService.called)
+	assert.True(t, mockPushService.called)
 }
