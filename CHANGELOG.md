@@ -10,7 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [backend/server/services] Thêm `CardService` xử lý Chợ Thẻ Bài Profile Độc Thân (Khớp lệnh Thẻ Bài) và thuật toán Bonding Curve (Issue #11).
 - [backend/server/services] Tích hợp Circuit Breaker cho Sàn Chứng Khoán qua Redis, đóng băng giao dịch (5 phút) khi biến động giá > 30% (Issue #29).
+- [infra/ci-cd] Cấu hình GitHub Actions build Docker image multi-stage và Trigger Deploy Webhook (Issue #31).
 - [backend/server/api] Bổ sung PremiumMiddleware để bỏ qua giới hạn Rate Limit của Locket đối với người dùng Premium (Issue #30).
+- [frontend/app] Tích hợp engine animation `rive`, xây dựng giao diện Đảo Tình Yêu (Love Island) (Issue #18).
+- [frontend/app] Thuật toán sinh mã Offline TOTP QR Code theo chuẩn RFC 6238 cho tính năng Dating Contract (Issue #17).
 - [frontend/app] Tích hợp Mapbox SDK (`mapbox_maps_flutter`), xây dựng Bản Đồ Chiếm Thành cho Clan (Issue #19).
 - [frontend/app] Xây dựng màn hình Thành lập & Quản lý Clan (Issue #28) kèm bộ lọc từ ngữ thô tục (Profanity Filter) cho tên Clan.
 - [frontend/admin] Xây dựng UI Quản lý Người dùng và Dòng tiền (React), hỗ trợ hiển thị lịch sử giao dịch và trạng thái người dùng (Issue #23).
