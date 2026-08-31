@@ -7,6 +7,8 @@ package services
 import (
 	"context"
 
+	"github.com/google/uuid"
+	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/repository"
 	"go.uber.org/zap"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
@@ -61,16 +63,21 @@ func (s *purgeServiceImpl) matchUsersInPairs(ctx context.Context, users []string
 	for i := 0; i < len(users)-1; i += 2 {
 		user1 := users[i]
 		user2 := users[i+1]
-		
-		err := s.matchRepo.CreateMatch(ctx, user1, user2, "purge")
+		uid1, _ := uuid.Parse(user1)
+		uid2, _ := uuid.Parse(user2)
+		match := &models.Match{
+			User1ID: uid1,
+			User2ID: uid2,
+		}
+		err := s.matchRepo.Create(ctx, match)
 		if err != nil {
 			logger.Log.Error("Failed to create purge match", zap.String("user1", user1), zap.String("user2", user2), zap.Error(err))
 			continue
 		}
 		
 		// Send notification
-		_ = s.pushSvc.SendPushNotification(ctx, user1, "The Purge", "Bạn đã được ghép đôi trong Đêm Săn Mồi!", nil)
-		_ = s.pushSvc.SendPushNotification(ctx, user2, "The Purge", "Bạn đã được ghép đôi trong Đêm Săn Mồi!", nil)
+		_ = s.pushSvc.SendPush(ctx, user1, "The Purge", "Bạn đã được ghép đôi trong Đêm Săn Mồi!", nil)
+		_ = s.pushSvc.SendPush(ctx, user2, "The Purge", "Bạn đã được ghép đôi trong Đêm Săn Mồi!", nil)
 	}
 	
 	// If one user left over, requeue them (just a simple approach, skipping here for simplicity)

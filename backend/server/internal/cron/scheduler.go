@@ -61,7 +61,7 @@ func (s *Scheduler) Start() {
 		ctx := context.Background()
 		logger.Log.Info("Triggering The Purge event from cron")
 		// Send global push notification
-		_ = s.pushSvc.SendPushNotification(ctx, "global", "The Purge", "Đêm Săn Mồi đã bắt đầu! Vào game ngay!", nil)
+		_ = s.pushSvc.BroadcastToAll(ctx, "The Purge", "Đêm Săn Mồi đã bắt đầu! Vào game ngay!", nil)
 	})
 	if err != nil {
 		logger.Log.Fatal("Failed to register purge cron job", zap.Error(err))
