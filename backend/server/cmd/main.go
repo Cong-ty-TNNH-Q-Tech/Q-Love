@@ -82,7 +82,13 @@ func setupApp(ctx context.Context, cfg *config.Config) (*fiber.App, error) {
 	txManager := repository.NewTransactionManager(db)
 	clanCronService := services.NewClanCronService(clanRepo, landmarkRepo, notifRepo, pushService, walletRepo, txManager)
 	
-	scheduler := cron.NewScheduler(clanCronService, islandCronService)
+	purgeQueueRepo := repository.NewPurgeQueueRepository(redisClient)
+	spiritualSvc := services.NewSpiritualService()
+	purgeSvc := services.NewPurgeService(purgeQueueRepo, matchRepo, pushService, spiritualSvc)
+	purgeWorker := services.NewPurgeWorker(purgeSvc)
+	purgeWorker.Start(ctx, 10) // start 10 goroutines for auto-scaling worker simulation
+
+	scheduler := cron.NewScheduler(clanCronService, islandCronService, pushService)
 	scheduler.Start()
 
 	// Health Check
