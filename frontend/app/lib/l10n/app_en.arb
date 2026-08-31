@@ -98,6 +98,18 @@
     "createClan": "Create Clan",
     "clanName": "Clan Name",
     "clanNameHint": "Enter your Clan name",
+    "datingContractTitle": "Dating Contract",
+    "scanQrToSign": "Let your partner scan this QR code to sign the Dating Contract together.",
+    "qrRefreshIn": "Refreshes in {seconds}s",
+    "@qrRefreshIn": {
+        "placeholders": {
+            "seconds": {
+                "type": "String"
+            }
+        }
+    },
+    "loveIslandTitle": "Love Island",
+    "interactWithIsland": "Tap the buildings to explore Love Island!",
     "profanityWarning": "Clan name contains inappropriate words.",
     "clanPoints": "Clan Points: {points}",
     "@clanPoints": {
