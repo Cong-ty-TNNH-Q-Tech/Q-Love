@@ -118,3 +118,57 @@ func TestPurgeService_ProcessMatchmaking(t *testing.T) {
 	matchRepo.AssertExpectations(t)
 	pushSvc.AssertExpectations(t)
 }
+
+func TestPurgeService_ProcessMatchmaking_ErrorDequeueNormal(t *testing.T) {
+	queueRepo := new(MockPurgeQueueRepository)
+	matchRepo := new(MockMatchRepository)
+	pushSvc := new(MockPushService)
+	spiritualSvc := new(MockSpiritualService)
+
+	queueRepo.On("DequeueUsers", mock.Anything, int64(4)).Return([]string{}, assert.AnError)
+
+	svc := NewPurgeService(queueRepo, matchRepo, pushSvc, spiritualSvc)
+	err := svc.ProcessMatchmaking(context.Background(), 4)
+
+	assert.Error(t, err)
+	queueRepo.AssertExpectations(t)
+}
+
+func TestPurgeService_ProcessMatchmaking_ErrorDequeueVIP(t *testing.T) {
+	queueRepo := new(MockPurgeQueueRepository)
+	matchRepo := new(MockMatchRepository)
+	pushSvc := new(MockPushService)
+	spiritualSvc := new(MockSpiritualService)
+
+	queueRepo.On("DequeueUsers", mock.Anything, int64(4)).Return([]string{}, nil)
+	queueRepo.On("DequeueVIPUsers", mock.Anything, int64(4)).Return([]string{}, assert.AnError)
+
+	svc := NewPurgeService(queueRepo, matchRepo, pushSvc, spiritualSvc)
+	err := svc.ProcessMatchmaking(context.Background(), 4)
+
+	assert.Error(t, err)
+	queueRepo.AssertExpectations(t)
+}
+
+func TestPurgeService_ProcessMatchmaking_ErrorMatchCreate(t *testing.T) {
+	queueRepo := new(MockPurgeQueueRepository)
+	matchRepo := new(MockMatchRepository)
+	pushSvc := new(MockPushService)
+	spiritualSvc := new(MockSpiritualService)
+
+	u1 := uuid.New().String()
+	u2 := uuid.New().String()
+
+	queueRepo.On("DequeueUsers", mock.Anything, int64(4)).Return([]string{u1, u2}, nil)
+	queueRepo.On("DequeueVIPUsers", mock.Anything, int64(4)).Return([]string{}, nil)
+
+	matchRepo.On("Create", mock.Anything, mock.AnythingOfType("*models.Match")).Return(assert.AnError).Times(1)
+
+	svc := NewPurgeService(queueRepo, matchRepo, pushSvc, spiritualSvc)
+	err := svc.ProcessMatchmaking(context.Background(), 4)
+
+	// Even if match creation fails, it doesn't return the error directly but logs it and continues.
+	assert.NoError(t, err)
+	queueRepo.AssertExpectations(t)
+	matchRepo.AssertExpectations(t)
+}

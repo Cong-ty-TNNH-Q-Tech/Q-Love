@@ -47,6 +47,18 @@ func TestPurgeQueueRepository_DequeueUsers(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, vipUsers, 2)
 
+	// Empty queue normal
+	mock.ExpectRPopCount("qlove:purge:queue", 2).SetErr(redis.Nil)
+	emptyUsers, err := repo.DequeueUsers(context.Background(), 2)
+	assert.NoError(t, err)
+	assert.Nil(t, emptyUsers)
+
+	// Empty queue VIP
+	mock.ExpectRPopCount("qlove:purge:queue:vip", 2).SetErr(redis.Nil)
+	emptyVIPUsers, err := repo.DequeueVIPUsers(context.Background(), 2)
+	assert.NoError(t, err)
+	assert.Nil(t, emptyVIPUsers)
+
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
