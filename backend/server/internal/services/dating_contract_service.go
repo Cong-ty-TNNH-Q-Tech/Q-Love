@@ -6,10 +6,15 @@ package services
 
 import (
 	"context"
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha1"
 	"database/sql"
+	"encoding/binary"
 	"encoding/hex"
 	"errors"
+	"fmt"
+	"math"
 	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
@@ -51,10 +56,56 @@ func NewDatingContractService(
 	}
 }
 
-func generateTOTPSecret() string {
-	bytes := make([]byte, 16)
-	rand.Read(bytes)
-	return hex.EncodeToString(bytes)
+func generateTOTPSecret() (string, error) {
+	bytes := make([]byte, 20)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", fmt.Errorf("failed to generate TOTP secret: %w", err)
+	}
+	return hex.EncodeToString(bytes), nil
+}
+
+// generateTOTP generates a 6-digit TOTP code based on RFC 6238.
+// It uses HMAC-SHA1 with a 30-second time step.
+func generateTOTP(secret string, t time.Time) (string, error) {
+	key, err := hex.DecodeString(secret)
+	if err != nil {
+		return "", fmt.Errorf("invalid TOTP secret: %w", err)
+	}
+
+	// Time step = 30 seconds (RFC 6238 default)
+	counter := uint64(t.Unix()) / 30
+
+	// Convert counter to big-endian bytes
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, counter)
+
+	// HMAC-SHA1
+	mac := hmac.New(sha1.New, key)
+	mac.Write(buf)
+	hash := mac.Sum(nil)
+
+	// Dynamic truncation (RFC 4226 Section 5.4)
+	offset := hash[len(hash)-1] & 0x0F
+	code := binary.BigEndian.Uint32(hash[offset:offset+4]) & 0x7FFFFFFF
+	otp := code % uint32(math.Pow10(6))
+
+	return fmt.Sprintf("%06d", otp), nil
+}
+
+// validateTOTP checks the provided token against TOTP codes within a
+// +/- 1 time step window to account for clock skew.
+func validateTOTP(secret string, token string) bool {
+	now := time.Now()
+	for _, offset := range []time.Duration{-30 * time.Second, 0, 30 * time.Second} {
+		expected, err := generateTOTP(secret, now.Add(offset))
+		if err != nil {
+			continue
+		}
+		if hmac.Equal([]byte(expected), []byte(token)) {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *datingContractService) CreateContract(ctx context.Context, userID uuid.UUID, targetUserID uuid.UUID, amount float64, appointmentTime time.Time) (*models.DatingContract, error) {
@@ -103,7 +154,10 @@ func (s *datingContractService) CreateContract(ctx context.Context, userID uuid.
 		}
 
 		// Create Contract
-		secret := generateTOTPSecret()
+		secret, err := generateTOTPSecret()
+		if err != nil {
+			return err
+		}
 		contract := &models.DatingContract{
 			UserAID:         userID,
 			UserBID:         targetUserID,
@@ -256,8 +310,7 @@ func (s *datingContractService) CancelContract(ctx context.Context, contractID u
 }
 
 func (s *datingContractService) ScanContract(ctx context.Context, contractID uuid.UUID, qrToken string) error {
-	// Simple TOTP logic check (In real implementation, we should use a proper TOTP package)
-	// For this simulation, we assume any token equal to TOTPSecret is valid
+	// RFC 6238 TOTP validation with +/- 30s window for clock skew tolerance
 	return s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
 		contract, err := s.contractRepo.GetByIDForUpdate(txCtx, contractID)
 		if err != nil {
@@ -268,9 +321,9 @@ func (s *datingContractService) ScanContract(ctx context.Context, contractID uui
 			return errors.New("contract must be active to scan")
 		}
 
-		// Mock TOTP validation
-		if qrToken != contract.TOTPSecret {
-			return errors.New("invalid QR token")
+		// Validate TOTP token (RFC 6238 with +/- 1 time step window)
+		if !validateTOTP(contract.TOTPSecret, qrToken) {
+			return errors.New("invalid or expired QR token")
 		}
 
 		contract.Status = "completed"
