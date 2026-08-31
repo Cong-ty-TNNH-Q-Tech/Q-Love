@@ -56,7 +56,8 @@ func TestPurgeQueueRepository_ClearQueue(t *testing.T) {
 	db, mock := redismock.NewClientMock()
 	repo := NewPurgeQueueRepository(db)
 
-	mock.ExpectDel("qlove:purge:queue", "qlove:purge:queue:vip").SetVal(2)
+	mock.ExpectDel("qlove:purge:queue").SetVal(1)
+	mock.ExpectDel("qlove:purge:queue:vip").SetVal(1)
 	err := repo.ClearQueue(context.Background())
 	assert.NoError(t, err)
 
