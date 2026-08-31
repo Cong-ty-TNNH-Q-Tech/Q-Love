@@ -9,6 +9,7 @@ import (
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/alicebob/miniredis/v2"
 )
 
 func TestNewRedisClient_InvalidURL(t *testing.T) {
@@ -38,4 +39,17 @@ func TestNewRedisClient_Skip(t *testing.T) {
 	client, err := NewRedisClient(cfg)
 	assert.NoError(t, err)
 	assert.Nil(t, client)
+}
+
+func TestNewRedisClient_Success(t *testing.T) {
+	mr, _ := miniredis.Run()
+	defer mr.Close()
+
+	cfg := &config.Config{
+		RedisURL: "redis://" + mr.Addr(),
+	}
+
+	client, err := NewRedisClient(cfg)
+	assert.NoError(t, err)
+	assert.NotNil(t, client)
 }

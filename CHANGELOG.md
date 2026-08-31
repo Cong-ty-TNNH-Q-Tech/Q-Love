@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [backend/server/services] Thêm `CardService` xử lý Chợ Thẻ Bài Profile Độc Thân (Khớp lệnh Thẻ Bài) và thuật toán Bonding Curve (Issue #11).
+- [backend/server/services] Tích hợp Circuit Breaker cho Sàn Chứng Khoán qua Redis, đóng băng giao dịch (5 phút) khi biến động giá > 30% (Issue #29).
+- [infra/ci-cd] Cấu hình GitHub Actions build Docker image multi-stage và Trigger Deploy Webhook (Issue #31).
 - [backend/server/api] Bổ sung PremiumMiddleware để bỏ qua giới hạn Rate Limit của Locket đối với người dùng Premium (Issue #30).
 - [frontend/app] Tích hợp engine animation `rive`, xây dựng giao diện Đảo Tình Yêu (Love Island) (Issue #18).
 - [frontend/app] Thuật toán sinh mã Offline TOTP QR Code theo chuẩn RFC 6238 cho tính năng Dating Contract (Issue #17).
