@@ -14,7 +14,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.24.x'
+          go-version: '1.25.x'
       - name: Go Mod Tidy
         run: |
           cd backend/server
@@ -23,7 +23,6 @@ jobs:
           go get gorm.io/driver/postgres
           go get github.com/google/uuid
           go mod tidy
-          go mod edit -go=1.24
       - name: Commit changes
         run: |
           git config --global user.name 'github-actions[bot]'
