@@ -23,6 +23,7 @@ jobs:
           go get gorm.io/driver/postgres
           go get github.com/google/uuid
           go mod tidy
+          go mod edit -go=1.24
       - name: Commit changes
         run: |
           git config --global user.name 'github-actions[bot]'
