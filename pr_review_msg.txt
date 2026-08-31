@@ -1,0 +1,7 @@
+❌ **PR Deep Review - Failed!**
+
+PR của bạn đã vi phạm tiêu chuẩn của dự án:
+- **Thiếu cập nhật `CHANGELOG.md`:** Bạn đang thêm một tính năng lớn (Tích hợp Rive render Đảo Tình Yêu - Issue #18) nhưng lại quên cập nhật `CHANGELOG.md` ở mục `[Unreleased] - Sắp tới`. Đây là quy tắc BẮT BUỘC (Rule 5) để theo dõi các phiên bản.
+
+**Yêu cầu sửa đổi:**
+Vui lòng bổ sung nội dung mô tả tính năng này vào `CHANGELOG.md` dưới phần `### Added`. Sau đó tôi sẽ approve PR này!
