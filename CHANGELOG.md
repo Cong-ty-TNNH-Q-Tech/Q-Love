@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [infra/ci-cd] Cấu hình GitHub Actions build Docker image multi-stage và Trigger Deploy Webhook (Issue #31).
 - [backend/server/api] Bổ sung PremiumMiddleware để bỏ qua giới hạn Rate Limit của Locket đối với người dùng Premium (Issue #30).
 - [frontend/app] Tích hợp engine animation `rive`, xây dựng giao diện Đảo Tình Yêu (Love Island) (Issue #18).
 - [frontend/app] Thuật toán sinh mã Offline TOTP QR Code theo chuẩn RFC 6238 cho tính năng Dating Contract (Issue #17).
