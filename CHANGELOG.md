@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [frontend/app] Biểu đồ giá Thẻ Bài & Giao diện The Purge (Issue #20).
 ### Added
+- [infra/cloudflare] Cấu hình Cloudflare CDN, WAF, DNS và GitHub Actions deploy Admin Dashboard lên Cloudflare Pages (Issue #43).
+- [infra/docker] Cấu hình Monitoring Stack với Sentry, Prometheus, Grafana và Loki (Issue #34).
+- [frontend/app] Biểu đồ giá Thẻ Bài & Giao diện The Purge (Issue #20).
 - [backend/server/services] Thêm `CardService` xử lý Chợ Thẻ Bài Profile Độc Thân (Khớp lệnh Thẻ Bài) và thuật toán Bonding Curve (Issue #11).
 - [backend/server/services] Tích hợp Circuit Breaker cho Sàn Chứng Khoán qua Redis, đóng băng giao dịch (5 phút) khi biến động giá > 30% (Issue #29).
 - [infra/ci-cd] Cấu hình GitHub Actions build Docker image multi-stage và Trigger Deploy Webhook (Issue #31).
@@ -126,3 +129,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [backend/server/api] Sửa lỗi thiếu `JWTMiddleware` cho các API `/wingman` và `/upload`.
 - [backend/server/api] Sửa lỗi sử dụng dummy UUID thay cho JWT context tại `WingmanHandler`.
 - [backend/server/tests] Sửa lỗi sai argument count của `go-sqlmock` trong `wingman_service_test.go`.
+### Added
+- [backend/server/services] Thêm worker ghép đôi The Purge (Issue #12) xử lý hàng đợi Redis.

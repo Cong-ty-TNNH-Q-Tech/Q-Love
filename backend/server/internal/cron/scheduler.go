@@ -17,13 +17,15 @@ type Scheduler struct {
 	c          *cron.Cron
 	cronService services.ClanCronService
 	islandCronService services.IslandCronService
+	pushSvc    services.PushService
 }
 
-func NewScheduler(cronService services.ClanCronService, islandCronService services.IslandCronService) *Scheduler {
+func NewScheduler(cronService services.ClanCronService, islandCronService services.IslandCronService, pushSvc services.PushService) *Scheduler {
 	return &Scheduler{
 		c:          cron.New(cron.WithSeconds()),
 		cronService: cronService,
 		islandCronService: islandCronService,
+		pushSvc:    pushSvc,
 	}
 }
 
@@ -52,6 +54,17 @@ func (s *Scheduler) Start() {
 	})
 	if err != nil {
 		logger.Log.Fatal("Failed to register island cron job", zap.Error(err))
+	}
+
+	// 0 0 22 * * 5 (22:00 every Friday)
+	_, err = s.c.AddFunc("0 0 22 * * 5", func() {
+		ctx := context.Background()
+		logger.Log.Info("Triggering The Purge event from cron")
+		// Send global push notification
+		_ = s.pushSvc.BroadcastToAll(ctx, "The Purge", "Đêm Săn Mồi đã bắt đầu! Vào game ngay!", nil)
+	})
+	if err != nil {
+		logger.Log.Fatal("Failed to register purge cron job", zap.Error(err))
 	}
 
 	s.c.Start()
