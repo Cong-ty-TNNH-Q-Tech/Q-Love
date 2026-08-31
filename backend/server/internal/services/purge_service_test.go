@@ -7,6 +7,7 @@ package services
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/models"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/pkg/logger"
@@ -80,9 +81,10 @@ func (m *MockPushService) BroadcastToAll(ctx context.Context, title string, body
 type MockSpiritualService struct {
 	mock.Mock
 }
-func (m *MockSpiritualService) GenerateDailyHoroscope(ctx context.Context, userID uuid.UUID) (*models.Horoscope, error) { return nil, nil }
-func (m *MockSpiritualService) GetCompatibilityScore(ctx context.Context, user1ID, user2ID uuid.UUID) (int, string, error) { return 0, "", nil }
-func (m *MockSpiritualService) DrawTarotCard(ctx context.Context, userID uuid.UUID) (*models.TarotCard, error) { return nil, nil }
+
+func (m *MockSpiritualService) CalculateZodiac(dob time.Time) string { return "" }
+func (m *MockSpiritualService) CalculateNumerology(dob time.Time) int { return 0 }
+func (m *MockSpiritualService) CalculateSpiritualMatchScore(dobA, dobB time.Time) int { return 0 }
 
 // Tests
 

@@ -35,12 +35,12 @@ func TestPurgeWorker_StartStop(t *testing.T) {
 
 	worker := NewPurgeWorker(mockSvc)
 	
-	worker.Start(context.Background(), 2) // start 2 workers
-	
-	// let it run a tiny bit
+	ctx, cancel := context.WithCancel(context.Background())
+	worker.Start(ctx, 1)
+
+	// Sleep slightly to let worker process once
 	time.Sleep(50 * time.Millisecond)
-	
-	worker.Stop()
+	cancel() // Stop the worker
 	
 	// Should stop safely without hanging
 	assert.True(t, true)

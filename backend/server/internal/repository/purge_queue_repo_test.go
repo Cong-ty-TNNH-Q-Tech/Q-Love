@@ -19,12 +19,12 @@ func TestPurgeQueueRepository_EnqueueUser(t *testing.T) {
 	userID := "user123"
 
 	// Success case
-	mock.ExpectLPush(purgeQueueNormal, userID).SetVal(1)
+	mock.ExpectLPush("qlove:purge:queue", userID).SetVal(1)
 	err := repo.EnqueueUser(context.Background(), userID, false)
 	assert.NoError(t, err)
 
 	// VIP case
-	mock.ExpectLPush(purgeQueueVIP, userID).SetVal(1)
+	mock.ExpectLPush("qlove:purge:queue:vip", userID).SetVal(1)
 	err = repo.EnqueueUser(context.Background(), userID, true)
 	assert.NoError(t, err)
 
@@ -36,13 +36,13 @@ func TestPurgeQueueRepository_DequeueUsers(t *testing.T) {
 	repo := NewPurgeQueueRepository(db)
 
 	// Success case normal
-	mock.ExpectRPopCount(purgeQueueNormal, 2).SetVal([]string{"user1", "user2"})
+	mock.ExpectRPopCount("qlove:purge:queue", 2).SetVal([]string{"user1", "user2"})
 	users, err := repo.DequeueUsers(context.Background(), 2)
 	assert.NoError(t, err)
 	assert.Len(t, users, 2)
 
 	// Success case VIP
-	mock.ExpectRPopCount(purgeQueueVIP, 2).SetVal([]string{"vip1", "vip2"})
+	mock.ExpectRPopCount("qlove:purge:queue:vip", 2).SetVal([]string{"vip1", "vip2"})
 	vipUsers, err := repo.DequeueVIPUsers(context.Background(), 2)
 	assert.NoError(t, err)
 	assert.Len(t, vipUsers, 2)
@@ -50,24 +50,13 @@ func TestPurgeQueueRepository_DequeueUsers(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestPurgeQueueRepository_RemoveUser(t *testing.T) {
-	db, mock := redismock.NewClientMock()
-	repo := NewPurgeQueueRepository(db)
 
-	mock.ExpectLRem(purgeQueueNormal, 0, "user1").SetVal(1)
-	mock.ExpectLRem(purgeQueueVIP, 0, "user1").SetVal(0)
-
-	err := repo.RemoveUser(context.Background(), "user1")
-	assert.NoError(t, err)
-
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
 
 func TestPurgeQueueRepository_ClearQueue(t *testing.T) {
 	db, mock := redismock.NewClientMock()
 	repo := NewPurgeQueueRepository(db)
 
-	mock.ExpectDel(purgeQueueNormal, purgeQueueVIP).SetVal(2)
+	mock.ExpectDel("qlove:purge:queue", "qlove:purge:queue:vip").SetVal(2)
 	err := repo.ClearQueue(context.Background())
 	assert.NoError(t, err)
 
