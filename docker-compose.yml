@@ -5,9 +5,9 @@ services:
     image: postgis/postgis:16-3.4
     container_name: qlove_postgres
     environment:
-      POSTGRES_USER: qlove
-      POSTGRES_PASSWORD: qlovepassword
-      POSTGRES_DB: qlove
+      POSTGRES_USER: ${POSTGRES_USER:-qlove}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-qlove}
     ports:
       - "5432:5432"
     volumes:
@@ -58,7 +58,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin}
     restart: unless-stopped
 
 volumes:

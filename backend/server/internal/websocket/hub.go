@@ -110,7 +110,7 @@ func (h *Hub) consumeRedisStream(ctx context.Context) {
 			streams, err := h.redisClient.XRead(ctx, &redis.XReadArgs{
 				Streams: []string{RedisChatStream, lastID},
 				Count:   10,
-				Block:   0, // Block indefinitely
+				Block:   5 * time.Second, // Periodic timeout to check ctx.Done()
 			}).Result()
 
 			if err != nil {
