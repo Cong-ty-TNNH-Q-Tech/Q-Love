@@ -39,7 +39,8 @@ func TestPurgeWorker_StartStop(t *testing.T) {
 	worker.Start(ctx, 1)
 
 	// Sleep slightly to let worker process once
-	time.Sleep(50 * time.Millisecond)
+	mockSvc.On("ProcessMatchmaking", mock.Anything, 100).Return(nil).Maybe()
+	time.Sleep(2100 * time.Millisecond)
 	cancel() // Stop the worker
 	
 	// Should stop safely without hanging
