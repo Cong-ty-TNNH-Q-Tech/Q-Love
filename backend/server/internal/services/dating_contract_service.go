@@ -64,9 +64,10 @@ func generateTOTPSecret() (string, error) {
 	return hex.EncodeToString(bytes), nil
 }
 
-// generateTOTP generates a 6-digit TOTP code based on RFC 6238.
+// GenerateTOTP generates a 6-digit TOTP code based on RFC 6238.
 // It uses HMAC-SHA1 with a 30-second time step.
-func generateTOTP(secret string, t time.Time) (string, error) {
+// Exported for testing purposes.
+func GenerateTOTP(secret string, t time.Time) (string, error) {
 	key, err := hex.DecodeString(secret)
 	if err != nil {
 		return "", fmt.Errorf("invalid TOTP secret: %w", err)
@@ -97,7 +98,7 @@ func generateTOTP(secret string, t time.Time) (string, error) {
 func validateTOTP(secret string, token string) bool {
 	now := time.Now()
 	for _, offset := range []time.Duration{-30 * time.Second, 0, 30 * time.Second} {
-		expected, err := generateTOTP(secret, now.Add(offset))
+		expected, err := GenerateTOTP(secret, now.Add(offset))
 		if err != nil {
 			continue
 		}
