@@ -241,13 +241,19 @@ func TestDatingContractService_ScanContract(t *testing.T) {
 	userB := uuid.New()
 	contractID := uuid.New()
 
+	// Use a valid hex secret (20 bytes = 40 hex chars) for RFC 6238 TOTP
+	totpSecret := "0123456789abcdef0123456789abcdef01234567"
+	// Generate a valid TOTP code for the current time
+	validToken, err := services.GenerateTOTP(totpSecret, time.Now())
+	assert.NoError(t, err)
+
 	contract := &models.DatingContract{
 		ID: contractID,
 		UserAID: userA,
 		UserBID: userB,
 		DepositAmount: 100.0,
 		Status: "active",
-		TOTPSecret: "mysecret",
+		TOTPSecret: totpSecret,
 	}
 
 	contractRepo.On("GetByIDForUpdate", ctx, contractID).Return(contract, nil)
@@ -256,7 +262,7 @@ func TestDatingContractService_ScanContract(t *testing.T) {
 	walletRepo.On("CreateTransaction", ctx, mock.Anything).Return(nil)
 	contractRepo.On("Update", ctx, mock.Anything).Return(nil)
 
-	err := service.ScanContract(ctx, contractID, "mysecret")
+	err = service.ScanContract(ctx, contractID, validToken)
 	assert.NoError(t, err)
 	assert.Equal(t, "completed", contract.Status)
 }
