@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [infra/docker] Cấu hình Monitoring Stack với Sentry, Prometheus, Grafana và Loki (Issue #34).
+- [frontend/app] Biểu đồ giá Thẻ Bài & Giao diện The Purge (Issue #20).
 - [backend/server/services] Thêm `CardService` xử lý Chợ Thẻ Bài Profile Độc Thân (Khớp lệnh Thẻ Bài) và thuật toán Bonding Curve (Issue #11).
 - [backend/server/services] Tích hợp Circuit Breaker cho Sàn Chứng Khoán qua Redis, đóng băng giao dịch (5 phút) khi biến động giá > 30% (Issue #29).
 - [infra/ci-cd] Cấu hình GitHub Actions build Docker image multi-stage và Trigger Deploy Webhook (Issue #31).

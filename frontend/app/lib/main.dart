@@ -8,6 +8,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_links/app_links.dart';
 import 'package:dio/dio.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:qlove/core/network/dio_client.dart';
 import 'package:qlove/core/network/secure_storage_service.dart';
 import 'package:qlove/features/auth/bloc/auth_bloc.dart';
@@ -24,7 +25,14 @@ import 'features/wingman/ui/matchmaker_popup.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await WidgetRepository().initialize();
-  runApp(const QLoveApp());
+  
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = const String.fromEnvironment('SENTRY_DSN', defaultValue: '');
+      options.tracesSampleRate = 1.0;
+    },
+    appRunner: () => runApp(const QLoveApp()),
+  );
 }
 
 class QLoveApp extends StatefulWidget {
