@@ -68,6 +68,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.53.1
 	github.com/fasthttp/websocket v1.5.3
 	github.com/getsentry/sentry-go v0.48.0
+	github.com/go-redis/redismock/v9 v9.2.0
 	github.com/gofiber/contrib/fibersentry v1.0.8
 	github.com/gofiber/contrib/fiberzap/v2 v2.1.6
 	github.com/golang-jwt/jwt/v5 v5.2.1
