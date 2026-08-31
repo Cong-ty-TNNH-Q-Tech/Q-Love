@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Added
+- [infra/cloudflare] Cấu hình Cloudflare CDN, WAF, DNS và GitHub Actions deploy Admin Dashboard lên Cloudflare Pages (Issue #43).
 - [infra/docker] Cấu hình Monitoring Stack với Sentry, Prometheus, Grafana và Loki (Issue #34).
 - [frontend/app] Biểu đồ giá Thẻ Bài & Giao diện The Purge (Issue #20).
 - [backend/server/services] Thêm `CardService` xử lý Chợ Thẻ Bài Profile Độc Thân (Khớp lệnh Thẻ Bài) và thuật toán Bonding Curve (Issue #11).
