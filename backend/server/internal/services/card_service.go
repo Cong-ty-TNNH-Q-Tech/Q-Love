@@ -122,16 +122,20 @@ func (s *cardService) TradeCard(ctx context.Context, collectorID, targetUserID u
 		totalCost := float64(0)
 		feePercent := 0.02
 
+		// Calculate cost using arithmetic series formula: Sum = n*(2a + (n-1)*d) / 2
+		// where a = starting price, d = price step (5.0), n = quantity
+		// This is O(1) instead of O(N) for large quantities
 		if tradeType == "buy" {
 			if profile.AvailableCards < quantity {
 				return errors.New("not enough available cards")
 			}
 			
-			// Calculate cost incrementally (Bonding curve simulation)
-			for i := 0; i < quantity; i++ {
-				priceAtI := 100.0 + float64(1000-(profile.AvailableCards-i))*5.0
-				totalCost += priceAtI
-			}
+			// Starting price for the first card purchased
+			a := 100.0 + float64(1000-(profile.AvailableCards))*5.0
+			d := 5.0
+			n := float64(quantity)
+			// Arithmetic series: Sum = n * (2a + (n-1)*d) / 2
+			totalCost = n * (2*a + (n-1)*d) / 2
 
 			// Add 2% fee
 			totalCostWithFee := totalCost * (1.0 + feePercent)
@@ -153,13 +157,29 @@ func (s *cardService) TradeCard(ctx context.Context, collectorID, targetUserID u
 				return errors.New("not enough owned cards to sell")
 			}
 
-			// Calculate revenue incrementally
-			for i := 0; i < quantity; i++ {
-				priceAtI := 100.0 + float64(1000-(profile.AvailableCards+i))*5.0
-				if priceAtI < 10 {
-					priceAtI = 10 // Minimum price floor
+			// Starting price for the first card sold
+			a := 100.0 + float64(1000-(profile.AvailableCards))*5.0
+			d := -5.0
+			n := float64(quantity)
+
+			// Calculate how many cards hit the price floor
+			// Price at step i: a + i*d >= 10 => i <= (a - 10) / 5
+			stepsBeforeFloor := int((a - 10.0) / 5.0) + 1
+			if stepsBeforeFloor < 0 {
+				stepsBeforeFloor = 0
+			}
+
+			if stepsBeforeFloor >= quantity {
+				// All cards are above floor price: use arithmetic series
+				totalCost = n * (2*a + (n-1)*d) / 2
+			} else {
+				// Some cards hit the floor
+				nAbove := float64(stepsBeforeFloor)
+				if nAbove > 0 {
+					totalCost = nAbove * (2*a + (nAbove-1)*d) / 2
 				}
-				totalCost += priceAtI
+				// Remaining cards at floor price
+				totalCost += float64(quantity-stepsBeforeFloor) * 10.0
 			}
 
 			// Deduct 2% fee
