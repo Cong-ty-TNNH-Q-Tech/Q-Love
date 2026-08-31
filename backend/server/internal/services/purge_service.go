@@ -43,7 +43,7 @@ func (s *purgeServiceImpl) ProcessMatchmaking(ctx context.Context, batchSize int
 	}
 
 	// Simple random matching for normal users
-	s.matchUsersInPairs(ctx, normalUsers)
+	s.matchUsersInPairs(ctx, normalUsers, false)
 
 	// Dequeue VIP users
 	vipUsers, err := s.queueRepo.DequeueVIPUsers(ctx, int64(batchSize))
@@ -53,18 +53,22 @@ func (s *purgeServiceImpl) ProcessMatchmaking(ctx context.Context, batchSize int
 	}
 
 	// We can use Spiritual matching for VIP, for now just simple pairs
-	s.matchUsersInPairs(ctx, vipUsers)
+	s.matchUsersInPairs(ctx, vipUsers, true)
 
 	return nil
 }
 
-func (s *purgeServiceImpl) matchUsersInPairs(ctx context.Context, users []string) {
+func (s *purgeServiceImpl) matchUsersInPairs(ctx context.Context, users []string, isVIP bool) {
 	// Pair adjacent users
 	for i := 0; i < len(users)-1; i += 2 {
 		user1 := users[i]
 		user2 := users[i+1]
-		uid1, _ := uuid.Parse(user1)
-		uid2, _ := uuid.Parse(user2)
+		uid1, err1 := uuid.Parse(user1)
+		uid2, err2 := uuid.Parse(user2)
+		if err1 != nil || err2 != nil {
+			logger.Log.Error("Invalid UUID for purge match", zap.String("user1", user1), zap.String("user2", user2))
+			continue
+		}
 		match := &models.Match{
 			User1ID: uid1,
 			User2ID: uid2,
@@ -80,5 +84,13 @@ func (s *purgeServiceImpl) matchUsersInPairs(ctx context.Context, users []string
 		_ = s.pushSvc.SendPush(ctx, user2, "The Purge", "Bạn đã được ghép đôi trong Đêm Săn Mồi!", nil)
 	}
 	
-	// If one user left over, requeue them (just a simple approach, skipping here for simplicity)
+	// If one user left over, requeue them
+	if len(users) > 0 && len(users)%2 != 0 {
+		leftoverUser := users[len(users)-1]
+		if _, err := uuid.Parse(leftoverUser); err == nil {
+			_ = s.queueRepo.EnqueueUser(ctx, leftoverUser, isVIP)
+		} else {
+			logger.Log.Error("Invalid UUID for leftover user", zap.String("user", leftoverUser))
+		}
+	}
 }

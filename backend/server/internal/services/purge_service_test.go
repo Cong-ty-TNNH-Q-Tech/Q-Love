@@ -172,3 +172,36 @@ func TestPurgeService_ProcessMatchmaking_ErrorMatchCreate(t *testing.T) {
 	queueRepo.AssertExpectations(t)
 	matchRepo.AssertExpectations(t)
 }
+
+func TestPurgeService_ProcessMatchmaking_OddUsers(t *testing.T) {
+	if logger.Log == nil {
+		logger.Log = zap.NewNop()
+	}
+
+	queueRepo := new(MockPurgeQueueRepository)
+	matchRepo := new(MockMatchRepository)
+	pushSvc := new(MockPushService)
+	spiritualSvc := new(MockSpiritualService)
+
+	u1 := uuid.New().String()
+	u2 := uuid.New().String()
+	u3 := uuid.New().String()
+
+	queueRepo.On("DequeueUsers", mock.Anything, int64(3)).Return([]string{u1, u2, u3}, nil)
+	queueRepo.On("DequeueVIPUsers", mock.Anything, int64(3)).Return([]string{}, nil)
+
+	matchRepo.On("Create", mock.Anything, mock.AnythingOfType("*models.Match")).Return(nil).Times(1)
+
+	pushSvc.On("SendPush", mock.Anything, mock.AnythingOfType("string"), "The Purge", "Bạn đã được ghép đôi trong Đêm Săn Mồi!", mock.Anything).Return(nil).Times(2)
+	
+	queueRepo.On("EnqueueUser", mock.Anything, u3, false).Return(nil).Times(1)
+
+	svc := NewPurgeService(queueRepo, matchRepo, pushSvc, spiritualSvc)
+	err := svc.ProcessMatchmaking(context.Background(), 3)
+
+	assert.NoError(t, err)
+	queueRepo.AssertExpectations(t)
+	matchRepo.AssertExpectations(t)
+	pushSvc.AssertExpectations(t)
+}
+
