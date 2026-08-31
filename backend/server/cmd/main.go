@@ -24,6 +24,7 @@ import (
 	"github.com/gofiber/contrib/fibersentry"
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"
+	"github.com/ansrivas/fiberprometheus/v2"
 	"go.uber.org/zap"
 )
 
@@ -64,6 +65,10 @@ func setupApp(ctx context.Context, cfg *config.Config) (*fiber.App, error) {
 		Repanic:         true,
 		WaitForDelivery: true,
 	}))
+	
+	prometheus := fiberprometheus.New("qlove_backend")
+	prometheus.RegisterAt(app, "/metrics")
+	app.Use(prometheus.Middleware)
 
 	// Cron Scheduler
 	matchRepo := repository.NewMatchRepository(db)
