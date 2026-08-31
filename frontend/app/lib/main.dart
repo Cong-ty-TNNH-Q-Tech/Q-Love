@@ -17,6 +17,10 @@ import 'package:qlove/features/auth/bloc/auth_event.dart';
 import 'package:qlove/features/auth/data/auth_repository.dart';
 import 'package:qlove/features/auth/ui/login_screen.dart';
 import 'package:qlove/features/auth/ui/profile_creation_screen.dart';
+import 'package:qlove/features/market/ui/card_detail_screen.dart';
+import 'package:qlove/features/discover/purge/ui/purge_lobby_screen.dart';
+import 'package:qlove/features/discover/purge/ui/purge_chat_screen.dart';
+import 'package:qlove/features/discover/purge/ui/purge_reveal_screen.dart';
 import 'package:qlove/features/locket/data/widget_repository.dart';
 import 'core/theme/app_theme.dart';
 import 'core/bloc/app_bloc.dart';
@@ -163,11 +167,40 @@ class _QLoveAppState extends State<QLoveApp> {
           home: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               if (state is AuthAuthenticated) {
-                return const Scaffold(
+                return Scaffold(
+                  appBar: AppBar(title: const Text('Q-Love App Foundation')),
                   body: Center(
-                    child: Text(
-                      'Q-Love App Foundation (Home)',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const CardDetailScreen(heroTag: 'test')));
+                          },
+                          child: const Text('Biểu đồ Thẻ Bài (Card Detail)'),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const PurgeLobbyScreen()));
+                          },
+                          child: const Text('The Purge: Lobby'),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const PurgeChatScreen()));
+                          },
+                          child: const Text('The Purge: Anonymous Chat'),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const PurgeRevealScreen()));
+                          },
+                          child: const Text('The Purge: Reveal'),
+                        ),
+                      ],
                     ),
                   ),
                 );

@@ -6,7 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] - Sắp tới
-
+### Added
+- [frontend/app] Biểu đồ giá Thẻ Bài & Giao diện The Purge (Issue #20).
 ### Added
 - [infra/cloudflare] Cấu hình Cloudflare CDN, WAF, DNS và GitHub Actions deploy Admin Dashboard lên Cloudflare Pages (Issue #43).
 - [infra/docker] Cấu hình Monitoring Stack với Sentry, Prometheus, Grafana và Loki (Issue #34).
