@@ -8,7 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - Sắp tới
 
 ### Fixed
+- [backend/server/services] **CRITICAL** Sửa lỗi bảo mật Refresh Token không invalidate token cũ: Thêm `jti` (JWT ID) claim và lưu vào Redis, mỗi refresh token chỉ dùng được 1 lần (token rotation) — ngăn chặn token reuse attack (Deep Review 10 Vòng #1).
+- [backend/server/services] Sửa lỗi balance âm trong `CourtService.FileLawsuit`: Thêm `GetWalletForUpdate` + kiểm tra balance trước khi trừ phí tòa án 50 Xu (Deep Review 10 Vòng #3a).
+- [backend/server/services] Sửa lỗi balance âm trong `CourtWorker.evaluateExpiredCases`: Thêm kiểm tra balance bị đơn trước khi trừ tiền phạt, áp dụng best-effort penalty (Deep Review 10 Vòng #3b).
+- [backend/server/services] Sửa lỗi balance âm trong `CardService.TradeCard` (buy): Thêm `GetWalletForUpdate` + kiểm tra balance trước khi trừ tiền mua thẻ (Deep Review 10 Vòng #3c).
+- [backend/server/services] Sửa thứ tự validation trong `LocketService.SendLocket`: Di chuyển kiểm tra file size/type lên trước NSFW check (AWS Rekognition) để tránh lãng phí chi phí AWS cho file không hợp lệ (Deep Review 10 Vòng #4).
 - [backend/server/services] Sửa lỗi nghiêm trọng trong `CancelContract`: Status bị ghi đè trước khi check, dẫn đến User A mất tiền cọc khi hủy hợp đồng `pending` (Deep Review Finding #1).
+
+### Added
+- [backend/server/api] Thêm CORS middleware cho Admin routes (`/admin/v1`) để React Admin Dashboard có thể gọi API cross-origin (Deep Review 10 Vòng #5).
+- [frontend/admin] Bổ sung header Copyright AGPLv3 cho `App.tsx` và `main.tsx` (Deep Review 10 Vòng #7).
 
 ### Changed
 - [repo] Dọn dẹp ~6MB file rác (CI logs, debug scripts) khỏi repo root và cập nhật `.gitignore` toàn diện (Deep Review Finding #2).
