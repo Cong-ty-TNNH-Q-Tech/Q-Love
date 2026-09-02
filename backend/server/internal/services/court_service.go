@@ -87,8 +87,16 @@ func (s *courtService) FileLawsuit(ctx context.Context, plaintiffID, defendantID
 	}
 
 	err = s.txManager.WithTransaction(ctx, func(txCtx context.Context) error {
-		// Deduct deposit (freeze) from plaintiff
+		// Deduct deposit (freeze) from plaintiff — check balance first to prevent negative balance
 		courtFee := float64(50)
+		wallet, err := s.walletRepo.GetWalletForUpdate(txCtx, plaintiffID)
+		if err != nil {
+			return err
+		}
+		if wallet.Balance < courtFee {
+			return errors.New("insufficient balance to file a lawsuit")
+		}
+
 		if err := s.walletRepo.UpdateBalance(txCtx, plaintiffID, -courtFee); err != nil {
 			return err
 		}
