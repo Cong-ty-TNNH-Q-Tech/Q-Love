@@ -166,6 +166,7 @@ func TestTradeCard_Success_Buy(t *testing.T) {
 		TotalCards: 1000,
 	}, nil)
 
+	mockWalletRepo.On("GetWalletForUpdate", mock.Anything, collectorID).Return(&models.UserWallet{UserID: collectorID, Balance: 10000}, nil)
 	mockWalletRepo.On("UpdateBalance", mock.Anything, collectorID, mock.AnythingOfType("float64")).Return(nil)
 	mockCardRepo.On("UpdateCardProfile", mock.Anything, mock.AnythingOfType("*models.CardProfile")).Return(nil)
 	mockCardRepo.On("CreateCardTransaction", mock.Anything, mock.AnythingOfType("*models.CardTransaction")).Return(nil)
@@ -325,6 +326,7 @@ func TestUpdateCardProfile_Error(t *testing.T) {
 		UserID: targetUserID, AvailableCards: 1000, TotalCards: 1000,
 	}, nil)
 
+	mockWalletRepo.On("GetWalletForUpdate", mock.Anything, collectorID).Return(&models.UserWallet{UserID: collectorID, Balance: 10000}, nil)
 	mockWalletRepo.On("UpdateBalance", mock.Anything, collectorID, mock.AnythingOfType("float64")).Return(nil)
 	
 	// Error on update profile

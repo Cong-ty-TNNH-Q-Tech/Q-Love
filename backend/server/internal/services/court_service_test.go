@@ -27,7 +27,7 @@ type mockCourtRepo struct {
 
 type mockWalletRepoCourt struct{}
 func (m *mockWalletRepoCourt) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error { return nil }
-func (m *mockWalletRepoCourt) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) { return nil, nil }
+func (m *mockWalletRepoCourt) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) { return &models.UserWallet{UserID: userID, Balance: 100}, nil }
 func (m *mockWalletRepoCourt) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
 func (m *mockWalletRepoCourt) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
 func (m *mockWalletRepoCourt) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error { return nil }
@@ -532,7 +532,7 @@ func TestCourtService_GetFeed_Error(t *testing.T) {
 
 type mockWalletRepoCourtFail struct{}
 func (m *mockWalletRepoCourtFail) UpdateBalance(ctx context.Context, userID uuid.UUID, delta float64) error { return errors.New("wallet err") }
-func (m *mockWalletRepoCourtFail) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) { return nil, nil }
+func (m *mockWalletRepoCourtFail) GetWalletForUpdate(ctx context.Context, userID uuid.UUID) (*models.UserWallet, error) { return &models.UserWallet{UserID: userID, Balance: 100}, nil }
 func (m *mockWalletRepoCourtFail) AddCommission(ctx context.Context, userID uuid.UUID, amount float64) error { return nil }
 func (m *mockWalletRepoCourtFail) CheckTransactionExists(ctx context.Context, txID uuid.UUID) (bool, error) { return false, nil }
 func (m *mockWalletRepoCourtFail) CreateTransaction(ctx context.Context, txn *models.WalletTransaction) error { return nil }

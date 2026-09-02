@@ -216,8 +216,8 @@ func TestAuthService_RefreshToken_Success(t *testing.T) {
 	esmsClient := new(mockESMSClient)
 	svc := NewAuthService(userRepo, esmsClient, rdb, "secret")
 
-	// Generate refresh token manually
-	rt, _ := svc.(*authService).generateRefreshToken(uuid.New())
+	// Generate refresh token manually (now stores jti in Redis for one-time-use validation)
+	rt, _ := svc.(*authService).generateRefreshToken(context.Background(), uuid.New())
 
 	newAT, newRT, err := svc.RefreshToken(context.Background(), rt)
 	assert.NoError(t, err)
@@ -239,6 +239,49 @@ func TestAuthService_RefreshToken_Invalid(t *testing.T) {
 	_, _, err := svc.RefreshToken(context.Background(), at)
 	assert.Error(t, err)
 	assert.Equal(t, "invalid token type", err.Error())
+}
+
+func TestAuthService_RefreshToken_Reuse_Rejected(t *testing.T) {
+	mr, rdb := setupAuthServiceTest()
+	defer mr.Close()
+
+	userRepo := new(mockUserRepoForAuth)
+	esmsClient := new(mockESMSClient)
+	svc := NewAuthService(userRepo, esmsClient, rdb, "secret")
+
+	// Generate a valid refresh token (stores jti in Redis)
+	rt, _ := svc.(*authService).generateRefreshToken(context.Background(), uuid.New())
+
+	// First use should succeed
+	_, _, err := svc.RefreshToken(context.Background(), rt)
+	assert.NoError(t, err)
+
+	// Second use of the SAME token should be rejected (jti already deleted)
+	_, _, err = svc.RefreshToken(context.Background(), rt)
+	assert.Error(t, err)
+	assert.Equal(t, "refresh token has already been used or revoked", err.Error())
+}
+
+func TestAuthService_RefreshToken_MissingJTI(t *testing.T) {
+	mr, rdb := setupAuthServiceTest()
+	defer mr.Close()
+
+	userRepo := new(mockUserRepoForAuth)
+	esmsClient := new(mockESMSClient)
+	svc := NewAuthService(userRepo, esmsClient, rdb, "secret")
+
+	// Manually craft a refresh token WITHOUT jti claim (simulates old token)
+	claims := jwt.MapClaims{
+		"sub":  uuid.New().String(),
+		"type": "refresh",
+		"exp":  time.Now().Add(30 * 24 * time.Hour).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	rt, _ := token.SignedString([]byte("secret"))
+
+	_, _, err := svc.RefreshToken(context.Background(), rt)
+	assert.Error(t, err)
+	assert.Equal(t, "invalid refresh token: missing jti", err.Error())
 }
 func TestAuthService_VerifyOTP_RedisError(t *testing.T) {
 	mr, rdb := setupAuthServiceTest()
