@@ -98,13 +98,28 @@ func (w *CourtWorker) evaluateExpiredCases(ctx context.Context) {
 
 			courtFee := float64(50)
 			if status == models.CourtCaseStatusGuilty {
-				if err := w.walletRepo.UpdateBalance(txCtx, c.DefendantID, -courtFee); err != nil {
+				// Check defendant balance before deducting penalty to prevent negative balance
+				defWallet, err := w.walletRepo.GetWalletForUpdate(txCtx, c.DefendantID)
+				if err != nil {
 					return err
 				}
-				if err := w.walletRepo.UpdateBalance(txCtx, c.PlaintiffID, courtFee*2); err != nil {
+				// Deduct only available balance (best effort for system-initiated penalty)
+				penalty := courtFee
+				if defWallet.Balance < penalty {
+					penalty = defWallet.Balance
+				}
+				if penalty > 0 {
+					if err := w.walletRepo.UpdateBalance(txCtx, c.DefendantID, -penalty); err != nil {
+						return err
+					}
+				}
+				// Refund plaintiff their filing fee + penalty collected from defendant
+				refundAmount := courtFee + penalty
+				if err := w.walletRepo.UpdateBalance(txCtx, c.PlaintiffID, refundAmount); err != nil {
 					return err
 				}
 			} else {
+				// Not Guilty: refund the filing fee to the defendant
 				if err := w.walletRepo.UpdateBalance(txCtx, c.DefendantID, courtFee); err != nil {
 					return err
 				}

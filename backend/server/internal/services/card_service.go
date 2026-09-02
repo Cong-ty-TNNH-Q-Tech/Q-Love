@@ -140,6 +140,15 @@ func (s *cardService) TradeCard(ctx context.Context, collectorID, targetUserID u
 			// Add 2% fee
 			totalCostWithFee := totalCost * (1.0 + feePercent)
 
+			// Check collector balance before deducting to prevent negative balance
+			wallet, err := s.walletRepo.GetWalletForUpdate(txCtx, collectorID)
+			if err != nil {
+				return err
+			}
+			if wallet.Balance < totalCostWithFee {
+				return errors.New("insufficient balance to buy cards")
+			}
+
 			// Deduct from wallet
 			if err := s.walletRepo.UpdateBalance(txCtx, collectorID, -totalCostWithFee); err != nil {
 				return err

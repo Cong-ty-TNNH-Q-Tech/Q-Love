@@ -6,6 +6,7 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/config"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/api/handlers"
 	"github.com/Cong-ty-TNNH-Q-Tech/Q-Love/backend/server/internal/middleware"
@@ -146,7 +147,11 @@ func RegisterRoutes(ctx context.Context, app *fiber.App, db *gorm.DB, r2Client *
 	courtRepo := repository.NewCourtRepository(db)
 	adminService := services.NewAdminService(violationRepo, courtRepo, r2Client, walletRepo, txManager)
 	adminHandler := handlers.NewAdminHandler(adminService)
-	adminGroup := app.Group("/admin/v1", middleware.AdminMiddleware(cfg.JWTSecret))
+	adminGroup := app.Group("/admin/v1", cors.New(cors.Config{
+		AllowOrigins: "https://admin.qlove.com",
+		AllowMethods: "GET,POST,DELETE,PUT,PATCH,OPTIONS",
+		AllowHeaders: "Origin,Content-Type,Accept,Authorization",
+	}), middleware.AdminMiddleware(cfg.JWTSecret))
 	adminGroup.Get("/violations", adminHandler.GetViolations)
 	adminGroup.Post("/users/:id/ban", adminHandler.BanUser)
 	adminGroup.Delete("/violations/:id/media", adminHandler.DeleteViolationMedia)

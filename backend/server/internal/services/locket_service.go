@@ -60,7 +60,16 @@ func (s *locketService) SendLocket(ctx context.Context, senderID uuid.UUID, matc
 		return errors.New("match not found")
 	}
 
-	// AI Check NSFW
+	// Validate file type and size BEFORE NSFW check to avoid wasting AWS costs on invalid files
+	if file.Size > 10*1024*1024 { // 10MB limit
+		return errors.New("file too large, limit is 10MB")
+	}
+	contentType := file.Header.Get("Content-Type")
+	if contentType != "image/jpeg" && contentType != "image/png" && contentType != "image/webp" {
+		return errors.New("only jpeg, png, and webp images are supported")
+	}
+
+	// AI Check NSFW (AWS Rekognition) — only after basic validation passes
 	isNSFW, _, err := s.nsfwService.CheckNSFW(ctx, file)
 	if err != nil {
 		return errors.New("failed to check image content")
@@ -83,15 +92,6 @@ func (s *locketService) SendLocket(ctx context.Context, senderID uuid.UUID, matc
 		}
 
 		return errors.New("ảnh chứa nội dung nhạy cảm, không được phép gửi")
-	}
-
-	// Validate file type and size
-	if file.Size > 10*1024*1024 { // 10MB limit
-		return errors.New("file too large, limit is 10MB")
-	}
-	contentType := file.Header.Get("Content-Type")
-	if contentType != "image/jpeg" && contentType != "image/png" && contentType != "image/webp" {
-		return errors.New("only jpeg, png, and webp images are supported")
 	}
 
 	// 3. Process blur

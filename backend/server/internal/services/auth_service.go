@@ -138,7 +138,7 @@ func (s *authService) VerifyOTP(ctx context.Context, phone, otp string) (*models
 		return nil, "", "", false, err
 	}
 
-	refreshToken, err := s.generateRefreshToken(user.ID)
+	refreshToken, err := s.generateRefreshToken(ctx, user.ID)
 	if err != nil {
 		return nil, "", "", false, err
 	}
@@ -177,12 +177,29 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (st
 		return "", "", err
 	}
 
+	// One-time use: Validate and invalidate the refresh token's jti in Redis.
+	// This prevents token reuse if the refresh token is leaked.
+	jti, jtiOk := claims["jti"].(string)
+	if !jtiOk || jti == "" {
+		return "", "", errors.New("invalid refresh token: missing jti")
+	}
+
+	jtiKey := fmt.Sprintf("refresh_token:%s", jti)
+	deleted, err := s.redis.Del(ctx, jtiKey).Result()
+	if err != nil {
+		return "", "", fmt.Errorf("failed to validate refresh token: %w", err)
+	}
+	if deleted == 0 {
+		// Token jti not found in Redis → already used or expired → reject
+		return "", "", errors.New("refresh token has already been used or revoked")
+	}
+
 	newAccessToken, err := s.generateAccessToken(userID)
 	if err != nil {
 		return "", "", err
 	}
 
-	newRefreshToken, err := s.generateRefreshToken(userID)
+	newRefreshToken, err := s.generateRefreshToken(ctx, userID)
 	if err != nil {
 		return "", "", err
 	}
@@ -192,22 +209,39 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (st
 
 func (s *authService) generateAccessToken(userID uuid.UUID) (string, error) {
 	claims := jwt.MapClaims{
-		"sub": userID.String(),
-		"type":    "access",
-		"exp":     time.Now().Add(15 * time.Minute).Unix(),
+		"sub":  userID.String(),
+		"type": "access",
+		"exp":  time.Now().Add(15 * time.Minute).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(s.jwtSecret))
 }
 
-func (s *authService) generateRefreshToken(userID uuid.UUID) (string, error) {
+// generateRefreshToken creates a new refresh token with a unique jti (JWT ID)
+// and stores the jti in Redis for one-time-use validation (token rotation).
+func (s *authService) generateRefreshToken(ctx context.Context, userID uuid.UUID) (string, error) {
+	jti := uuid.New().String()
+	refreshTTL := 30 * 24 * time.Hour
+
 	claims := jwt.MapClaims{
-		"sub": userID.String(),
-		"type":    "refresh",
-		"exp":     time.Now().Add(30 * 24 * time.Hour).Unix(),
+		"sub":  userID.String(),
+		"type": "refresh",
+		"jti":  jti,
+		"exp":  time.Now().Add(refreshTTL).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(s.jwtSecret))
+	signedToken, err := token.SignedString([]byte(s.jwtSecret))
+	if err != nil {
+		return "", err
+	}
+
+	// Store jti in Redis with the same TTL as the token so it auto-expires
+	jtiKey := fmt.Sprintf("refresh_token:%s", jti)
+	if err := s.redis.Set(ctx, jtiKey, userID.String(), refreshTTL).Err(); err != nil {
+		return "", fmt.Errorf("failed to store refresh token jti: %w", err)
+	}
+
+	return signedToken, nil
 }
